@@ -24,7 +24,7 @@ const Shoe = () => {
                     {shoe.isAvailable ? <p>Available</p> : <p>Stock out</p>}
 
                 </div>
-                <p>Old Price: ${shoe.old_price}</p>
+                <p className="text-red-400 line-through">Old Price: ${shoe.old_price}</p>
                 <p>New Price: ${shoe.new_price}</p>
                 <p>Category: {shoe.category}</p>
                 <p>Sub-category: {shoe.sub_category}</p>

@@ -8,6 +8,7 @@ import Home from './layout/Home'
 import Shoe from './pages/Shoe'
 import AllShoes from './pages/AllShoes'
 import CategoryShoe from './pages/CategoryShoe'
+import Error from './components/Error'
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
           <Route path='/shoe/:id' element={<Shoe />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/about' element={<About />} />
+          <Route path='/*' element={<Error />} />
         </Routes>
       </div>
 
