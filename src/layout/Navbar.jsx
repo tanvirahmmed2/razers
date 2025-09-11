@@ -13,9 +13,9 @@ const Navbar = () => {
             <input type="text" placeholder='search your favourite pair' className='p-1 px-3 hidden md:block  rounded-lg outline-none placeholder-blue-500 placeholder-opacity-25 text-black' />
 
             <div className='w-auto flex flex-row items-center justify-center gap-2 h-14'>
-                <Link to='/' className='h-14 flex items-center justify-center hover:border-b-2 border-red-500 px-6'>Home</Link>
-                <Link to='/about' className='h-14 flex items-center justify-center hover:border-b-2 border-red-500 px-6'>About</Link>
-                <Link to='/cart' className='h-14 flex items-center justify-center hover:border-b-2 border-red-500 px-6'>Cart</Link>
+                <Link to='/' className='h-14 flex items-center justify-center hover:border-b-2 border-red-500 px-2 md:px-6'>Home</Link>
+                <Link to='/about' className='h-14 flex items-center justify-center hover:border-b-2 border-red-500 px-2 md:px-6'>About</Link>
+                <Link to='/cart' className='h-14 flex items-center justify-center hover:border-b-2 border-red-500 px-2 md:px-6'>Cart</Link>
             </div>
 
         </nav>
