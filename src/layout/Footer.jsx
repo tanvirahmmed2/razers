@@ -6,10 +6,10 @@ const Footer = () => {
     <section className='m-2'>
         <footer className='w-full flex flex-col md:flex-row gap-4  items-center justify-around p-4 bg-gray-100 rounded-lg'>
             <div className='w-auto flex flex-col items-start justify-center gap-2'>
-                <Link to='/' className='hover:border-l-2 border-black px-4'>Sneaker</Link>
-                <Link to='/' className='hover:border-l-2 border-black px-4'>Boots</Link>
-                <Link to='/' className='hover:border-l-2 border-black px-4'>Casual</Link>
-                <Link to='/' className='hover:border-l-2 border-black px-4'>Hiking</Link>
+                <Link to='/sneaker' className='hover:border-l-2 border-black px-4'>Sneaker</Link>
+                <Link to='/boot' className='hover:border-l-2 border-black px-4'>Boots</Link>
+                <Link to='/casual' className='hover:border-l-2 border-black px-4'>Casual</Link>
+                <Link to='/hiking' className='hover:border-l-2 border-black px-4'>Hiking</Link>
             </div>
             <div className='w-auto flex flex-col items-center gap-2 justify-center'>
                 <label htmlFor="subscribe">Subscibe newsletter</label>

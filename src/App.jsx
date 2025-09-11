@@ -7,6 +7,7 @@ import About from './pages/About'
 import Home from './layout/Home'
 import Shoe from './pages/Shoe'
 import AllShoes from './pages/AllShoes'
+import CategoryShoe from './pages/CategoryShoe'
 
 const App = () => {
   return (
@@ -15,6 +16,10 @@ const App = () => {
       <div className='w-full min-h-screen flex items-center justify-center py-10'>
         <Routes>
           <Route path='/' element={<Home />} />
+          <Route path='/casual' element={<CategoryShoe category='casual'/>} />
+          <Route path='/sneaker' element={<CategoryShoe category='sneaker'/>} />
+          <Route path='/boot' element={<CategoryShoe category='boot'/>} />
+          <Route path='/hiking' element={<CategoryShoe category='hiking'/>} />
           <Route path='/allshoes' element={<AllShoes />} />
           <Route path='/shoe/:id' element={<Shoe />} />
           <Route path='/cart' element={<Cart />} />

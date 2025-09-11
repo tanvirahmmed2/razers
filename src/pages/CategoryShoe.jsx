@@ -2,15 +2,16 @@ import React, { useContext } from 'react'
 import { ShopContext } from '../components/ContextProvider'
 import Shoes from './Shoes'
 
-const Latest = () => {
-    const {data} = useContext(ShopContext)
-    const latestData= data.slice(-8)
+const CategoryShoe = (props) => {
+  const {category} = props
+  const {data} =useContext(ShopContext)
+  const filteredData= data.filter((item)=> item.category=== category)
   return (
     <div className='w-full flex flex-col items-center justify-center gap-6'>
-        <h1 className='text-3xl font-semibold'>Latest Collections</h1>
+        <h1 className='text-3xl font-semibold'>Check our {category} collections</h1>
         <div className='w-full flex flex-wrap gap-4 justify-center'>
             {
-            latestData.map((shoe)=>{
+            filteredData.map((shoe)=>{
                 const {name, id, old_price, new_price, image}= shoe
                 return(
                     <Shoes name={name} old_price={old_price} new_price={new_price} image={image} key={id} id={id}/>
@@ -24,4 +25,4 @@ const Latest = () => {
   )
 }
 
-export default Latest
+export default CategoryShoe
