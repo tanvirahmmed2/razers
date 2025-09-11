@@ -8,7 +8,7 @@ import Home from './layout/Home'
 
 const App = () => {
   return (
-    <>
+    <div className='w-full overflow-x-hidden relative'>
       <Navbar />
       <div>
         <Routes>
@@ -20,7 +20,7 @@ const App = () => {
 
 
       <Footer />
-    </>
+    </div>
   )
 }
 
