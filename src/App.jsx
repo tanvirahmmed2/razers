@@ -10,7 +10,7 @@ const App = () => {
   return (
     <div className='w-full overflow-x-hidden relative'>
       <Navbar />
-      <div>
+      <div className='w-full min-h-screen flex items-center justify-center'>
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/cart' element={<Cart />} />
