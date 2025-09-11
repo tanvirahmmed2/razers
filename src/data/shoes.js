@@ -7,6 +7,7 @@ export const shoes = [
         "old_price": 120,
         "new_price": 95,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "A timeless classic, the Nike Air Force 1 '07 features a smooth leather upper and a durable rubber outsole, offering both style and comfort."
     },
@@ -18,6 +19,7 @@ export const shoes = [
         "old_price": 100,
         "new_price": 85,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "The Stan Smith is a minimalist tennis shoe with a clean design, featuring a leather upper and perforated 3-Stripes for breathability."
     },
@@ -29,6 +31,7 @@ export const shoes = [
         "old_price": 85,
         "new_price": 70,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "The Suede Classic combines a soft suede upper with a rubber outsole, delivering a comfortable and stylish look."
     },
@@ -40,6 +43,7 @@ export const shoes = [
         "old_price": 90,
         "new_price": 75,
         "image": null,
+        "isAvailable": true,
         "sizes": ["6", "7", "8", "9", "10"],
         "description": "The 574 Core offers a versatile mix of new, different, and uncomplicated design, built on a wider last for comfort."
     },
@@ -51,6 +55,7 @@ export const shoes = [
         "old_price": 60,
         "new_price": 50,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "The Chuck Taylor All Star is an iconic sneaker known for its timeless silhouette and durable canvas upper."
     },
@@ -62,6 +67,7 @@ export const shoes = [
         "old_price": 75,
         "new_price": 65,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "The Old Skool features a suede and canvas upper with a signature Sidestripe™, offering a classic skate-inspired look."
     },
@@ -73,6 +79,7 @@ export const shoes = [
         "old_price": 95,
         "new_price": 80,
         "image": null,
+        "isAvailable": true,
         "sizes": ["6", "7", "8", "9", "10"],
         "description": "Inspired by '80s basketball, the Court Vision Low combines retro style with modern materials for everyday wear."
     },
@@ -84,6 +91,7 @@ export const shoes = [
         "old_price": 85,
         "new_price": 70,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "The Club C 85 offers a minimalist design with a leather upper and EVA midsole for lightweight cushioning."
     },
@@ -95,6 +103,7 @@ export const shoes = [
         "old_price": 100,
         "new_price": 85,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "The Gazelle is a classic sneaker with a soft suede upper and a rubber outsole, offering both comfort and style."
     },
@@ -106,6 +115,7 @@ export const shoes = [
         "old_price": 75,
         "new_price": 60,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "The Blazer Low combines a leather upper with a rubber outsole, delivering a sleek and durable design."
     },
@@ -117,6 +127,7 @@ export const shoes = [
         "old_price": 210,
         "new_price": 180,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Durable and iconic, these boots provide comfort and protection in all conditions."
     },
@@ -128,6 +139,7 @@ export const shoes = [
         "old_price": 170,
         "new_price": 145,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "The 1460 is a legendary boot featuring smooth leather and signature yellow stitching."
     },
@@ -139,6 +151,7 @@ export const shoes = [
         "old_price": 130,
         "new_price": 110,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Work-ready boots with sturdy leather and slip-resistant soles for all-day protection."
     },
@@ -150,6 +163,7 @@ export const shoes = [
         "old_price": 200,
         "new_price": 170,
         "image": null,
+        "isAvailable": true,
         "sizes": ["6", "7", "8", "9", "10"],
         "description": "Warm and waterproof winter boots featuring a durable leather upper and rubber outsole."
     },
@@ -161,6 +175,7 @@ export const shoes = [
         "old_price": 160,
         "new_price": 135,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Comfortable and stylish short boots made with soft sheepskin lining."
     },
@@ -172,6 +187,7 @@ export const shoes = [
         "old_price": 200,
         "new_price": 175,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Durable slip-on leather boots perfect for everyday wear and outdoor use."
     },
@@ -183,6 +199,7 @@ export const shoes = [
         "old_price": 130,
         "new_price": 110,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "Waterproof boots for kids with sturdy soles and flexible comfort."
     },
@@ -194,6 +211,7 @@ export const shoes = [
         "old_price": 150,
         "new_price": 125,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Waterproof insulated boots designed for extreme cold and outdoor adventures."
     },
@@ -205,6 +223,7 @@ export const shoes = [
         "old_price": 90,
         "new_price": 75,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "Kids' waterproof boots built for outdoor play with comfort and durability."
     },
@@ -216,6 +235,7 @@ export const shoes = [
         "old_price": 180,
         "new_price": 155,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Classic Chelsea boots with smooth leather and elastic side panels for easy wear."
     },
@@ -227,6 +247,7 @@ export const shoes = [
         "old_price": 150,
         "new_price": 130,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Lightweight hiking shoes with excellent traction and stability."
     },
@@ -238,6 +259,7 @@ export const shoes = [
         "old_price": 140,
         "new_price": 120,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Durable hiking shoes with supportive midsoles and waterproof mesh."
     },
@@ -249,6 +271,7 @@ export const shoes = [
         "old_price": 110,
         "new_price": 95,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Lightweight and waterproof hiking boots for comfort on trails."
     },
@@ -260,6 +283,7 @@ export const shoes = [
         "old_price": 150,
         "new_price": 130,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Reliable trail shoes with excellent traction and waterproof protection."
     },
@@ -271,6 +295,7 @@ export const shoes = [
         "old_price": 145,
         "new_price": 125,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Durable hiking boots with breathable mesh and sturdy soles for long treks."
     },
@@ -282,6 +307,7 @@ export const shoes = [
         "old_price": 160,
         "new_price": 135,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Lightweight and supportive hiking boots with waterproof protection."
     },
@@ -293,6 +319,7 @@ export const shoes = [
         "old_price": 110,
         "new_price": 95,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "Trail shoes for kids with durable construction and excellent grip."
     },
@@ -304,6 +331,7 @@ export const shoes = [
         "old_price": 135,
         "new_price": 110,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Barefoot-style hiking shoes for maximum trail sensitivity and comfort."
     },
@@ -315,6 +343,7 @@ export const shoes = [
         "old_price": 100,
         "new_price": 80,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "Kids' waterproof hiking shoes built for comfort and trail performance."
     },
@@ -326,6 +355,7 @@ export const shoes = [
         "old_price": 120,
         "new_price": 95,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Lightweight and comfortable hiking shoes for outdoor adventures."
     },
@@ -337,6 +367,7 @@ export const shoes = [
         "old_price": 130,
         "new_price": 110,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "High-performance running shoes with responsive cushioning for long-distance comfort."
     },
@@ -348,6 +379,7 @@ export const shoes = [
         "old_price": 180,
         "new_price": 150,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Lightweight and comfortable sneakers designed for running and casual wear."
     },
@@ -359,6 +391,7 @@ export const shoes = [
         "old_price": 140,
         "new_price": 120,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "A responsive running shoe with lightweight construction and durable support."
     },
@@ -370,6 +403,7 @@ export const shoes = [
         "old_price": 170,
         "new_price": 145,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Premium running shoes with GEL cushioning for stability and comfort."
     },
@@ -381,6 +415,7 @@ export const shoes = [
         "old_price": 120,
         "new_price": 95,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Retro-inspired sneakers with modern comfort and stylish design."
     },
@@ -392,6 +427,7 @@ export const shoes = [
         "old_price": 120,
         "new_price": 105,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Classic low-top sneakers with leather upper and cushioned comfort."
     },
@@ -403,6 +439,7 @@ export const shoes = [
         "old_price": 110,
         "new_price": 90,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "Kids' retro sneakers with durable leather upper and rubber sole."
     },
@@ -414,6 +451,7 @@ export const shoes = [
         "old_price": 130,
         "new_price": 110,
         "image": null,
+        "isAvailable": true,
         "sizes": ["7", "8", "9", "10", "11", "12"],
         "description": "Bold sneakers with cushioned midsole and modern design details."
     },
@@ -425,6 +463,7 @@ export const shoes = [
         "old_price": 180,
         "new_price": 155,
         "image": null,
+        "isAvailable": true,
         "sizes": ["5", "6", "7", "8", "9", "10"],
         "description": "Cushioned running shoes with GEL technology for smooth and comfortable runs."
     },
@@ -436,6 +475,7 @@ export const shoes = [
         "old_price": 140,
         "new_price": 120,
         "image": null,
+        "isAvailable": true,
         "sizes": ["10", "11", "12", "13", "1", "2"],
         "description": "Lightweight kids' sneakers designed for speed, comfort, and performance."
     }

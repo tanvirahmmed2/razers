@@ -14,16 +14,32 @@ const Shoe = () => {
     }
 
     return (
-        <div className="p-4 w-full flex flex-col md:flex-row items-center justify-center gap-12">
-            <div>
+        <div className="p-4 w-full flex flex-col md:flex-row items-center justify-center gap-12 px-0 md:px-6 lg:px-20">
+            <div className="w-full">
                 <img src={shoe.image} alt={shoe.name} className="w-64 mt-2" />
             </div>
-            <div>
-                <h2 className="text-xl font-bold">{shoe.name}</h2>
+            <div className="w-full flex flex-col gap-2">
+                <div className="w-full flex flex-row items-center justify-between">
+                    <h2 className="text-xl font-bold">{shoe.name}</h2>
+                    {shoe.isAvailable ? <p>Available</p> : <p>Stock out</p>}
+
+                </div>
                 <p>Old Price: ${shoe.old_price}</p>
                 <p>New Price: ${shoe.new_price}</p>
                 <p>Category: {shoe.category}</p>
-                <p>Sub-category: {shoe.subCategory}</p>
+                <p>Sub-category: {shoe.sub_category}</p>
+                <select name="" id="">
+                    <option value="">Select size</option>
+                    {
+                        shoe.sizes.map((size) => {
+                            return (
+                                <option value={size} key={size}>{size}</option>
+                            )
+                        })
+                    }
+                </select>
+                <button className='bg-gradient-to-br from-sky-500 to-blue-600 text-white px-2 p-1 rounded-lg'>Add to cart</button>
+                <p>{shoe.description}</p>
             </div>
 
 
