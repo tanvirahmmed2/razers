@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 const Footer = () => {
   return (
     <section className='m-2'>
-        <footer className='w-full flex flex-col md:flex-row gap-4  items-center justify-around p-4 bg-gray-200 rounded-lg'>
+        <footer className='w-full flex flex-col md:flex-row gap-4  items-center justify-around p-4 bg-gray-100 rounded-lg'>
             <div className='w-auto flex flex-col items-start justify-center gap-2'>
                 <Link to='/' className='hover:border-l-2 border-black px-4'>Sneaker</Link>
                 <Link to='/' className='hover:border-l-2 border-black px-4'>Boots</Link>
