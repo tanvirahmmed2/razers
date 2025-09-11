@@ -16,7 +16,7 @@ const Shoe = () => {
     return (
         <div className="p-4 w-full flex flex-col md:flex-row items-center justify-center gap-12 px-0 md:px-6 lg:px-20">
             <div className="w-full">
-                <img src={shoe.image} alt={shoe.name} className="w-64 mt-2" />
+                <img src={shoe.image} alt={shoe.name} className="w-80 rounded-lg mt-2" />
             </div>
             <div className="w-full flex flex-col gap-2">
                 <div className="w-full flex flex-row items-center justify-between">
