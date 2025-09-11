@@ -5,6 +5,7 @@ import Footer from './layout/Footer'
 import Cart from './pages/Cart'
 import About from './pages/About'
 import Home from './layout/Home'
+import Shoe from './pages/Shoe'
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
       <div className='w-full min-h-screen flex items-center justify-center'>
         <Routes>
           <Route path='/' element={<Home />} />
+          <Route path='/shoe/:id' element={<Shoe />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/about' element={<About />} />
         </Routes>

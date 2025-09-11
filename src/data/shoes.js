@@ -1,405 +1,442 @@
-export const shoes=[
-  {
-    "id": 1,
-    "name": "Nike Air Force 1 '07",
-    "category": "casual",
-    "sub_category": "men",
-    "old_price": 120,
-    "new_price": 95,
-    "image": "https://images.nike.com/is/image/DotCom/315122-111",
-    "stock": 40
-  },
-  {
-    "id": 2,
-    "name": "Adidas Stan Smith",
-    "category": "casual",
-    "sub_category": "women",
-    "old_price": 100,
-    "new_price": 85,
-    "image": "https://assets.adidas.com/images/w_600,f_auto,q_auto/Stan_Smith.jpg",
-    "stock": 33
-  },
-  {
-    "id": 3,
-    "name": "Puma Suede Classic",
-    "category": "casual",
-    "sub_category": "men",
-    "old_price": 85,
-    "new_price": 70,
-    "image": "https://images.puma.com/is/image/PUMA/SUEDE-CLASSIC",
-    "stock": 28
-  },
-  {
-    "id": 4,
-    "name": "New Balance 574 Core",
-    "category": "casual",
-    "sub_category": "women",
-    "old_price": 90,
-    "new_price": 75,
-    "image": "https://nb.scene7.com/is/image/NB/574-core",
-    "stock": 46
-  },
-  {
-    "id": 5,
-    "name": "Converse Chuck Taylor",
-    "category": "casual",
-    "sub_category": "kid",
-    "old_price": 60,
-    "new_price": 50,
-    "image": "https://images.converse.com/is/image/Converse/Chuck-Taylor-All-Star",
-    "stock": 22
-  },
-  {
-    "id": 6,
-    "name": "Vans Old Skool",
-    "category": "casual",
-    "sub_category": "men",
-    "old_price": 75,
-    "new_price": 65,
-    "image": "https://images.vans.com/is/image/Vans/Old-Skool",
-    "stock": 35
-  },
-  {
-    "id": 7,
-    "name": "Nike Court Vision Low",
-    "category": "casual",
-    "sub_category": "women",
-    "old_price": 95,
-    "new_price": 80,
-    "image": "https://images.nike.com/is/image/DotCom/Court-Vision-Low",
-    "stock": 41
-  },
-  {
-    "id": 8,
-    "name": "Reebok Club C 85",
-    "category": "casual",
-    "sub_category": "men",
-    "old_price": 85,
-    "new_price": 70,
-    "image": "https://reebok.scene7.com/is/image/Reebok/Club-C-85",
-    "stock": 29
-  },
-  {
-    "id": 9,
-    "name": "Adidas Gazelle",
-    "category": "casual",
-    "sub_category": "women",
-    "old_price": 100,
-    "new_price": 85,
-    "image": "https://assets.adidas.com/images/w_600,f_auto,q_auto/Gazelle.jpg",
-    "stock": 38
-  },
-  {
-    "id": 10,
-    "name": "Nike Blazer Low",
-    "category": "casual",
-    "sub_category": "kid",
-    "old_price": 75,
-    "new_price": 60,
-    "image": "https://images.nike.com/is/image/DotCom/Blazer-Low",
-    "stock": 26
-  },
-
-  {
-    "id": 11,
-    "name": "Timberland 6-Inch Premium",
-    "category": "boot",
-    "sub_category": "men",
-    "old_price": 210,
-    "new_price": 180,
-    "image": "https://images.timberland.com/is/image/Timberland/6-inch-premium",
-    "stock": 15
-  },
-  {
-    "id": 12,
-    "name": "Dr. Martens 1460",
-    "category": "boot",
-    "sub_category": "women",
-    "old_price": 170,
-    "new_price": 145,
-    "image": "https://images.drmartens.com/is/image/DrMartens/1460",
-    "stock": 18
-  },
-  {
-    "id": 13,
-    "name": "Caterpillar Second Shift",
-    "category": "boot",
-    "sub_category": "men",
-    "old_price": 130,
-    "new_price": 110,
-    "image": "https://images.catfootwear.com/is/image/CatFootwear/Second-Shift",
-    "stock": 23
-  },
-  {
-    "id": 14,
-    "name": "Sorel Caribou",
-    "category": "boot",
-    "sub_category": "women",
-    "old_price": 200,
-    "new_price": 170,
-    "image": "https://images.sorel.com/is/image/Sorel/Caribou",
-    "stock": 14
-  },
-  {
-    "id": 15,
-    "name": "UGG Classic Mini II",
-    "category": "boot",
-    "sub_category": "women",
-    "old_price": 160,
-    "new_price": 135,
-    "image": "https://images.ugg.com/is/image/UGG/Classic-Mini-II",
-    "stock": 20
-  },
-  {
-    "id": 16,
-    "name": "Blundstone 500",
-    "category": "boot",
-    "sub_category": "men",
-    "old_price": 200,
-    "new_price": 175,
-    "image": "https://images.blundstone.com/is/image/Blundstone/500",
-    "stock": 19
-  },
-  {
-    "id": 17,
-    "name": "Keen Ridge Flex Waterproof",
-    "category": "boot",
-    "sub_category": "kid",
-    "old_price": 130,
-    "new_price": 110,
-    "image": "https://images.keenfootwear.com/is/image/KeenFootwear/Ridge-Flex-WP",
-    "stock": 12
-  },
-  {
-    "id": 18,
-    "name": "Columbia Bugaboot III",
-    "category": "boot",
-    "sub_category": "men",
-    "old_price": 150,
-    "new_price": 125,
-    "image": "https://images.columbia.com/is/image/Columbia/Bugaboot-III",
-    "stock": 17
-  },
-  {
-    "id": 19,
-    "name": "Timberland Pokey Pine",
-    "category": "boot",
-    "sub_category": "kid",
-    "old_price": 90,
-    "new_price": 75,
-    "image": "https://images.timberland.com/is/image/Timberland/Pokey-Pine",
-    "stock": 25
-  },
-  {
-    "id": 20,
-    "name": "Dr. Martens 2976 Chelsea",
-    "category": "boot",
-    "sub_category": "women",
-    "old_price": 180,
-    "new_price": 155,
-    "image": "https://images.drmartens.com/is/image/DrMartens/2976-Chelsea",
-    "stock": 16
-  },
-
-  {
-    "id": 21,
-    "name": "Salomon X Ultra 4",
-    "category": "hiking",
-    "sub_category": "men",
-    "old_price": 150,
-    "new_price": 130,
-    "image": "https://images.salomon.com/is/image/Salomon/X-Ultra-4",
-    "stock": 19
-  },
-  {
-    "id": 22,
-    "name": "Merrell Moab 3",
-    "category": "hiking",
-    "sub_category": "women",
-    "old_price": 140,
-    "new_price": 120,
-    "image": "https://images.merrell.com/is/image/Merrell/Moab-3",
-    "stock": 22
-  },
-  {
-    "id": 23,
-    "name": "Columbia Newton Ridge Plus",
-    "category": "hiking",
-    "sub_category": "men",
-    "old_price": 110,
-    "new_price": 95,
-    "image": "https://images.columbia.com/is/image/Columbia/Newton-Ridge-Plus",
-    "stock": 27
-  },
-  {
-    "id": 24,
-    "name": "Keen Targhee III",
-    "category": "hiking",
-    "sub_category": "women",
-    "old_price": 150,
-    "new_price": 130,
-    "image": "https://images.keenfootwear.com/is/image/KeenFootwear/Targhee-III",
-    "stock": 21
-  },
-  {
-    "id": 25,
-    "name": "The North Face Hedgehog Fastpack",
-    "category": "hiking",
-    "sub_category": "men",
-    "old_price": 145,
-    "new_price": 125,
-    "image": "https://images.thenorthface.com/is/image/TheNorthFace/Hedgehog-Fastpack",
-    "stock": 15
-  },
-  {
-    "id": 26,
-    "name": "Vasque Breeze LT NTX",
-    "category": "hiking",
-    "sub_category": "women",
-    "old_price": 160,
-    "new_price": 135,
-    "image": "https://images.vasque.com/is/image/Vasque/Breeze-LT-NTX",
-    "stock": 18
-  },
-  {
-    "id": 27,
-    "name": "Salomon XA Pro 3D",
-    "category": "hiking",
-    "sub_category": "kid",
-    "old_price": 110,
-    "new_price": 95,
-    "image": "https://images.salomon.com/is/image/Salomon/XA-Pro-3D",
-    "stock": 26
-  },
-  {
-    "id": 28,
-    "name": "Merrell Trail Glove 7",
-    "category": "hiking",
-    "sub_category": "men",
-    "old_price": 135,
-    "new_price": 110,
-    "image": "https://images.merrell.com/is/image/Merrell/Trail-Glove-7",
-    "stock": 23
-  },
-  {
-    "id": 29,
-    "name": "Keen Ridge Flex WP Kid",
-    "category": "hiking",
-    "sub_category": "kid",
-    "old_price": 100,
-    "new_price": 80,
-    "image": "https://images.keenfootwear.com/is/image/KeenFootwear/Ridge-Flex-WP-Kid",
-    "stock": 19
-  },
-  {
-    "id": 30,
-    "name": "Columbia Redmond III",
-    "category": "hiking",
-    "sub_category": "women",
-    "old_price": 120,
-    "new_price": 95,
-    "image": "https://images.columbia.com/is/image/Columbia/Redmond-III",
-    "stock": 20
-  },
-
-  {
-    "id": 31,
-    "name": "Nike Air Zoom Pegasus 40",
-    "category": "sneaker",
-    "sub_category": "men",
-    "old_price": 130,
-    "new_price": 110,
-    "image": "https://images.nike.com/is/image/DotCom/DV3853-002",
-    "stock": 31
-  },
-  {
-    "id": 32,
-    "name": "Adidas Ultraboost Light",
-    "category": "sneaker",
-    "sub_category": "women",
-    "old_price": 180,
-    "new_price": 150,
-    "image": "https://assets.adidas.com/images/w_600,f_auto,q_auto/Ultraboost_Light.jpg",
-    "stock": 25
-  },
-  {
-    "id": 33,
-    "name": "Puma Velocity Nitro 3",
-    "category": "sneaker",
-    "sub_category": "men",
-    "old_price": 140,
-    "new_price": 120,
-    "image": "https://images.puma.com/is/image/PUMA/VELOCITY-NITRO-3",
-    "stock": 38
-  },
-  {
-    "id": 34,
-    "name": "ASICS Gel-Kayano 31",
-    "category": "sneaker",
-    "sub_category": "women",
-    "old_price": 170,
-    "new_price": 145,
-    "image": "https://images.asics.com/is/image/asics/GEL-KAYANO-31",
-    "stock": 29
-  },
-  {
-    "id": 35,
-    "name": "New Balance 327",
-    "category": "sneaker",
-    "sub_category": "men",
-    "old_price": 120,
-    "new_price": 95,
-    "image": "https://nb.scene7.com/is/image/NB/327",
-    "stock": 33
-  },
-  {
-    "id": 36,
-    "name": "Nike Dunk Low Retro",
-    "category": "sneaker",
-    "sub_category": "women",
-    "old_price": 120,
-    "new_price": 105,
-    "image": "https://www.ubuy.com.bd/en/product/5B58TSFME-nike-dunk-low-retro-shoes-dd1391-100-039-black-panda-039?srsltid=AfmBOoqG7jHsmOdlyTWiWIpwiZ_EtH5sxq9ZhlZieU8O0KWEX_XIa9l_",
-    "stock": 22
-  },
-  {
-    "id": 37,
-    "name": "Adidas Samba OG",
-    "category": "sneaker",
-    "sub_category": "kid",
-    "old_price": 110,
-    "new_price": 90,
-    "image": "https://assets.adidas.com/images/w_600,f_auto,q_auto/Samba_OG.jpg",
-    "stock": 19
-  },
-  {
-    "id": 38,
-    "name": "Puma RS-X Efekt",
-    "category": "sneaker",
-    "sub_category": "men",
-    "old_price": 130,
-    "new_price": 110,
-    "image": "https://images.puma.com/is/image/PUMA/RS-X-EFEKT",
-    "stock": 30
-  },
-  {
-    "id": 39,
-    "name": "ASICS Gel-Nimbus 26",
-    "category": "sneaker",
-    "sub_category": "women",
-    "old_price": 180,
-    "new_price": 155,
-    "image": "https://images.asics.com/is/image/asics/GEL-NIMBUS-26",
-    "stock": 17
-  },
-  {
-    "id": 40,
-    "name": "New Balance FuelCell Rebel v4",
-    "category": "sneaker",
-    "sub_category": "kid",
-    "old_price": 140,
-    "new_price": 120,
-    "image": "https://nb.scene7.com/is/image/NB/FuelCell-Rebel-v4",
-    "stock": 21
-  }
+export const shoes = [
+    {
+        "id": 1,
+        "name": "Nike Air Force 1 '07",
+        "category": "casual",
+        "sub_category": "men",
+        "old_price": 120,
+        "new_price": 95,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "A timeless classic, the Nike Air Force 1 '07 features a smooth leather upper and a durable rubber outsole, offering both style and comfort."
+    },
+    {
+        "id": 2,
+        "name": "Adidas Stan Smith",
+        "category": "casual",
+        "sub_category": "women",
+        "old_price": 100,
+        "new_price": 85,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "The Stan Smith is a minimalist tennis shoe with a clean design, featuring a leather upper and perforated 3-Stripes for breathability."
+    },
+    {
+        "id": 3,
+        "name": "Puma Suede Classic",
+        "category": "casual",
+        "sub_category": "men",
+        "old_price": 85,
+        "new_price": 70,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "The Suede Classic combines a soft suede upper with a rubber outsole, delivering a comfortable and stylish look."
+    },
+    {
+        "id": 4,
+        "name": "New Balance 574 Core",
+        "category": "casual",
+        "sub_category": "women",
+        "old_price": 90,
+        "new_price": 75,
+        "image": null,
+        "sizes": ["6", "7", "8", "9", "10"],
+        "description": "The 574 Core offers a versatile mix of new, different, and uncomplicated design, built on a wider last for comfort."
+    },
+    {
+        "id": 5,
+        "name": "Converse Chuck Taylor",
+        "category": "casual",
+        "sub_category": "kid",
+        "old_price": 60,
+        "new_price": 50,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "The Chuck Taylor All Star is an iconic sneaker known for its timeless silhouette and durable canvas upper."
+    },
+    {
+        "id": 6,
+        "name": "Vans Old Skool",
+        "category": "casual",
+        "sub_category": "men",
+        "old_price": 75,
+        "new_price": 65,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "The Old Skool features a suede and canvas upper with a signature Sidestripe™, offering a classic skate-inspired look."
+    },
+    {
+        "id": 7,
+        "name": "Nike Court Vision Low",
+        "category": "casual",
+        "sub_category": "women",
+        "old_price": 95,
+        "new_price": 80,
+        "image": null,
+        "sizes": ["6", "7", "8", "9", "10"],
+        "description": "Inspired by '80s basketball, the Court Vision Low combines retro style with modern materials for everyday wear."
+    },
+    {
+        "id": 8,
+        "name": "Reebok Club C 85",
+        "category": "casual",
+        "sub_category": "men",
+        "old_price": 85,
+        "new_price": 70,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "The Club C 85 offers a minimalist design with a leather upper and EVA midsole for lightweight cushioning."
+    },
+    {
+        "id": 9,
+        "name": "Adidas Gazelle",
+        "category": "casual",
+        "sub_category": "women",
+        "old_price": 100,
+        "new_price": 85,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "The Gazelle is a classic sneaker with a soft suede upper and a rubber outsole, offering both comfort and style."
+    },
+    {
+        "id": 10,
+        "name": "Nike Blazer Low",
+        "category": "casual",
+        "sub_category": "kid",
+        "old_price": 75,
+        "new_price": 60,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "The Blazer Low combines a leather upper with a rubber outsole, delivering a sleek and durable design."
+    },
+    {
+        "id": 11,
+        "name": "Timberland 6-Inch Premium",
+        "category": "boot",
+        "sub_category": "men",
+        "old_price": 210,
+        "new_price": 180,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Durable and iconic, these boots provide comfort and protection in all conditions."
+    },
+    {
+        "id": 12,
+        "name": "Dr. Martens 1460",
+        "category": "boot",
+        "sub_category": "women",
+        "old_price": 170,
+        "new_price": 145,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "The 1460 is a legendary boot featuring smooth leather and signature yellow stitching."
+    },
+    {
+        "id": 13,
+        "name": "Caterpillar Second Shift",
+        "category": "boot",
+        "sub_category": "men",
+        "old_price": 130,
+        "new_price": 110,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Work-ready boots with sturdy leather and slip-resistant soles for all-day protection."
+    },
+    {
+        "id": 14,
+        "name": "Sorel Caribou",
+        "category": "boot",
+        "sub_category": "women",
+        "old_price": 200,
+        "new_price": 170,
+        "image": null,
+        "sizes": ["6", "7", "8", "9", "10"],
+        "description": "Warm and waterproof winter boots featuring a durable leather upper and rubber outsole."
+    },
+    {
+        "id": 15,
+        "name": "UGG Classic Mini II",
+        "category": "boot",
+        "sub_category": "women",
+        "old_price": 160,
+        "new_price": 135,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Comfortable and stylish short boots made with soft sheepskin lining."
+    },
+    {
+        "id": 16,
+        "name": "Blundstone 500",
+        "category": "boot",
+        "sub_category": "men",
+        "old_price": 200,
+        "new_price": 175,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Durable slip-on leather boots perfect for everyday wear and outdoor use."
+    },
+    {
+        "id": 17,
+        "name": "Keen Ridge Flex Waterproof",
+        "category": "boot",
+        "sub_category": "kid",
+        "old_price": 130,
+        "new_price": 110,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "Waterproof boots for kids with sturdy soles and flexible comfort."
+    },
+    {
+        "id": 18,
+        "name": "Columbia Bugaboot III",
+        "category": "boot",
+        "sub_category": "men",
+        "old_price": 150,
+        "new_price": 125,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Waterproof insulated boots designed for extreme cold and outdoor adventures."
+    },
+    {
+        "id": 19,
+        "name": "Timberland Pokey Pine",
+        "category": "boot",
+        "sub_category": "kid",
+        "old_price": 90,
+        "new_price": 75,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "Kids' waterproof boots built for outdoor play with comfort and durability."
+    },
+    {
+        "id": 20,
+        "name": "Dr. Martens 2976 Chelsea",
+        "category": "boot",
+        "sub_category": "women",
+        "old_price": 180,
+        "new_price": 155,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Classic Chelsea boots with smooth leather and elastic side panels for easy wear."
+    },
+    {
+        "id": 21,
+        "name": "Salomon X Ultra 4",
+        "category": "hiking",
+        "sub_category": "men",
+        "old_price": 150,
+        "new_price": 130,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Lightweight hiking shoes with excellent traction and stability."
+    },
+    {
+        "id": 22,
+        "name": "Merrell Moab 3",
+        "category": "hiking",
+        "sub_category": "women",
+        "old_price": 140,
+        "new_price": 120,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Durable hiking shoes with supportive midsoles and waterproof mesh."
+    },
+    {
+        "id": 23,
+        "name": "Columbia Newton Ridge Plus",
+        "category": "hiking",
+        "sub_category": "men",
+        "old_price": 110,
+        "new_price": 95,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Lightweight and waterproof hiking boots for comfort on trails."
+    },
+    {
+        "id": 24,
+        "name": "Keen Targhee III",
+        "category": "hiking",
+        "sub_category": "women",
+        "old_price": 150,
+        "new_price": 130,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Reliable trail shoes with excellent traction and waterproof protection."
+    },
+    {
+        "id": 25,
+        "name": "The North Face Hedgehog Fastpack",
+        "category": "hiking",
+        "sub_category": "men",
+        "old_price": 145,
+        "new_price": 125,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Durable hiking boots with breathable mesh and sturdy soles for long treks."
+    },
+    {
+        "id": 26,
+        "name": "Vasque Breeze LT NTX",
+        "category": "hiking",
+        "sub_category": "women",
+        "old_price": 160,
+        "new_price": 135,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Lightweight and supportive hiking boots with waterproof protection."
+    },
+    {
+        "id": 27,
+        "name": "Salomon XA Pro 3D",
+        "category": "hiking",
+        "sub_category": "kid",
+        "old_price": 110,
+        "new_price": 95,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "Trail shoes for kids with durable construction and excellent grip."
+    },
+    {
+        "id": 28,
+        "name": "Merrell Trail Glove 7",
+        "category": "hiking",
+        "sub_category": "men",
+        "old_price": 135,
+        "new_price": 110,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Barefoot-style hiking shoes for maximum trail sensitivity and comfort."
+    },
+    {
+        "id": 29,
+        "name": "Keen Ridge Flex WP Kid",
+        "category": "hiking",
+        "sub_category": "kid",
+        "old_price": 100,
+        "new_price": 80,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "Kids' waterproof hiking shoes built for comfort and trail performance."
+    },
+    {
+        "id": 30,
+        "name": "Columbia Redmond III",
+        "category": "hiking",
+        "sub_category": "women",
+        "old_price": 120,
+        "new_price": 95,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Lightweight and comfortable hiking shoes for outdoor adventures."
+    },
+    {
+        "id": 31,
+        "name": "Nike Air Zoom Pegasus 40",
+        "category": "sneaker",
+        "sub_category": "men",
+        "old_price": 130,
+        "new_price": 110,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "High-performance running shoes with responsive cushioning for long-distance comfort."
+    },
+    {
+        "id": 32,
+        "name": "Adidas Ultraboost Light",
+        "category": "sneaker",
+        "sub_category": "women",
+        "old_price": 180,
+        "new_price": 150,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Lightweight and comfortable sneakers designed for running and casual wear."
+    },
+    {
+        "id": 33,
+        "name": "Puma Velocity Nitro 3",
+        "category": "sneaker",
+        "sub_category": "men",
+        "old_price": 140,
+        "new_price": 120,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "A responsive running shoe with lightweight construction and durable support."
+    },
+    {
+        "id": 34,
+        "name": "ASICS Gel-Kayano 31",
+        "category": "sneaker",
+        "sub_category": "women",
+        "old_price": 170,
+        "new_price": 145,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Premium running shoes with GEL cushioning for stability and comfort."
+    },
+    {
+        "id": 35,
+        "name": "New Balance 327",
+        "category": "sneaker",
+        "sub_category": "men",
+        "old_price": 120,
+        "new_price": 95,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Retro-inspired sneakers with modern comfort and stylish design."
+    },
+    {
+        "id": 36,
+        "name": "Nike Dunk Low Retro",
+        "category": "sneaker",
+        "sub_category": "women",
+        "old_price": 120,
+        "new_price": 105,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Classic low-top sneakers with leather upper and cushioned comfort."
+    },
+    {
+        "id": 37,
+        "name": "Adidas Samba OG",
+        "category": "sneaker",
+        "sub_category": "kid",
+        "old_price": 110,
+        "new_price": 90,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "Kids' retro sneakers with durable leather upper and rubber sole."
+    },
+    {
+        "id": 38,
+        "name": "Puma RS-X Efekt",
+        "category": "sneaker",
+        "sub_category": "men",
+        "old_price": 130,
+        "new_price": 110,
+        "image": null,
+        "sizes": ["7", "8", "9", "10", "11", "12"],
+        "description": "Bold sneakers with cushioned midsole and modern design details."
+    },
+    {
+        "id": 39,
+        "name": "ASICS Gel-Nimbus 26",
+        "category": "sneaker",
+        "sub_category": "women",
+        "old_price": 180,
+        "new_price": 155,
+        "image": null,
+        "sizes": ["5", "6", "7", "8", "9", "10"],
+        "description": "Cushioned running shoes with GEL technology for smooth and comfortable runs."
+    },
+    {
+        "id": 40,
+        "name": "New Balance FuelCell Rebel v4",
+        "category": "sneaker",
+        "sub_category": "kid",
+        "old_price": 140,
+        "new_price": 120,
+        "image": null,
+        "sizes": ["10", "11", "12", "13", "1", "2"],
+        "description": "Lightweight kids' sneakers designed for speed, comfort, and performance."
+    }
 ]
