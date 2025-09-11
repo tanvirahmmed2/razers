@@ -9,7 +9,6 @@ const Footer = () => {
                 <Link to='/' className='hover:border-l-2 border-black px-4'>Sneaker</Link>
                 <Link to='/' className='hover:border-l-2 border-black px-4'>Boots</Link>
                 <Link to='/' className='hover:border-l-2 border-black px-4'>Casual</Link>
-                <Link to='/' className='hover:border-l-2 border-black px-4'>Kids</Link>
                 <Link to='/' className='hover:border-l-2 border-black px-4'>Hiking</Link>
             </div>
             <div className='w-auto flex flex-col items-center gap-2 justify-center'>
