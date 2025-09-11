@@ -6,10 +6,10 @@ import Intro from '../pages/Intro'
 
 const Home = () => {
     return (
-        <div className='w-full flex flex-col items-center justify-center gap-6'>
+        <div className='w-full flex flex-col items-center justify-center gap-12'>
             <Intro/>
-            <Latest />
             <Link to='/allshoes' className='p-1 px-3 bg-gradient-to-br from-sky-500 to-blue-600 text-white rounded-lg'>Explore more</Link>
+            <Latest />
             <About />
         </div>
     )
