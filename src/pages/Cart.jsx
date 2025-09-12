@@ -27,7 +27,7 @@ const Cart = () => {
         const { image, name, id, new_price, } = data
         return (
           <div className='w-full flex flex-row items-center justify-around border-2' key={id}>
-            <img src={image} alt="" className='w-10' />
+            <img src={image} alt="" className='h-10' />
             <p>{name}</p>
             <p>Quantity</p>
             <p>{new_price}</p>
