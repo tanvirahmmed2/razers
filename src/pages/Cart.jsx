@@ -46,7 +46,7 @@ const Cart = () => {
         </div>
         <form action="" className='w-full bg-blue-600 text-white rounded-lg flex flex-col gap-2 p-4' onSubmit={handleCoupon}>
           <label htmlFor="coupon">Get Discount</label>
-          <input type="text" name='coupon' id='coupon' placeholder='type coupon' required className='p-1 px-3 hidden md:block  rounded-lg outline-none placeholder-blue-500 placeholder-opacity-25 text-black' />
+          <input type="text" name='coupon' id='coupon' placeholder='type coupon' required className='p-1 px-3   rounded-lg outline-none placeholder-blue-500 placeholder-opacity-25 text-black' />
           <button className='bg-white text-blue-600 rounded-lg' type='submit'>Apply coupon</button>
 
         </form>
