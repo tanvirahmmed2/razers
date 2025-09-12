@@ -14,7 +14,7 @@ const Cart = () => {
   return (
     <section className='w-full h-auto flex flex-col items-center justify-center gap-6 p-2'>
       <h1 className='text-3xl font-semibold'>Welcome to cart</h1>
-      <div className='w-full flex flex-row items-center justify-around border-2'>
+      <div className='w-full grid grid-cols-5 text-center border-2'>
         <p>Product</p>
         <p>Name</p>
         <p>Quantity</p>
@@ -26,7 +26,7 @@ const Cart = () => {
       {cartData.map((data) => {
         const { image, name, id, new_price, } = data
         return (
-          <div className='w-full flex flex-row items-center justify-around border-2' key={id}>
+          <div className='w-full grid grid-cols-5 text-center border-2 justify-items-center ' key={id}>
             <img src={image} alt="" className='h-10' />
             <p>{name}</p>
             <p>Quantity</p>

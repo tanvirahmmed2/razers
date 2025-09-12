@@ -4,7 +4,7 @@ import { ShopContext } from "../components/ContextProvider";
 
 const Shoe = () => {
     const { id } = useParams();
-    const { data } = useContext(ShopContext);
+    const { data, addToCart } = useContext(ShopContext);
 
     // Use find and convert id to number
     const shoe = data.find((item) => item.id === Number(id));
@@ -39,7 +39,7 @@ const Shoe = () => {
                         })
                     }
                 </select>
-                <button  className='bg-gradient-to-br from-sky-500 to-blue-600 text-white px-2 p-1 rounded-lg'>Add to cart</button>
+                <button onClick={() => addToCart(id)}  className='bg-gradient-to-br from-sky-500 to-blue-600 text-white px-2 p-1 rounded-lg'>Add to cart</button>
                 <p>{shoe.description}</p>
             </div>
 
