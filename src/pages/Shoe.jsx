@@ -15,10 +15,10 @@ const Shoe = () => {
 
     return (
         <div className="p-4 w-full flex flex-col md:flex-row items-center justify-center gap-12 px-0 md:px-6 lg:px-20">
-            <div className="w-full">
+            <div className="w-full p-2 flex items-center justify-center">
                 <img src={shoe.image} alt={shoe.name} className="w-80 rounded-lg mt-2" />
             </div>
-            <div className="w-full flex flex-col gap-2">
+            <div className="w-full p-2 flex flex-col gap-2">
                 <div className="w-full flex flex-row items-center justify-between">
                     <h2 className="text-xl font-bold">{shoe.name}</h2>
                     {shoe.isAvailable ? <p>Available</p> : <p>Stock out</p>}
