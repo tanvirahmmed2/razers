@@ -15,9 +15,9 @@ export const ContextProvider = ({ children }) => {
         }
     };
 
-
+    const contextValue={ data, setData, addToCart, cartData }
     return (
-        <ShopContext.Provider value={{ data, setData, addToCart, cartData }}>
+        <ShopContext.Provider value={contextValue}>
             {children}
         </ShopContext.Provider>
     )
