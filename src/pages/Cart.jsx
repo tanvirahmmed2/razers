@@ -1,13 +1,14 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { ShopContext } from '../components/ContextProvider'
 
 const Cart = () => {
-  
+  const { cartData } = useContext(ShopContext)
 
 
 
 
 
-  const handleCoupon=(e)=>{
+  const handleCoupon = (e) => {
     e.preventDefault()
   }
   return (
@@ -21,6 +22,23 @@ const Cart = () => {
         <p>Remove</p>
 
       </div>
+
+      {cartData.map((data) => {
+        const { image, name, id, new_price, } = data
+        return (
+          <div className='w-full flex flex-row items-center justify-around border-2' key={id}>
+            <img src={image} alt="" className='w-10' />
+            <p>{name}</p>
+            <p>Quantity</p>
+            <p>{new_price}</p>
+            <p>Remove</p>
+          </div>
+
+        )
+      })}
+
+
+
       <div className='w-full flex flex-col md:flex-row items-center justify-between'>
         <div className='w-full flex flex-col p-4'>
           <p>Total item:</p>

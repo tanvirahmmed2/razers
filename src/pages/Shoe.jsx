@@ -13,6 +13,7 @@ const Shoe = () => {
         return <p>Shoe not found</p>;
     }
 
+    
     return (
         <div className="p-4 w-full flex flex-col md:flex-row items-center justify-center gap-12 px-0 md:px-6 lg:px-20">
             <div className="w-full p-2 flex items-center justify-center">
@@ -38,7 +39,7 @@ const Shoe = () => {
                         })
                     }
                 </select>
-                <button className='bg-gradient-to-br from-sky-500 to-blue-600 text-white px-2 p-1 rounded-lg'>Add to cart</button>
+                <button  className='bg-gradient-to-br from-sky-500 to-blue-600 text-white px-2 p-1 rounded-lg'>Add to cart</button>
                 <p>{shoe.description}</p>
             </div>
 

@@ -1,13 +1,23 @@
-import {  createContext, useState } from "react";
+import { createContext, useState } from "react";
 import { shoes } from "../data/shoes";
 
-export const ShopContext= createContext()
+export const ShopContext = createContext()
 
 
-export const ContextProvider=({children})=>{
-    const [data, setData]= useState(shoes)
-    return(
-        <ShopContext.Provider value={{data, setData}}>
+export const ContextProvider = ({ children }) => {
+    const [data, setData] = useState(shoes)
+    const [cartData, setCartData] = useState([])
+
+    const addToCart = (id) => {
+        const selectedItem = data.find((item) => item.id === Number(id));
+        if (selectedItem) {
+            setCartData((prev) => [...prev, selectedItem]);
+        }
+    };
+
+
+    return (
+        <ShopContext.Provider value={{ data, setData, addToCart, cartData }}>
             {children}
         </ShopContext.Provider>
     )
