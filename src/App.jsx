@@ -9,6 +9,8 @@ import Shoe from './pages/Shoe'
 import AllShoes from './pages/AllShoes'
 import CategoryShoe from './pages/CategoryShoe'
 import Error from './components/Error'
+import Login from './user/Login'
+import Register from './user/Register'
 
 const App = () => {
   return (
@@ -25,6 +27,9 @@ const App = () => {
           <Route path='/shoe/:id' element={<Shoe />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/about' element={<About />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+
           <Route path='/*' element={<Error />} />
         </Routes>
       </div>
