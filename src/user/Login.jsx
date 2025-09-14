@@ -10,7 +10,7 @@ const Login = () => {
                 <p>login and enjoy our premium services</p>
                 <Link to='/register' className='mt-6 text-red-500 italic'>new user?</Link>
             </div>
-            <form action="" className='flex flex-col items-center justify-center gap-4 lg:border-l-2 pl-4 border-white'>
+            <form action=""  className='flex flex-col items-center justify-center gap-4 lg:border-l-2 pl-4 border-white'>
                
                 <div className='w-auto flex flex-col items-start justify-center gap-2'>
                     <label htmlFor="email">email</label>
