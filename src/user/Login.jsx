@@ -1,7 +1,49 @@
 import React from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const Login = () => {
+        const [user, setUser] = useState({
+        
+        email: '',
+        password: ''
+    })
+
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setUser((prev) => ({
+            ...prev,
+            [name]: value
+        }))
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            const res = await fetch('http://localhost:5000/user/login', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(user)
+            })
+            const data = await res.json()
+            console.log(data)
+
+            if (data.success) {
+                alert('Login successful')
+                setUser({ name: '', email: '', password: '' })
+            } else {
+                alert(data.message || 'Login failed')
+            }
+        } catch (error) {
+            console.error(error)
+            alert('Something went wrong')
+        }
+
+    }
+
   return (
     <section className='w-full h-auto my-20 flex items-center justify-center'>
         <div className='w-auto h-auto p-4 flex flex-col lg:flex-row items-center justify-center gap-6 bg-sky-100 rounded-lg'>
@@ -10,15 +52,15 @@ const Login = () => {
                 <p>login and enjoy our premium services</p>
                 <Link to='/register' className='mt-6 text-red-500 italic'>new user?</Link>
             </div>
-            <form action=""  className='flex flex-col items-center justify-center gap-4 lg:border-l-2 pl-4 border-white'>
+            <form onSubmit={handleSubmit} className='flex flex-col items-center justify-center gap-4 lg:border-l-2 pl-4 border-white'>
                
                 <div className='w-auto flex flex-col items-start justify-center gap-2'>
                     <label htmlFor="email">email</label>
-                    <input type="email" name='email' id='email' className='p-1 px-2 border-2 outline-none rounded-lg'/>
+                    <input type="email" name='email' id='email' className='p-1 px-2 border-2 outline-none rounded-lg' value={user.email} onChange={handleChange}/>
                 </div>
                 <div className='w-auto flex flex-col items-start justify-center gap-2'>
                     <label htmlFor="password">password</label>
-                    <input type="password" name='password' id='password' className='p-1 px-2 border-2 outline-none rounded-lg'/>
+                    <input type="password" name='password' id='password' className='p-1 px-2 border-2 outline-none rounded-lg' value={user.password} onChange={handleChange}/>
                 </div>
                 <button type='submit' className='p-1 px-2 bg-white text-sky-600 font-semibold rounded-lg'>Continue</button>
 
