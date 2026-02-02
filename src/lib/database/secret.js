@@ -1,5 +1,5 @@
 export const MONGO_URL = process.env.MONGO_URL;
-export const BASE_URL = 'https://nizamvarietiesstore.vercel.app';
+export const BASE_URL = 'https://monihari.vercel.app';
 
 export const CLOUDINARY_NAME = process.env.CLOUDINARY_NAME;
 export const CLOUDINARY_API = process.env.CLOUDINARY_API;
