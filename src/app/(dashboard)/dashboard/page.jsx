@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import DatePicker from 'react-datepicker'
+import "react-datepicker/dist/react-datepicker.css"
 import { format } from 'date-fns'
 
 const Dashboard = () => {

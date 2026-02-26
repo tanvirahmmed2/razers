@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 
 const ForgetPasswordPage = () => {
     const router = useRouter()
-    const [view, setView] = useState('request') // 'request' or 'reset'
+    const [view, setView] = useState('request') 
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [otp, setOtp] = useState('')
