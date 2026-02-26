@@ -52,7 +52,7 @@ const downloadDB = async () => {
     
     // Set the filename with today's date
     const date = new Date().toISOString().split('T')[0];
-    link.setAttribute('download', `nizam_store_backup_${date}.json`);
+    link.setAttribute('download', `monihari_backup_${date}.json`);
 
     // 4. Trigger the click and clean up
     document.body.appendChild(link);

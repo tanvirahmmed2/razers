@@ -39,7 +39,7 @@ const Navbar = () => {
   return (
     <div className='w-full relative'>
       <nav className='w-full flex flex-row items-center justify-between fixed top-0 right-0 h-14 px-4 bg-linear-to-br from-sky-600 to-blue-800 text-white z-50'>
-        <Link href={'/'} className='text-lg sm:text-2xl font-semibold'>Nizam Varieties Store</Link>
+        <Link href={'/'} className='text-lg sm:text-2xl font-semibold'>Monihari</Link>
 
         <input
           type="text"

@@ -1,7 +1,6 @@
 
 import Logout from '@/components/buttons/Logout'
 import { isLogin } from '@/lib/middleware'
-import Link from 'next/link'
 import React from 'react'
 
 const Profile = async () => {

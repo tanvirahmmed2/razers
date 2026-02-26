@@ -30,7 +30,7 @@ const PrintOrder = ({ order }) => {
         </head>
         <body>
           <div class="center">
-            <h2 style="margin:0; font-size: 18px;">NIZAM VARIETIES</h2>
+            <h2 style="margin:0; font-size: 18px;">Monihari</h2>
             <p style="margin:2px 0;">Phone: ${order.phone}</p>
             <div class="divider"></div>
             <p class="bold">INVOICE: #${order.order_id}</p>
