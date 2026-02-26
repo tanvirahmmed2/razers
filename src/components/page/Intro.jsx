@@ -1,68 +1,26 @@
 'use client'
 import Image from 'next/image'
+import React from 'react'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import { useCart } from '../context/Context'
-import axios from 'axios'
 
 const Intro = () => {
-  const { siteData } = useCart()
-  const [products, setProducts] = useState()
 
-  useEffect(() => {
-    const fetchProducts = async() => {
-      try {
-        const response = await axios.get('/api/product/latest', { withCredentials: true })
-        setProducts(response.data.payload)
-      } catch (error) {
-        console.log(error)
-        setProducts(null)
-      }
-    }
-    fetchProducts()
-  }, [])
+    return (
+        <div className=' w-full flex flex-col gap-8'>
 
+            <div className='w-full h-90 sm:h-110 overflow-hidden flex items-center justify-center relative'>
+                <Image src={`/intro.jpg`} className='w-full h-90 sm:h-110 object-cover blur-[8px] opacity-90' alt='home image' width={1000} height={1000} />
+                <div className="absolute inset-0 gap-4 flex flex-col items-center justify-center text-white bg-black/10 p-4">
+                    <p className='font-semibold font-serif uppercase'>Welcome to</p>
+                    <h1 className='text-5xl sm:text-7xl font-extrabold text-sky-500 text-center'>Nizam Varieties Store</h1>
+                    <div className='w-full max-w-2xl flex flex-wrap items-center justify-center gap-2'>
+                       
+                    </div>
+                </div>
+            </div>
 
-  if (!products || products.length === 0) return null
-
-  const randomIndex = Math.floor(Math.random() * products.length)
-  const product = products[randomIndex]
-
-  return (
-    <section className='relative w-full h-200 flex flex-col items-center justify-center overflow-hidden '>
-
-      <div className="absolute inset-0 -z-20">
-        <Image
-          src={product.image}
-          alt={product?.title}
-          fill
-          priority
-          className='object-cover opacity-60 transition-opacity min-h-200 duration-700 blur-xl'
-        />
-      </div>
-
-      <div className='z-10 text-center px-6'>
-        <h2 className='text-red-400 uppercase tracking-[0.3em] text-sm mb-4 font-sans font-bold'>
-          Welcome to
-        </h2>
-        <h1 className='text-6xl md:text-8xl font-serif text-white mb-6 drop-shadow-2xl'>
-          {siteData?.title || 'Business'}
-        </h1>
-        <p className='text-white/80 text-lg md:text-2xl font-light max-w-2xl mx-auto mb-10 leading-relaxed'>
-          Featuring today: <span className="text-red-300 font-medium">{product?.title}</span>.
-        </p>
-
-        <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
-          <Link href='/products' className='w-48 py-4 bg-red-600 hover:bg-red-500 text-white transition-all duration-300 rounded-full font-semibold tracking-wide shadow-lg'>
-            Products
-          </Link>
-          <Link href='/support' className='w-48 py-4 border border-white/30 hover:bg-white hover:text-black text-white transition-all duration-300 rounded-full font-semibold tracking-wide backdrop-blur-sm'>
-            Contact
-          </Link>
         </div>
-      </div>
-    </section>
-  )
+    )
 }
 
 export default Intro

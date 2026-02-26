@@ -1,19 +1,22 @@
-import ToastProvider from "@/components/ui/ToastProvider";
+
+import ContextProvider from "@/components/helper/Context";
 import "./globals.css";
-import { ContextProvider } from "@/components/context/Context";
+import ToastProvider from "@/components/helper/ToastProvider";
 
 
 export const metadata = {
   title: {
     default: "Nizam Varieties Store",
-    template: "%s | Nizam Store",
+    template: "%s | Nizam Varieties Store",
   },
-  description: "Nizam Store app",
+  description: "Nizam Varieties Store app",
 };
+
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="w-full overflow-x-hidden relative">
+      <body className="w-full overflow-x-hidden relative bg-white">
         <ContextProvider>
           <ToastProvider>
             <main>{children}</main>

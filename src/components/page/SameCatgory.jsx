@@ -2,8 +2,8 @@
 import { BASE_URL } from '@/lib/database/secret'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import Item from '../card/Item'
 import axios from 'axios'
+import Item from '../card/Item'
 
 const SameCategory = ({ category }) => {
   const [products, setProducts] = useState([])
@@ -26,12 +26,10 @@ const SameCategory = ({ category }) => {
     <div className='w-full flex flex-col items-center justify-center p-4 gap-4  '>
       <h1 className='text-3xl text-center '>You May Also Love</h1>
       {
-        products && <div className='w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4'>
+        products && <div className='w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'>
           {
             products.map((item) => (
-              <Link href={`/products/${item.slug}`} key={item._id} className=''>
-                <Item item={item} />
-              </Link>
+              <Item product={item} key={item.product_id}/>
             ))
           }
         </div>

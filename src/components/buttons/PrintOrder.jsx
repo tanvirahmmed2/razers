@@ -1,11 +1,8 @@
 'use client'
 import React from 'react'
 import { FaPrint } from "react-icons/fa";
-import { useCart } from '../context/Context';
 
 const PrintOrder = ({ order }) => {
-  const { siteData } = useCart()
-
   const printOrder = () => {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
@@ -18,41 +15,29 @@ const PrintOrder = ({ order }) => {
             @page { margin: 0; size: 80mm auto; }
             body { 
               font-family: 'Courier New', Courier, monospace; 
-              width: 72mm;
-              margin: 0 auto;
-              padding: 5mm 2mm;
-              font-size: 13px;
-              color: #000;
-              line-height: 1.2;
+              width: 72mm; margin: 0 auto; padding: 5mm 2mm;
+              font-size: 12px; color: #000; line-height: 1.4;
             }
             .center { text-align: center; }
             .bold { font-weight: bold; }
             .divider { border-top: 1px dashed #000; margin: 8px 0; }
-            table { width: 100%; border-collapse: collapse; margin: 5px 0; }
-            th { border-bottom: 1px solid #000; text-align: left; padding-bottom: 2px; }
+            table { width: 100%; border-collapse: collapse; }
+            th { border-bottom: 1px solid #000; text-align: left; }
             .qty { width: 15%; }
             .name { width: 55%; }
             .price { width: 30%; text-align: right; }
-            .total-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-            .grand-total { font-size: 16px; margin-top: 5px; border-top: 1px solid #000; padding-top: 5px; }
-            .footer-msg { margin-top: 15px; font-size: 11px; font-style: italic; }
           </style>
         </head>
         <body>
           <div class="center">
-            <h2 style="margin:0; font-size: 18px; text-transform: uppercase;">${siteData?.title || 'Restaurant'}</h2>
-            <p style="margin:2px 0;">${siteData?.address || 'Sadar, Mymensingh'}</p>
-            ${siteData?.phone ? `<p style="margin:2px 0;">Tel: ${siteData.phone}</p>` : ''}
+            <h2 style="margin:0; font-size: 18px;">NIZAM VARIETIES</h2>
+            <p style="margin:2px 0;">Phone: ${order.phone}</p>
             <div class="divider"></div>
-            <p style="margin:2px 0;">ORDER: #${order.orderId}</p>
-            <p style="margin:2px 0;">${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+            <p class="bold">INVOICE: #${order.order_id}</p>
+            <p>${new Date(order.date).toLocaleString()}</p>
           </div>
 
-          <div style="margin: 10px 0 5px 0;">
-            <div>Customer: <span class="bold">${order.name || 'Guest'}</span></div>
-            <div>Type: <span class="bold">${order.delivery?.toUpperCase()}</span></div>
-            ${order.delivery}
-          </div>
+          <p>Customer: <span class="bold">${order.name}</span></p>
 
           <table>
             <thead>
@@ -63,11 +48,11 @@ const PrintOrder = ({ order }) => {
               </tr>
             </thead>
             <tbody>
-              ${order.items.map(item => `
+              ${order.product_list?.map(item => `
                 <tr>
                   <td class="qty">${item.quantity}</td>
-                  <td class="name">${item.title}</td>
-                  <td class="price">${(item.price * item.quantity).toFixed(2)}</td>
+                  <td class="name">${item.name}</td>
+                  <td class="price">${(parseFloat(item.sale_price) * item.quantity).toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -75,31 +60,22 @@ const PrintOrder = ({ order }) => {
 
           <div class="divider"></div>
 
-          <div class="total-section">
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span>${order.subTotal?.toFixed(2)}</span>
+          <div style="width: 100%;">
+            <div style="display:flex; justify-content: space-between;">
+              <span>Subtotal:</span><span>৳${parseFloat(order.subtotal || 0).toFixed(2)}</span>
             </div>
             ${order.discount > 0 ? `
-            <div class="total-row">
-              <span>Discount:</span>
-              <span>-${order.discount?.toFixed(2)}</span>
+            <div style="display:flex; justify-content: space-between;">
+              <span>Discount:</span><span>-৳${parseFloat(order.discount).toFixed(2)}</span>
             </div>` : ''}
-            <div class="total-row">
-              <span>Tax (2%):</span>
-              <span>${order.tax?.toFixed(2)}</span>
-            </div>
-            <div class="total-row bold grand-total">
-              <span>TOTAL:</span>
-              <span>BDT ${order.totalPrice?.toFixed(2)}</span>
+            <div style="display:flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 5px; border-top: 1px solid #000; padding-top: 5px;">
+              <span>NET TOTAL:</span><span>৳${parseFloat(order.total_amount).toFixed(2)}</span>
             </div>
           </div>
 
-          <div class="center footer-msg">
-            <p style="margin:0;">Payment Mode: ${order.paymentMethod?.toUpperCase()}</p>
-            <div class="divider" style="border-top-style: dotted;"></div>
-            <p>Thank you for dining with us!</p>
-            <p style="font-size: 9px; opacity: 0.8;">Software by Tanvir Ahmmed</p>
+          <div class="center" style="margin-top: 15px;">
+            <p style="margin:0;">Method: ${order.payment_method?.toUpperCase()}</p>
+            <p style="margin:5px 0 0 0; font-size: 10px;">Thank You for Shopping!</p>
           </div>
         </body>
       </html>
@@ -118,12 +94,8 @@ const PrintOrder = ({ order }) => {
   }
 
   return (
-    <button 
-      onClick={printOrder} 
-     className='w-full px-2 rounded-lg hover:bg-black/10 p-1 cursor-pointer flex flex-row items-center justify-center gap-4'
-    >
-      <FaPrint className="text-gray-700 hover:text-black" />
-      <span className="font-medium">Print Receipt</span>
+    <button onClick={printOrder} className='mt-4 flex items-center justify-center gap-2 bg-gray-100 w-full py-2 rounded-lg hover:bg-gray-200 text-black  transition-all'>
+      <FaPrint /> <span>Print Receipt</span>
     </button>
   )
 }

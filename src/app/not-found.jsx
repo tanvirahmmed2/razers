@@ -7,7 +7,7 @@ const NotFound = () => {
     return (
         <button onClick={()=> router.back()} className='w-full min-h-screen flex flex-col items-center justify-center cursor-pointer'>
             <h1 className='text-7xl font-semibold'>404</h1>
-            <p className='text-lg'>Page not found</p>
+            <p className=''>Page not found</p>
         </button>
     )
 }

@@ -1,22 +1,49 @@
-import ConnectDB from "@/lib/database/mongo";
-import Product from "@/lib/models/product";
+import { pool } from "@/lib/database/db";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        await ConnectDB();
         const { searchParams } = new URL(req.url);
-        const category = searchParams.get('category');
-        const availability = searchParams.get('availability');
+        const category_id = searchParams.get('category');
+        const page = parseInt(searchParams.get('page')) || 1;
+        const limit = 20;
+        const offset = (page - 1) * limit;
 
-        const filter = {};
-        if (category) filter.category = category;
-        if (availability === "isAvailable") filter.isAvailable = true;
+        let query = `SELECT * FROM products`;
+        let countQuery = `SELECT COUNT(*) FROM products`;
+        let values = [];
 
-        const products = await Product.find(filter).sort({ _id: -1 }).limit(30);;
+        if (category_id && category_id !== '') {
+            query += ` WHERE category_id = $1`;
+            countQuery += ` WHERE category_id = $1`;
+            values.push(category_id);
+        }
 
-        return NextResponse.json({ success: true,message:'Successfully fetched data', payload: products });
+        const totalRes = await pool.query(countQuery, values);
+        const totalItems = parseInt(totalRes.rows[0].count);
+        const totalPages = Math.ceil(totalItems / limit) || 1;
+
+        query += ` ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+        const finalValues = [...values, limit, offset];
+
+        const data = await pool.query(query, finalValues);
+        const result = data.rows;
+
+        return NextResponse.json({
+            success: true,
+            message: result.length > 0 ? 'Successfully fetched data' : 'No product found',
+            payload: result,
+            pagination: {
+                totalItems,
+                totalPages,
+                currentPage: page
+            }
+        }, { status: 200 });
+
     } catch (error) {
-        return NextResponse.json({ success: false, message: 'Failed to fetch data', error: error.message }, { status: 500 });
+        return NextResponse.json({
+            success: false,
+            message: error.message
+        }, { status: 500 });
     }
 }

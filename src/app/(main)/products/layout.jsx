@@ -8,7 +8,7 @@ export const metadata={
 
 const Menuayout = async({children}) => {
   return (
-    <div>
+    <div className='w-full'>
       {children}
     </div>
   )

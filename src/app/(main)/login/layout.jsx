@@ -1,23 +1,20 @@
-import { isLogin } from '@/lib/middleware'
+import { isUserLogin } from '@/lib/usermiddleware'
 import { redirect } from 'next/navigation'
 import React from 'react'
+
 export const metadata={
     title:'Login',
-    description:'Login page'
+    description:'Login Page'
 }
 
-const LoginLayout = async({children}) => {
-    const auth= await isLogin()
-
-    if(auth.success){
-        return redirect('/profile')
-    }
-
+const UserLoginLayout = async({children}) => {
+    const auth= await isUserLogin()
+    if(auth.success) return redirect('/profile')
   return (
-    <div>
+    <div className='w-full'>
       {children}
     </div>
   )
 }
 
-export default LoginLayout
+export default UserLoginLayout

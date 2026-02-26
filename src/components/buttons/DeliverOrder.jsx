@@ -3,20 +3,17 @@ import axios from 'axios';
 import React from 'react'
 import { CiDeliveryTruck } from "react-icons/ci";
 import { toast } from 'react-toastify';
-import { useCart } from '../context/Context';
 
 const DeliverOrder = ({ id, order }) => {
-    const { siteData } = useCart()
-
-    const printOrder = () => {
-
-    }
+   
 
 
     const deliverOrder = async () => {
         try {
             const response = await axios.post('/api/order/deliver', { id }, { withCredentials: true })
             toast.success(response.data.message)
+
+
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
@@ -50,11 +47,10 @@ const DeliverOrder = ({ id, order }) => {
             </head>
             <body>
               <div class="center">
-                <h2 style="margin:0; font-size: 18px; text-transform: uppercase;">${siteData?.title || 'Restaurant'}</h2>
-                <p style="margin:2px 0;">${siteData?.address || 'Sadar, Mymensingh'}</p>
-                ${siteData?.phone ? `<p style="margin:2px 0;">Tel: ${siteData.phone}</p>` : ''}
-                <div class="divider"></div>
-                <p style="margin:2px 0;">ORDER: #${order.orderId}</p>
+            <h2 style="margin:0; font-size: 18px; text-transform: uppercase;">BabyMart</h2>
+            <p style="margin:2px 0;">Tel: 01987131369</p>
+            <div class="divider"></div>
+            <p style="margin:2px 0;">ORDER: #${order.orderId}</p>
                 <p style="margin:2px 0;">${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
               </div>
     

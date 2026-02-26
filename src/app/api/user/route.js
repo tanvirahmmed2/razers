@@ -1,117 +1,91 @@
-import ConnectDB from "@/lib/database/mongo";
+import { pool } from "@/lib/database/db";
 import { NextResponse } from "next/server";
-import bcrypt from 'bcryptjs'
-import User from "@/lib/models/user";
-
+import bcrypt from "bcryptjs";
 
 export async function POST(req) {
     try {
-        await ConnectDB()
+        const { name, email, phone, password } = await req.json();
 
-        const { name, email, password, role } = await req.json()
-        if (!name || !email || !password ) {
-            return NextResponse.json({
-                success: false,
-                message: 'Please fill all information'
-            }, { status: 400 })
+        if (!name || !email || !phone || !password) {
+            return NextResponse.json({ message: "All fields are required" }, { status: 400 });
         }
 
-        const hashedPass = await bcrypt.hash(password, 10);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = await User({ name, email, password: hashedPass, role })
+        const client = await pool.connect();
+        try {
+            const query = `
+                INSERT INTO users (name, email, phone, password)
+                VALUES ($1, $2, $3, $4)
+                RETURNING user_id, name, email;
+            `;
+            const values = [name, email, phone, hashedPassword];
+            const result = await client.query(query, values);
 
-        await newUser.save()
+            return NextResponse.json({
+                message: "User registered successfully",
+                user: result.rows[0]
+            }, { status: 201 });
 
-        return NextResponse.json({
-            success: true,
-            message: 'Successfully created user',
-            payload: newUser
-        }, { status: 200 })
-
-
-
+        } catch (err) {
+            if (err.code === '23505') { 
+                return NextResponse.json({ message: "Email or Phone already exists" }, { status: 409 });
+            }
+            throw err;
+        } finally {
+            client.release();
+        }
     } catch (error) {
-        return NextResponse.json({
-            success: false,
-            message: 'Failed to create user',
-            error: error.message
-        }, { status: 500 })
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
-
 }
 
+export async function PUT(req) {
+    try {
+        const { user_id, name, phone, email } = await req.json();
+        const client = await pool.connect();
+
+        try {
+            const query = `
+                UPDATE users 
+                SET name = $1, phone = $2, email = $3
+                WHERE user_id = $4
+                RETURNING user_id, name, email, phone;
+            `;
+            const result = await client.query(query, [name, phone, email, user_id]);
+
+            if (result.rowCount === 0) {
+                return NextResponse.json({ message: "User not found" }, { status: 404 });
+            }
+
+            return NextResponse.json({ message: "Profile updated", user: result.rows[0] });
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+}
 
 export async function DELETE(req) {
     try {
-        await ConnectDB()
+        const { searchParams } = new URL(req.url);
+        const user_id = searchParams.get('id');
 
-        const { id } = await req.json()
-        if (!id) {
-            return NextResponse.json({
-                success: false,
-                message: "User id not found"
-            }, { status: 400 })
+        const client = await pool.connect();
+        try {
+            const result = await client.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+            
+            if (result.rowCount === 0) {
+                return NextResponse.json({ message: "User not found" }, { status: 404 });
+            }
+
+            return NextResponse.json({ message: "Account deleted successfully" });
+        } finally {
+            client.release();
         }
-
-        
-        const user = await User.findById(id)
-        if (!user) {
-            return NextResponse.json({
-                success: false,
-                message: 'User not found'
-            }, { status: 400 })
-        }
-
-        const users= await User.find({role: 'manager'})
-
-        if(users.length===1 && user.role ==='manager'){
-            return NextResponse.json({
-                success:false,
-                message:"This account can't be removed"
-            },{status:400})
-        }
-
-
-        await User.findByIdAndDelete(id)
-
-        return NextResponse.json({
-            success: true,
-            message: 'Account has been deleted'
-        }, { status: 200 })
-
     } catch (error) {
-        return NextResponse.json({
-            success: false,
-            message: 'Failed to delete user',
-            error: error.message
-        }, { status: 500 })
-
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
-
-}
-
-export async function GET() {
-    try {
-        await ConnectDB()
-
-        const users = await User.find({ $or: [{ role: 'manager' }, { role: 'sales' }] })
-        if (!users || users.length === 0) {
-            return NextResponse.json({
-                success: false,
-                message: "No user data found"
-            }, { status: 400 })
-        }
-        return NextResponse.json({
-            success: true,
-            message: 'Successfully fetched user data',
-            payload: users
-        }, { status: 200 })
-    } catch (error) {
-        return NextResponse.json({
-            success: false,
-            message: 'Failed to fetch user data'
-        }, { status: 500 })
-
-    }
-
 }

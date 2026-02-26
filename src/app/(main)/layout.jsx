@@ -1,12 +1,23 @@
-import Footer from "@/components/ui/Footer";
-import Navbar from "@/components/ui/Navbar";
+import BottomBar from "@/components/bar/BottomBar"
+import Footer from "@/components/bar/Footer"
+import Navbar from "@/components/bar/Navbar"
 
-export default function MainLayout({ children }) {
+
+export const metadata = {
+  title: 'Home',
+  description: 'Home page'
+}
+
+const MainLayout = ({ children }) => {
   return (
-    <div className="w-full relative text-black">
-      <Navbar /> 
-      <main className="w-full mt-14">{children}</main>
-      <Footer/>
+    <div className="w-full min-h-screen pb-14 sm:pb-0 relative bg-gray-200">
+      <Navbar />
+      <div className="w-full mb-14 mt-14 sm:mb-0 min-h-screen flex items-center justify-center">{children}</div>
+      
+      <Footer />
+      <BottomBar/>
     </div>
   )
 }
+
+export default MainLayout

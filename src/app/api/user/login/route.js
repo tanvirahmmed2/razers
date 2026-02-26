@@ -1,83 +1,79 @@
-import ConnectDB from "@/lib/database/mongo";
-import User from "@/lib/models/user";
+import { pool } from "@/lib/database/db";
 import { NextResponse } from "next/server";
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { JWT_SECRET, NODE_ENV } from "@/lib/database/secret";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from "@/lib/database/secret";
 
+const TWENTY_YEARS = 60 * 60 * 24 * 365 * 20;
 
 export async function POST(req) {
     try {
+        const { email, password } = await req.json();
 
-        await ConnectDB()
-        const { email, password } = await req.json()
-
-        if (!email || !password) {
-            return NextResponse.json({
-                success: false,
-                message: 'Please provide email and password'
-            }, { status: 400 })
+        // 1. Validate Input
+        const existsUser = await pool.query(`SELECT * FROM users WHERE email=$1`, [email]);
+        if (existsUser.rowCount === 0) {
+            return NextResponse.json({ success: false, message: 'User not found' }, { status: 400 });
         }
 
-        const user = await User.findOne({ email })
-
-        if (!user) {
-            return NextResponse.json({
-                success: false,
-                message: 'No account found with this email'
-            }, { status: 400 })
+        const user = existsUser.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return NextResponse.json({ success: false, message: 'Incorrect password' }, { status: 400 });
         }
-
-        if (user.isBanned) {
-            return NextResponse.json({
-                success: false,
-                message: 'User is banned'
-            }, { status: 400 })
-        }
-
-
-        const isMatchPassword = await bcrypt.compare( password, user.password)
-
-        if (!isMatchPassword) {
-            return NextResponse.json({
-                success: false,
-                message: 'Incorrect password'
-            }, { status: 400 })
-        }
-
-        const payload = { id: user._id, email: user.email, role: user.role }
 
         const token = jwt.sign(
-            payload,
+            { user_id: user.user_id, email: user.email, phone:user.phone },
             JWT_SECRET,
-            { expiresIn: "7d" }
+            { expiresIn: "20y" }
         );
 
-        const response = NextResponse.json(
-            {
-                success: true,
-                message: "Successfully logged in",
-                payload: user,
-            },
-            { status: 200 }
-        );
+        const response = NextResponse.json({
+            success: true,
+            message: "Successfully logged in",
+            payload: { name: user.name, email: user.email }
+        }, { status: 200 });
 
-        response.cookies.set("user_token", token, {
-            httpOnly: true,
-            secure: NODE_ENV,
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
+        response.cookies.set("nvs_user_token", token, {
+            httpOnly: true, // Prevents JS access (XSS protection)
+            path: "/",      // Essential: makes cookie available to all pages
+            maxAge: TWENTY_YEARS, 
+            sameSite: "lax", // Better for local dev than 'strict'
+            // Only use secure (HTTPS) in production
+            secure: process.env.NODE_ENV === "production", 
         });
 
         return response;
 
     } catch (error) {
-
-        return NextResponse.json({
-            success: false,
-            message: 'Failed to login',
-            error: error.message
-        }, { status: 500 })
+        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
+}
 
+
+
+
+export async function GET() {
+
+    try {
+        const res = NextResponse.json({
+        success: true,
+        message: "Logout successful",
+    });
+
+
+    res.cookies.set("nvs_user_token", "", {
+        httpOnly: true,
+        expires: new Date(0),
+        path: "/",
+    });
+
+    return res;
+    } catch (error) {
+        return NextResponse.json({
+            success:false,
+            message: "failed to logout",
+            error: error.message
+        }, {status:500})
+    }
 }

@@ -1,20 +1,19 @@
-import About from '@/components/page/About'
-import Featured from '@/components/page/Featured'
+import Footer from '@/components/bar/Footer'
 import Intro from '@/components/page/Intro'
-import Latest from '@/components/page/Latest'
-import Offer from '@/components/page/Offer'
+import Offer from '@/components/page/Products'
+import StoreVisit from '@/components/page/StoreVisit'
+import Support from '@/components/page/Support'
 import React from 'react'
 
-const Main = () => {
+const MainPage = () => {
   return (
-    <div className='w-full overflow-hidden min-h-screen flex flex-col items-center justify-center'>
-      <Intro/>
+    <div className='w-full min-h-screen flex flex-col'>
+      <Intro />
       <Offer/>
-      <Featured/>
-      <Latest/>
-      <About/>
+      <StoreVisit/>
+      <Support />
     </div>
   )
 }
 
-export default Main
+export default MainPage

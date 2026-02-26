@@ -1,157 +1,175 @@
 'use client'
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
-import RemoveFromCart from '@/components/buttons/RemoveFromCart'
-import { useCart } from '@/components/context/Context'
+import { Context } from '@/components/helper/Context'
+import React, { useContext, useEffect, useState } from 'react'
+import { MdDeleteOutline } from "react-icons/md";
+import { FaMinus, FaPlus } from "react-icons/fa6";
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import Link from 'next/link';
 
 const Cart = () => {
-    const { fetchCart, cartItems, userData  } = useCart()
-    const [data, setData] = useState({
-        name: userData?.name,
-        phone: userData?.number || userData?.email,
-        address:userData?.address,
-        delivery: 'homedelivery',
-        discount: 0,
-        tax: 0,
-        totlePrice: 0,
-        payment: 'cash'
-    })
+  const { cart, removeFromCart, addToCart, decreaseQuantity, clearCart, userData } = useContext(Context)
+  const [formData, setFormData] = useState({
+    name: userData.name || '',
+    phone: userData.phone || '',
+    subTotal: 0,
+    discount: 0,
+    totalPrice: 0,
+    paymentMethod: 'cash',
+    transactionId: ''
+  })
 
-    const [totals, setTotals] = useState({
-        subTotal: 0,
-        discount: 0,
-        tax: 0,
-        totlePrice: 0
-    })
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
-    useEffect(() => {
-        let subTotal = 0
-        for (let i = 0; i < cartItems.length; i++) {
-            subTotal += cartItems[i].price
-        }
-        const discountRate = 0 
-        const discount = subTotal * discountRate
-        const taxRate = 0.02
-        const tax = (subTotal - discount) * taxRate
-        const totlePrice = subTotal - discount + tax
+  useEffect(() => {
+    if (!cart?.items) return;
 
-        setTotals({ subTotal, discount, tax, totlePrice })
-    }, [cartItems])
+    const subTotal = cart.items.reduce((sum, item) =>
+      sum + (parseFloat(item.sale_price || 0) * (item.quantity || 0)), 0)
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setData(prev => ({ ...prev, [name]: value }))
+    const totalDiscount = cart.items.reduce((sum, item) =>
+      sum + (parseFloat(item.discount_price || 0) * (item.quantity || 0)), 0)
+
+    const totalPrice = subTotal - totalDiscount
+
+    setFormData(prev => ({ ...prev, subTotal, discount: totalDiscount, totalPrice }))
+  }, [cart?.items])
+
+  const placeOrder = async (e) => {
+    e.preventDefault()
+
+    if (cart.items.length === 0) return toast.error("Your cart is empty");
+
+    const payload = {
+      customerName: formData.name,
+      phone: formData.phone,
+      subtotal: formData.subTotal,
+      discount: formData.discount,
+      total: formData.totalPrice,
+      paymentMethod: formData.paymentMethod,
+      transactionId: formData.transactionId,
+      status: 'pending',
+      items: cart.items.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.sale_price
+      }))
     }
 
-    const handleMethodChange = (method) => {
-        setData(prev => ({ ...prev, delivery: method }))
+    try {
+      const response = await axios.post('/api/order/public', payload, { withCredentials: true })
+      toast.success(response.data.message || 'Order placed successfully!');
+      clearCart()
+      setFormData({
+        name: '', phone: '', subTotal: 0, discount: 0,
+        totalPrice: 0, paymentMethod: 'cash', transactionId: ''
+      })
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Failed to place order')
     }
+  }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        const orderData = {
-            ...data,
-            items: cartItems, 
-            subTotal: totals.subTotal,
-            tax: totals.tax,
-            discount: totals.discount,
-            totalPrice: totals.totlePrice, 
-            paymentMethod: data.payment
-        };
+  if (!cart || cart?.items.length < 1) return (
+    <div className='w-full p-20 text-center flex flex-col items-center gap-4'>
+      <p className='text-2xl text-gray-400 '>Your cart is empty</p>
+      <Link href="/products" className='bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-full transition-all'>
+        Continue Shopping
+      </Link>
+    </div>
+  )
 
-        try {
-            const response = await axios.post('/api/order', orderData, { withCredentials: true });
-            toast.success(response.data.message);
-            fetchCart()
-        } catch (error) {
-            console.log(error)
-            toast.error(error?.response?.data?.message || "Something went wrong");
-        }
-    }
+  return (
+    <div className='w-full max-w-6xl mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-10'>
 
-    if(!userData) return <div className="p-10 text-center text-gray-400">No data found</div>
-
-    return (
-        <div className='w-full p-4 flex items-center justify-center'>
-          <form onSubmit={handleSubmit} className='w-full max-w-lg mx-auto flex flex-col gap-6 p-4 bg-white rounded-2xl shadow-sm border border-gray-100'>
-           
-            <div className='w-full flex flex-col gap-4'>
-                <div className="flex bg-gray-100 p-1 rounded-xl">
-                    <p 
-                       
-                        className={`flex-1 text-center py-2 rounded-lg cursor-pointer transition-all font-medium 'bg-white shadow-sm text-black'`}
-                    > Pickup </p>
+      <div className='flex-1'>
+        <h1 className='text-3xl font-semibold mb-8 text-gray-800'>Shopping Cart</h1>
+        <div className='flex flex-col gap-6'>
+          {cart.items.map((item) => (
+            <div key={item?.product_id} className='w-full grid grid-cols-1 justify-items-center shadow sm:grid-cols-2  rounded-2xl border border-black/30 p-2'>
+              <div className='col-span-1 w-full text-start'>
+                <p className=' text-lg text-gray-800'>{item?.name}</p>
+                <p className='text-sm text-gray-500'>৳{parseFloat(item?.sale_price).toFixed(2)} per unit</p>
+              </div>
+              <div className='col-span-1 grid grid-cols-3 justify-items-center gap-6'>
+                <div className='grid-cols-1 flex items-center gap-4 bg-gray-100 px-4  rounded-full'>
+                  <FaMinus
+                    className='cursor-pointer text-gray-600 hover:text-black transition-colors'
+                    onClick={() => decreaseQuantity(item?.product_id)}
+                  />
+                  <span className=' text-gray-800'>{item?.quantity}</span>
+                  <FaPlus
+                    className='cursor-pointer text-gray-600 hover:text-black transition-colors'
+                    onClick={() => addToCart(item)}
+                  />
                 </div>
-
-                <div className="grid gap-3">
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="name" className="text-xs font-semibold text-gray-500 ml-1">NAME</label>
-                        <input type="text" id='name' name='name' value={data.name} onChange={handleChange} className='w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all' />
-                    </div>
-
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="phone" className="text-xs font-semibold text-gray-500 ml-1">PHONE</label>
-                        <input type="text" id='phone' name='phone' value={data.phone} onChange={handleChange} className='w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all' />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className='flex flex-col gap-1'>
-                            <label htmlFor="payment" className="text-xs font-semibold text-gray-500 ml-1">PAYMENT</label>
-                            <select name="payment" id="payment" value={data.payment} onChange={handleChange} className='w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none appearance-none cursor-pointer'>
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
-                                <option value="online">Online</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                <p className='grid-cols-1   text-gray-800'>
+                  ৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}
+                </p>
+                <MdDeleteOutline
+                  className='grid-cols-1 text-2xl text-red-400 cursor-pointer hover:text-red-600 transition-colors'
+                  onClick={() => removeFromCart(item?.product_id)}
+                />
+              </div>
             </div>
-
-            <div className="flex flex-col gap-2">
-                <p className="font-bold text-gray-800 ml-1">Order Items</p>
-                {cartItems.length > 0 && cartItems.map(item => (
-                    <div key={item.productId} className='w-full flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100'>
-                        <div className="flex flex-col">
-                            <p className='font-medium text-gray-700'>{item?.title}</p>
-                            <p className='text-[10px] text-gray-400 uppercase'>Qty: {item.quantity}</p>
-                        </div>
-                        <div className='flex items-center gap-4'>
-                            <p className="font-semibold text-gray-900">৳{item.price}</p>
-                            <RemoveFromCart
-                                productId={item.productId}
-                                onRemove={fetchCart} 
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className='w-full bg-gray-50 rounded-2xl p-4 flex flex-col gap-2 border border-gray-100'>
-                <div className='flex justify-between text-gray-600'>
-                    <p>Sub Total</p>
-                    <p className="font-medium">৳{totals.subTotal.toFixed(2)}</p>
-                </div>
-                <div className='flex justify-between text-gray-600'>
-                    <p>Discount</p>
-                    <p className="font-medium">-৳{totals.discount.toFixed(2)}</p>
-                </div>
-                <div className='flex justify-between text-gray-600'>
-                    <p>Tax</p>
-                    <p className="font-medium">৳{totals.tax.toFixed(2)}</p>
-                </div>
-                <div className='flex justify-between items-center mt-2 pt-2 border-t border-gray-200'>
-                    <p className="font-bold text-lg">Total</p>
-                    <p className="font-bold text-lg text-black">৳{totals.totlePrice.toFixed(2)}</p>
-                </div>
-            </div>
-
-            <button className='w-full bg-black text-white  rounded-xl font-bold hover:bg-zinc-800 transition-colors active:scale-[0.98] cursor-pointer' type='submit'>
-                Place Order
-            </button>
-        </form>
+          ))}
+          <button
+            onClick={clearCart}
+            className='text-sm text-red-400 self-start mt-4 hover:text-red-600 hover:underline transition-all'
+          >
+            Clear All Items
+          </button>
         </div>
-    )
+      </div>
+
+      <div className='w-full lg:w-100 bg-white p-8 rounded-3xl shadow-xl shadow-black/5 border border-gray-100 h-fit sticky top-10'>
+        <h2 className='text-2xl  mb-6 text-gray-800'>Order Summary</h2>
+        <form onSubmit={placeOrder} className='flex flex-col gap-5'>
+          <div className='space-y-4'>
+            <input
+              type="text" name='name' required placeholder="Your Full Name"
+              onChange={handleChange} value={formData.name}
+              className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-sky-500 transition-all'
+            />
+            <input
+              type="text" name='phone' required placeholder="Phone Number"
+              onChange={handleChange} value={formData.phone}
+              className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-sky-500 transition-all'
+            />
+
+            <label className='text-xs  text-gray-400 uppercase ml-2'>Payment Method</label>
+            <input type="text" name="paymentMethod" onChange={handleChange} value={formData.paymentMethod} readOnly className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-sky-500 transition-all' />
+
+          </div>
+
+          <div className='flex flex-col gap-3 border-t border-gray-100 pt-6 mt-2'>
+            <div className='flex justify-between text-gray-500'>
+              <span>Subtotal</span>
+              <span>৳{formData.subTotal.toFixed(2)}</span>
+            </div>
+            <div className='flex justify-between text-green-600 font-semibold'>
+              <span>Discount Applied</span>
+              <span>-৳{formData.discount.toFixed(2)}</span>
+            </div>
+            <div className='flex justify-between text-xl font-black mt-2 text-gray-900'>
+              <span>Net Total</span>
+              <span>৳{formData.totalPrice.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <button
+            className='w-full bg-sky-600 text-white py-5 rounded-2xl  hover:bg-sky-700 active:scale-95   transition-all mt-6 uppercase tracking-wider'
+            type='submit'
+          >
+            Confirm Order
+          </button>
+          <p className='text-[10px] text-center text-gray-400 italic'>*Our representative will call to confirm your order.</p>
+        </form>
+      </div>
+    </div>
+  )
 }
 
 export default Cart

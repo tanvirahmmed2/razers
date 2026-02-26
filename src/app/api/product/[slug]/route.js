@@ -1,43 +1,37 @@
-import ConnectDB from "@/lib/database/mongo";
-import Product from "@/lib/models/product";
+import { pool } from "@/lib/database/db";
 import { NextResponse } from "next/server";
+
 
 
 export async function GET(req, { params }) {
     try {
-        await ConnectDB()
         const { slug } = await params
-
         if (!slug) {
             return NextResponse.json({
-                success: false,
-                message: 'id not found'
+                success: false, message: 'Slug not recieved'
             }, { status: 400 })
         }
 
-        const product = await Product.findOne({ slug })
+        const data = await pool.query(`SELECT p.*,c.category_id, c.name as category_name, b.name as brand_name FROM products p
+            LEFT JOIN categories c ON p.category_id= c.category_id
+            LEFT JOIN brands b on p.brand_id= b.brand_id
+            WHERE slug= $1`, [slug])
 
-        if (!product) {
+
+        const result = data.rows
+        if (result.length === 0) {
             return NextResponse.json({
-                success: false,
-                message: 'No product found with this slug'
+                success: false, message: 'Product not found'
             }, { status: 400 })
         }
-
         return NextResponse.json({
-            success: true,
-            message: 'Product data found successfully',
-            payload: product
+            success: true, message: 'Successfully fetched data', payload: result
         }, { status: 200 })
-
     } catch (error) {
         return NextResponse.json({
-            success: false,
-            message: 'Failed to fetch data',
-            error: error.message
+            success: false, message: error.message
         }, { status: 500 })
+
     }
 
 }
-
-

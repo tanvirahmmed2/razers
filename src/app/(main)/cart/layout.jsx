@@ -1,20 +1,12 @@
-import { isLogin } from '@/lib/middleware'
-import { redirect } from 'next/navigation'
 import React from 'react'
 export const metadata={
     title:'Cart',
-    description:'Cart page'
+    description:'Cart Page'
 }
 
-const CartLayout = async({children}) => {
-    const auth= await isLogin()
-
-    if(!auth.success){
-        return redirect('/login')
-    }
-
+const CartLayout = ({children}) => {
   return (
-    <div>
+    <div className='w-full'>
       {children}
     </div>
   )

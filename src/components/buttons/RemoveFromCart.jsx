@@ -16,7 +16,7 @@ const RemoveFromCart = ({ productId, onRemove }) => {
         withCredentials: true
       })
       toast.success(res.data.message)
-      if (onRemove) onRemove() // ✅ REFRESH parent cart
+      if (onRemove) onRemove() 
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to remove')
     } finally {
