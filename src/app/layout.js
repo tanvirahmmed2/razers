@@ -6,10 +6,10 @@ import ToastProvider from "@/components/helper/ToastProvider";
 
 export const metadata = {
   title: {
-    default: "Nizam Varieties Store",
-    template: "%s | Nizam Varieties Store",
+    default: "Monihari",
+    template: "%s | Monihari",
   },
-  description: "Nizam Varieties Store app",
+  description: "Monihari app",
 };
 
 
