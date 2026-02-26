@@ -5,16 +5,18 @@ import axios from 'axios'
 import React, { useContext, } from 'react'
 
 const BrandPage = () => {
-  const {brands, fetchBrand}= useContext(Context)
+  const { brands, fetchBrand } = useContext(Context)
 
-  const removeBrand=async(id)=>{
+  const removeBrand = async (id) => {
     try {
-      const response= await axios.delete('/api/brand', {data:{id},withCredentials:true})
+      const response = await axios.delete('/api/brand', { data: { id }, withCredentials: true })
       alert(response.data.message)
-      fetchBrand()
+      if (fetchBrand) {
+         fetchBrand();
+      }
     } catch (error) {
       alert(error?.response?.data?.message || 'Failed to remove brand')
-      
+
     }
   }
   return (
@@ -29,7 +31,7 @@ const BrandPage = () => {
               <div key={brand.brand_id} className='w-full grid grid-cols-3 p-2 border border-black/50 rounded-xl even:bg-gray-200'>
                 <p>{brand.name}</p>
                 <p>{brand.description}</p>
-                <button className='cursor-pointer' onClick={()=> removeBrand(brand.brand_id)}>Delete</button>
+                <button className='cursor-pointer' onClick={() => removeBrand(brand.brand_id)}>Delete</button>
               </div>
             ))
           }

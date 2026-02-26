@@ -17,19 +17,28 @@ const AddBrandForm = () => {
         setFormData((prev)=>({...prev, [name]:value}))
     }
     
-    const addNewBrand=async(e)=>{
-        e.preventDefault()
+   const addNewBrand = async (e) => {
+    e.preventDefault();
+    
+    try {
+        const response = await axios.post('/api/brand', formData, { withCredentials: true });
         
-        try {
-            const response = await axios.post('/api/brand', formData, { withCredentials: true })
-            toast(response.data.message)
-            fetchBrand()
-            setIsBrandBox(false)
-        } catch (error) {
-            toast(error?.response?.data?.message || "failed to add Brand")
-
+        if (response.data.success) {
+            toast.success(response.data.message);
+            
+            if (fetchBrand) {
+                await fetchBrand(); 
+            }
+            
+            setIsBrandBox(false);
         }
+    } catch (error) {
+        console.error("Frontend Brand Error:", error);
+        const errorMsg = error?.response?.data?.message || "Failed to add Brand";
+        toast.error(errorMsg);
     }
+};
+
   return (
     <form onSubmit={addNewBrand} className='w-full flex  flex-col items-center justify-center gap-3 relative'>
         <h1>Add New Brand</h1>

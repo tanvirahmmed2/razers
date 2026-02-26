@@ -145,6 +145,8 @@ const ContextProvider = ({ children }) => {
     } catch (error) { setSuppliers([]) }
   }
   const [customers, setCustomers] = useState([])
+
+
   const fetchCustomer = async () => {
     try {
       const response = await axios.get('/api/customer', { withCredentials: true })
@@ -215,7 +217,7 @@ const ContextProvider = ({ children }) => {
     <Context.Provider value={{
       isBrandBox, setIsBrandBox, isCategoryBox, setIsCategoryBox, brands, setBrands, purchaseItems, addToPurchase, removeFromPurchase,
       isSupplierBox, setIsSupplierBox, fetchSupplier, suppliers, setSuppliers, setPurchaseItems,
-      isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,
+      isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,fetchBrand,fetchCustomer,
       categories, fetchCategory, cart, setCart, fetchCart, addToCart, clearCart, removeFromCart, decreaseQuantity, clearPurchase
     }}>
       {children}
