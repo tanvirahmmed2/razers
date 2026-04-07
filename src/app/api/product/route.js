@@ -11,8 +11,6 @@ export async function POST(req) {
         const description = formData.get('description');
         const category_id = parseInt(formData.get('categoryId'));
         const brand_id = formData.get('brandId') ? parseInt(formData.get('brandId')) : null;
-        
-        // We use 'let' because we might modify this variable
         let barcode = formData.get('barcode');
         
         const unit = formData.get('unit');
@@ -34,10 +32,7 @@ export async function POST(req) {
             }, { status: 400 });
         }
 
-        // AUTO-GENERATE BARCODE LOGIC
         if (!barcode || barcode.trim() === '') {
-            // Find the highest numeric barcode currently in the database
-            // The regex ~ '^[0-9]+$' ensures we ignore barcodes like "ABC-123"
             const maxBarcodeResult = await pool.query(`
                 SELECT MAX(CAST(barcode AS BIGINT)) as max_code 
                 FROM products 
@@ -47,17 +42,14 @@ export async function POST(req) {
             const maxCode = maxBarcodeResult.rows[0]?.max_code;
 
             if (maxCode) {
-                // Increment the highest found number
                 barcode = (Number(maxCode) + 1).toString();
             } else {
-                // If no numeric barcodes exist yet, start at 10001
                 barcode = "10001";
             }
         }
 
         const slug = slugify(name.trim(), { lower: true, strict: true });
 
-        // CHECK DUPLICATES (now checks the provided OR generated barcode)
         const isExists = await pool.query(`SELECT product_id FROM products WHERE slug=$1 OR barcode=$2`, [slug, barcode]);
         if (isExists.rowCount > 0) {
             return NextResponse.json({
@@ -69,11 +61,10 @@ export async function POST(req) {
             return NextResponse.json({ success: false, message: 'Please add image' }, { status: 400 });
         }
 
-        // Cloudinary Upload
         const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
         const cloudImage = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-                { folder: "nizamvarietiesstore" },
+                { folder: "monihari" },
                 (err, result) => {
                     if (err) reject(err);
                     else resolve(result);
@@ -82,7 +73,6 @@ export async function POST(req) {
             stream.end(imageBuffer);
         });
 
-        // Insert into DB
         const query = `
             INSERT INTO products (
                 name, description, category_id, brand_id, slug, barcode, unit, 

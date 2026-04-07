@@ -1,8 +1,14 @@
 import { pool } from "@/lib/database/db";
+import { isManager } from "@/lib/middleware";
 import { NextResponse } from "next/server";
 
-// GET: Fetch all customers
 export async function GET() {
+    const auth= await isManager()
+    if(!auth.success){
+        return NextResponse.json({
+            success:false, message:auth.message
+        },{status:400})
+    }
     const client = await pool.connect();
     try {
         const result = await client.query(`
