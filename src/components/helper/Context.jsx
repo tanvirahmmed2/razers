@@ -19,7 +19,7 @@ const ContextProvider = ({ children }) => {
 
   const fetchCart = () => {
     if (typeof window === 'undefined') return
-    const storedCart = localStorage.getItem('cart')
+    const storedCart = localStorage.getItem('monihari')
 
     if (!storedCart || storedCart === 'undefined') {
       setCart({ items: [] })
@@ -35,7 +35,7 @@ const ContextProvider = ({ children }) => {
         setCart({ items: [] })
       }
     } catch (err) {
-      localStorage.removeItem('cart')
+      localStorage.removeItem('monihari')
       setCart({ items: [] })
     }
     setHydrated(true)
@@ -43,7 +43,7 @@ const ContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && hydrated) {
-      localStorage.setItem('cart', JSON.stringify(cart))
+      localStorage.setItem('monihari', JSON.stringify(cart))
     }
   }, [cart, hydrated])
 
@@ -88,8 +88,6 @@ const ContextProvider = ({ children }) => {
             sale_price: salePrice,
             wholesale_price: wholeSalePrice,
             discount_price: discountAmount,
-            // FIX: Set the base price to the FULL sale price. 
-            // Do NOT subtract the discount here.
             price: salePrice 
           }
         ]

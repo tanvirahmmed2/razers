@@ -40,21 +40,21 @@ const Support = () => {
         <form onSubmit={handleSubmit} className='flex w-full flex-col gap-4'>
           <div className='w-full flex flex-col gap-2'>
             <label htmlFor="name">Name</label>
-            <input type="text" id=' name' name='name' required onChange={handleChange}value={formData.name} className='border border-orange-400/30 outline-none px-2 p-1' />
+            <input type="text" id=' name' name='name' required onChange={handleChange}value={formData.name} className='border border-red-400/30 outline-none px-2 p-1' />
           </div>
           <div className='w-full flex flex-col gap-2'>
             <label htmlFor="email">Email</label>
-            <input type="email" id='email' name='email' required onChange={handleChange} value={formData.email} className='border border-orange-400/30 outline-none px-2 p-1' />
+            <input type="email" id='email' name='email' required onChange={handleChange} value={formData.email} className='border border-red-400/30 outline-none px-2 p-1' />
           </div>
           <div className='w-full flex flex-col gap-2'>
             <label htmlFor="subject">Subject</label>
-            <input type="text" id='subject' name='subject' required onChange={handleChange} value={formData.subject} className='border border-orange-400/30 outline-none px-2 p-1' />
+            <input type="text" id='subject' name='subject' required onChange={handleChange} value={formData.subject} className='border border-red-400/30 outline-none px-2 p-1' />
           </div>
           <div className='w-full flex flex-col gap-2'>
             <label htmlFor="message">Message</label>
-            <textarea name="message" id="message" required onChange={handleChange} value={formData.message} className='border border-orange-400/30 outline-none px-2 p-1' />
+            <textarea name="message" id="message" required onChange={handleChange} value={formData.message} className='border border-red-400/30 outline-none px-2 p-1' />
           </div>
-          <button type='submit' className='bg-orange-600 w-auto cursor-pointer p-1 text-white hover:scale-[1.02] transform ease-in-out duration-500'>Submit</button>
+          <button type='submit' className='bg-red-600 w-auto cursor-pointer p-1 text-white hover:scale-[1.02] transform ease-in-out duration-500'>Submit</button>
         </form>
       </div>
 

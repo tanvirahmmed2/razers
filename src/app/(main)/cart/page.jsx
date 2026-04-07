@@ -75,7 +75,7 @@ const Cart = () => {
   if (!cart || cart?.items.length < 1) return (
     <div className='w-full p-20 text-center flex flex-col items-center gap-4'>
       <p className='text-2xl text-gray-400 '>Your cart is empty</p>
-      <Link href="/products" className='bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-full transition-all'>
+      <Link href="/products" className='bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full transition-all'>
         Continue Shopping
       </Link>
     </div>
@@ -90,7 +90,7 @@ const Cart = () => {
           {cart.items.map((item) => (
             <div key={item?.product_id} className='w-full grid grid-cols-1 justify-items-center shadow sm:grid-cols-2  rounded-2xl border border-black/30 p-2'>
               <div className='col-span-1 w-full text-start'>
-                <p className=' text-lg text-gray-800'>{item?.name}</p>
+                <p className=' text-lg text-gray-800'>{item?.name.slice(0,30)}</p>
                 <p className='text-sm text-gray-500'>৳{parseFloat(item?.sale_price).toFixed(2)} per unit</p>
               </div>
               <div className='col-span-1 grid grid-cols-3 justify-items-center gap-6'>
@@ -131,16 +131,16 @@ const Cart = () => {
             <input
               type="text" name='name' required placeholder="Your Full Name"
               onChange={handleChange} value={formData.name}
-              className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-sky-500 transition-all'
+              className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-red-500 transition-all'
             />
             <input
               type="text" name='phone' required placeholder="Phone Number"
               onChange={handleChange} value={formData.phone}
-              className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-sky-500 transition-all'
+              className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-red-500 transition-all'
             />
 
             <label className='text-xs  text-gray-400 uppercase ml-2'>Payment Method</label>
-            <input type="text" name="paymentMethod" onChange={handleChange} value={formData.paymentMethod} readOnly className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-sky-500 transition-all' />
+            <input type="text" name="paymentMethod" onChange={handleChange} value={formData.paymentMethod} readOnly className='w-full p-4 border border-gray-200 rounded-2xl outline-none focus:border-red-500 transition-all' />
 
           </div>
 
@@ -160,7 +160,7 @@ const Cart = () => {
           </div>
 
           <button
-            className='w-full bg-sky-600 text-white py-5 rounded-2xl  hover:bg-sky-700 active:scale-95   transition-all mt-6 uppercase tracking-wider'
+            className='w-full bg-red-600 text-white py-5 rounded-2xl  hover:bg-red-700 active:scale-95   transition-all mt-6 uppercase tracking-wider'
             type='submit'
           >
             Confirm Order

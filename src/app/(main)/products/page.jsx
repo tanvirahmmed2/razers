@@ -55,8 +55,8 @@ const Products = () => {
         </div>
         {
           products.length < 1 ? <p className="">No product found</p> :
-            <>
-              <div className='w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'>
+            <div className="w-full min-h-screen flex flex-col gap-4 items-center justify-between">
+              <div className='w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4'>
                 {
                   products.map(product => (
                     <Item product={product} key={product.product_id} />
@@ -74,7 +74,6 @@ const Products = () => {
                   Prev
                 </button>
 
-                {/* First Page (Optional, but helpful) */}
                 {page > 2 && (
                   <>
                     <button onClick={() => setPage(1)} className="w-10 h-10 border rounded-md">1</button>
@@ -112,7 +111,7 @@ const Products = () => {
                   Next
                 </button>
               </div>
-            </>
+            </div>
         }
       </div>
     </div>

@@ -37,14 +37,14 @@ const Offers = () => {
   return (
     <div className="w-full p-4 min-h-screen">
       <div className="w-full flex flex-col items-center justify-center gap-4">
-        <h1 className='font-semibold text-center text-2xl mt-4'>Offer available on specific items</h1>
+        <h1 className='font-semibold text-center mt-4'>Offer available on specific items</h1>
 
         {loading ? (
           <p>Loading offers...</p>
         ) : products.length < 1 ? (
           <p className="">No product found</p>
         ) : (
-          <>
+          <div className="w-full min-h-screen flex flex-col gap-4 items-center justify-between">
             <div className='w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'>
               {products.map(product => (
                 <Item product={product} key={product.product_id} />
@@ -52,7 +52,7 @@ const Offers = () => {
             </div>
 
             <div className="flex items-center gap-2 mt-8">
-              {/* Prev Button */}
+           
               <button
                 disabled={page === 1}
                 onClick={() => setPage(prev => prev - 1)}
@@ -61,7 +61,6 @@ const Offers = () => {
                 Prev
               </button>
 
-              {/* First Page (Optional, but helpful) */}
               {page > 2 && (
                 <>
                   <button onClick={() => setPage(1)} className="w-10 h-10 border rounded-md">1</button>
@@ -69,9 +68,8 @@ const Offers = () => {
                 </>
               )}
 
-              {/* Display Range: Prev, Current, Next */}
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(num => num >= page - 1 && num <= page + 1) // Only show current and neighbors
+                .filter(num => num >= page - 1 && num <= page + 1)
                 .map(num => (
                   <button
                     key={num}
@@ -102,7 +100,7 @@ const Offers = () => {
                 Next
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
