@@ -14,7 +14,7 @@ const Footer = () => {
       <div className='max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-12'>
         <div className='flex flex-col gap-4'>
           <div className='flex items-center gap-2 mb-2'>
-            <Image src={siteData?.logo || "/icon.png"} alt="Logo" width={32} height={32} />
+         
             <h2 className='text-xl font-bold text-white uppercase tracking-tighter'>
               {siteData?.website_name || 'Nizam Varieties Store'}
             </h2>
