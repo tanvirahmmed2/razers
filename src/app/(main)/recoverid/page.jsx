@@ -1,12 +1,12 @@
 'use client'
 import React, { useState } from 'react'
 import axios from 'axios'
-import { toast } from 'react-toastify'
+import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
 const ForgetPasswordPage = () => {
     const router = useRouter()
-    const [view, setView] = useState('request') 
+    const [view, setView] = useState('request') // 'request' or 'reset'
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
     const [otp, setOtp] = useState('')
@@ -16,7 +16,7 @@ const ForgetPasswordPage = () => {
         e.preventDefault()
         setLoading(true)
         try {
-            const res = await axios.post('/api/staff/forgetpassword', { email })
+            const res = await axios.post('/api/user/forgetpassword', { email })
             if (res.data.success) {
                 toast.success("OTP Dispatched")
                 setView('reset')
@@ -29,7 +29,7 @@ const ForgetPasswordPage = () => {
         e.preventDefault()
         setLoading(true)
         try {
-            const res = await axios.post('/api/staff/forgetpassword/reset', { email, otp, newPassword })
+            const res = await axios.post('/api/user/forgetpassword/reset', { email, otp, newPassword })
             if (res.data.success) {
                 toast.success("Password Updated")
                 router.push('/login')

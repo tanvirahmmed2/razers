@@ -1,11 +1,12 @@
 'use client'
 import axios from 'axios'
 import React, { createContext, useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
+import { toast } from 'react-hot-toast'
 
 export const Context = createContext()
 
-const ContextProvider = ({ children }) => {
+const ContextProvider = ({ children, initialSiteData }) => {
+  const [siteData, setSiteData] = useState(initialSiteData)
   const [isCategoryBox, setIsCategoryBox] = useState(false)
   const [isBrandBox, setIsBrandBox] = useState(false)
   const [isSupplierBox, setIsSupplierBox] = useState(false)
@@ -16,10 +17,11 @@ const ContextProvider = ({ children }) => {
   const [hydrated, setHydrated] = useState(false)
   const [cart, setCart] = useState({ items: [] })
   const [userData, setUserData] = useState([])
+  const [isDashboardSidebar, setIsDashboardSidebar]=useState(false)
 
   const fetchCart = () => {
     if (typeof window === 'undefined') return
-    const storedCart = localStorage.getItem('monihari')
+    const storedCart = localStorage.getItem('nvs')
 
     if (!storedCart || storedCart === 'undefined') {
       setCart({ items: [] })
@@ -35,7 +37,7 @@ const ContextProvider = ({ children }) => {
         setCart({ items: [] })
       }
     } catch (err) {
-      localStorage.removeItem('monihari')
+      localStorage.removeItem('nvs')
       setCart({ items: [] })
     }
     setHydrated(true)
@@ -43,7 +45,7 @@ const ContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && hydrated) {
-      localStorage.setItem('monihari', JSON.stringify(cart))
+      localStorage.setItem('nvs', JSON.stringify(cart))
     }
   }, [cart, hydrated])
 
@@ -59,7 +61,7 @@ const ContextProvider = ({ children }) => {
 
     if (existingInCart) {
       if (existingInCart.quantity >= Number(product.stock)) {
-        toast.warning(`Only ${product.stock} items available in stock`);
+        toast.error(`Only ${product.stock} items available in stock`);
         return; 
       }
 
@@ -71,7 +73,7 @@ const ContextProvider = ({ children }) => {
             : item
         )
       }));
-      toast.info("Quantity increased");
+      toast("Quantity increased", { icon: '➕' });
     } else {
       const salePrice = parseFloat(product?.sale_price) || 0;
       const wholeSalePrice = parseFloat(product?.wholesale_price) || 0;
@@ -84,10 +86,13 @@ const ContextProvider = ({ children }) => {
           {
             product_id: product.product_id,
             name: product.name,
+            image: product.image,
             quantity: 1,
             sale_price: salePrice,
             wholesale_price: wholeSalePrice,
             discount_price: discountAmount,
+            // FIX: Set the base price to the FULL sale price. 
+            // Do NOT subtract the discount here.
             price: salePrice 
           }
         ]
@@ -143,8 +148,6 @@ const ContextProvider = ({ children }) => {
     } catch (error) { setSuppliers([]) }
   }
   const [customers, setCustomers] = useState([])
-
-
   const fetchCustomer = async () => {
     try {
       const response = await axios.get('/api/customer', { withCredentials: true })
@@ -215,8 +218,9 @@ const ContextProvider = ({ children }) => {
     <Context.Provider value={{
       isBrandBox, setIsBrandBox, isCategoryBox, setIsCategoryBox, brands, setBrands, purchaseItems, addToPurchase, removeFromPurchase,
       isSupplierBox, setIsSupplierBox, fetchSupplier, suppliers, setSuppliers, setPurchaseItems,
-      isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,fetchBrand,fetchCustomer,
-      categories, fetchCategory, cart, setCart, fetchCart, addToCart, clearCart, removeFromCart, decreaseQuantity, clearPurchase
+      isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,fetchBrand, fetchCustomer, fetchSupplier,isDashboardSidebar, setIsDashboardSidebar,
+      categories, fetchCategory, cart, setCart, fetchCart, addToCart, clearCart, removeFromCart, decreaseQuantity, clearPurchase,
+      siteData, setSiteData
     }}>
       {children}
     </Context.Provider>

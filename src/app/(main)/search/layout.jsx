@@ -2,9 +2,11 @@ import React from 'react'
 
 export const metadata={
     title:'Search Products',
-    description:"Search your favourite products"
+    description:'Search Products page'
 }
-const layout = ({children}) => {
+
+
+const Menuayout = async({children}) => {
   return (
     <div className='w-full'>
       {children}
@@ -12,4 +14,4 @@ const layout = ({children}) => {
   )
 }
 
-export default layout
+export default Menuayout

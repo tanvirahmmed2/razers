@@ -3,7 +3,7 @@ import axios from 'axios';
 import React from 'react'
 import { CiStar } from "react-icons/ci";
 import { FaStar } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 const MakeFeatured = ({ id ,status}) => {
     const makeFeaturedItem = async () => {

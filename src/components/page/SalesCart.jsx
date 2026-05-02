@@ -9,12 +9,13 @@ const SalesCart = () => {
   
 
   return (
-    <div className='flex-1  p-4 flex flex-col items-center gap-6'>
-      <h1 className='text-xl font-semibold'>Order details</h1>
+    <div className='w-full flex flex-col gap-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm'>
+      <div className='flex items-center justify-between'>
+        <h1 className='text-lg font-bold text-slate-800 tracking-tight'>Order Details</h1>
+        <button onClick={clearCart} className='text-[10px] font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-500 hover:text-white transition-all uppercase tracking-wider'>Clear Cart</button>
+      </div>
       
       <Orderform cartItems={cart?.items} />
-
-      <button onClick={clearCart} className='font-semibold bg-orange-500 text-white px-4 p-1 rounded-full uppercase cursor-pointer'>Clear Cart</button>
     </div>
   )
 }

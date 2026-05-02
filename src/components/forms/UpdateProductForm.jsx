@@ -1,6 +1,6 @@
 'use client'
 import React, { useContext, useState } from 'react'
-import { toast } from 'react-toastify'
+import { toast } from 'react-hot-toast'
 import { Context } from '../helper/Context'
 import axios from 'axios'
 

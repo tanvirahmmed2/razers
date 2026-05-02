@@ -1,33 +1,30 @@
-import { BrevoClient } from "@getbrevo/brevo";
+import { Brevo } from "@getbrevo/brevo";
 import { BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME } from "./secret";
 
-// Initialize the client once
-const client = new BrevoClient({
-    apiKey: BREVO_API_KEY,
-});
-
 /**
- * Utility to send transactional emails via Brevo (v4 SDK)
+ * Utility to send transactional emails via Brevo
+ * @param {Object} options - { toEmail, toName, subject, htmlContent }
  */
 export const sendEmail = async ({ toEmail, toName, subject, htmlContent }) => {
     try {
-        const response = await client.transactionalEmails.sendTransacEmail({
+        const apiInstance = new Brevo.TransactionalEmailsApi({
+            apiKey: BREVO_API_KEY
+        });
+
+        const smtpEmail = {
             subject: subject,
             htmlContent: htmlContent,
             sender: { 
-                name: BREVO_SENDER_NAME, 
-                email: BREVO_SENDER_EMAIL 
+                name: BREVO_SENDER_NAME,
+                email: BREVO_SENDER_EMAIL
             },
-            to: [{ 
-                email: toEmail, 
-                name: toName 
-            }]
-        });
+            to: [{ email: toEmail, name: toName }]
+        };
 
-        return { success: true, data: response };
+        const data = await apiInstance.sendTransacEmail(smtpEmail);
+        return { success: true, data };
     } catch (error) {
-        // Modern SDK errors have better structure
-        console.error("Brevo Email Error:", error.message);
-        return { success: false, error: error.message };
+        console.error("Brevo Email Error:", error);
+        return { success: false, error };
     }
 };

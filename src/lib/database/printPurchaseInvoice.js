@@ -38,8 +38,9 @@ export const printPurchaseInvoice = (purchase) => {
         <body>
           <div class="header-container">
             <div class="company-brand">
-              <h1 style="margin:0;">NIZAM VARIETIES</h1>
-              <p style="margin:0;">Business License: TRAD/DSCC/012345/2024</p>
+              <h1 style="margin:0;">NIZAM VARIETIES STORE</h1>
+              <p style="margin:0;">Pakuritala, Tarakanda, 2252</p>
+              <p style="margin:0;">Contact: 01645-172356</p>
             </div>
             <div class="invoice-details">
               <h2 style="margin:0; color: #64748b;">PURCHASE RECORD</h2>

@@ -1,6 +1,6 @@
 import { pool } from "@/lib/database/db";
 import { NextResponse } from "next/server";
-import { isUserLogin } from "@/lib/usermiddleware";
+import { isUserLogin } from "@/lib/middleware";
 
 export async function GET() {
     const client = await pool.connect();

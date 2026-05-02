@@ -1,9 +1,16 @@
 import { pool } from "@/lib/database/db";
+import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     const client = await pool.connect();
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
+
         const body = await req.json();
         const {
             supplier_id,
@@ -24,46 +31,52 @@ export async function POST(req) {
         await client.query('BEGIN');
 
         // 1. Get Supplier Info
-        const supplierRes = await client.query("SELECT name, phone FROM suppliers WHERE supplier_id = $1", [supplier_id]);
+        const supplierRes = await client.query("SELECT name, phone FROM ecom_suppliers WHERE supplier_id = $1 AND tenant_id = $2", [supplier_id, tenant_id]);
         if (supplierRes.rows.length === 0) throw new Error("Supplier not found");
         
         const { name: s_name, phone: s_phone } = supplierRes.rows[0];
 
         // 2. Insert Purchase Header
         const purchaseQuery = `
-            INSERT INTO purchases (
+            INSERT INTO ecom_purchases (
                 supplier_id, supplier_name, supplier_phone, invoice_no, subtotal_amount, 
-                extra_discount, total_amount, payment_method, transaction_id, note
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING purchase_id`;
+                extra_discount, total_amount, payment_method, transaction_id, note, tenant_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING purchase_id`;
 
         const purchaseRes = await client.query(purchaseQuery, [
             supplier_id, s_name, s_phone, invoice_no, 
             Number(subtotal_amount), Number(extra_discount), Number(total_amount), 
-            payment_method, transaction_id, note
+            payment_method, transaction_id, note, tenant_id
         ]);
         const purchaseId = purchaseRes.rows[0].purchase_id;
 
         // 3. Insert Payment
         await client.query(
-            "INSERT INTO purchase_payments (purchase_id, payment_method, amount_paid, transaction_id) VALUES ($1, $2, $3, $4)",
-            [purchaseId, payment_method, Number(total_amount), transaction_id]
+            "INSERT INTO ecom_purchase_payments (purchase_id, payment_method, amount_paid, transaction_id, tenant_id) VALUES ($1, $2, $3, $4, $5)",
+            [purchaseId, payment_method, Number(total_amount), transaction_id, tenant_id]
         );
 
         // 4. Loop Items: Insert & Update Stock
         for (const item of items) {
             await client.query(
-                "INSERT INTO purchase_items (purchase_id, product_id, quantity, purchase_price) VALUES ($1, $2, $3, $4)",
-                [purchaseId, item.product_id, item.quantity, Number(item.purchase_price)]
+                "INSERT INTO ecom_purchase_items (purchase_id, product_id, quantity, purchase_price, tenant_id) VALUES ($1, $2, $3, $4, $5)",
+                [purchaseId, item.product_id, item.quantity, Number(item.purchase_price), tenant_id]
             );
 
             await client.query(
-                "UPDATE products SET stock = stock + $1, purchase_price = $2 WHERE product_id = $3",
-                [item.quantity, Number(item.purchase_price), item.product_id]
+                "UPDATE ecom_products SET stock = stock + $1, purchase_price = $2 WHERE product_id = $3 AND tenant_id = $4",
+                [item.quantity, Number(item.purchase_price), item.product_id, tenant_id]
             );
         }
 
         await client.query('COMMIT');
-        return NextResponse.json({ success: true, message: 'Purchase processed successfully' }, { status: 201 });
+
+        return NextResponse.json({ 
+            success: true, 
+            message: 'Purchase processed successfully',
+            purchase_id: purchaseId 
+        }, { status: 201 });
+
     } catch (error) {
         await client.query('ROLLBACK');
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
@@ -74,6 +87,12 @@ export async function POST(req) {
 
 export async function GET(req) {
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
+
         const { searchParams } = new URL(req.url);
         const q = searchParams.get('q') || '';
         const searchTerm = `%${q}%`;
@@ -87,52 +106,58 @@ export async function GET(req) {
                         'quantity', pi.quantity,
                         'purchase_price', pi.purchase_price
                     ))
-                    FROM purchase_items pi
-                    JOIN products pr ON pi.product_id = pr.product_id
-                    WHERE pi.purchase_id = p.purchase_id
+                    FROM ecom_purchase_items pi
+                    JOIN ecom_products pr ON pi.product_id = pr.product_id AND pi.tenant_id = pr.tenant_id
+                    WHERE pi.purchase_id = p.purchase_id AND pi.tenant_id = p.tenant_id
                 ), '[]') as items
-            FROM purchases p
+            FROM ecom_purchases p
             WHERE 
+                p.tenant_id = $2 AND (
                 p.supplier_name ILIKE $1 
                 OR p.supplier_phone ILIKE $1 
                 OR p.invoice_no ILIKE $1
                 OR p.created_at::text ILIKE $1
                 OR EXISTS (
-                    SELECT 1 FROM purchase_items pi
-                    JOIN products pr ON pi.product_id = pr.product_id
-                    WHERE pi.purchase_id = p.purchase_id
+                    SELECT 1 FROM ecom_purchase_items pi
+                    JOIN ecom_products pr ON pi.product_id = pr.product_id AND pi.tenant_id = pr.tenant_id
+                    WHERE pi.purchase_id = p.purchase_id AND pi.tenant_id = p.tenant_id
                     AND (pr.name ILIKE $1 OR pr.barcode ILIKE $1)
-                )
+                ))
             ORDER BY p.created_at DESC`;
 
-        const res = await pool.query(query, [searchTerm]);
+        const res = await pool.query(query, [searchTerm, tenant_id]);
         return NextResponse.json({ success: true, payload: res.rows });
     } catch (error) {
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 }
 
-
 export async function DELETE(req) {
     const client = await pool.connect();
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
+
         const { id } = await req.json();
         if (!id) return NextResponse.json({ success: false, message: "ID missing" }, { status: 400 });
 
         await client.query('BEGIN');
 
         // 1. Get items to revert stock
-        const itemsRes = await client.query("SELECT product_id, quantity FROM purchase_items WHERE purchase_id = $1", [id]);
+        const itemsRes = await client.query("SELECT product_id, quantity FROM ecom_purchase_items WHERE purchase_id = $1 AND tenant_id = $2", [id, tenant_id]);
 
         // 2. Revert Stock
         for (const item of itemsRes.rows) {
             await client.query(
-                "UPDATE products SET stock = stock - $1 WHERE product_id = $2",
-                [item.quantity, item.product_id]
+                "UPDATE ecom_products SET stock = stock - $1 WHERE product_id = $2 AND tenant_id = $3",
+                [item.quantity, item.product_id, tenant_id]
             );
         }
 
-        const del = await client.query("DELETE FROM purchases WHERE purchase_id = $1 RETURNING *", [id]);
+        const del = await client.query("DELETE FROM ecom_purchases WHERE purchase_id = $1 AND tenant_id = $2 RETURNING *", [id, tenant_id]);
         
         if (del.rowCount === 0) throw new Error("Purchase not found");
 
@@ -145,4 +170,4 @@ export async function DELETE(req) {
     } finally {
         client.release();
     }
-}
+}

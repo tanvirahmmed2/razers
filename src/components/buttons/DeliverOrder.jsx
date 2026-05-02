@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React from 'react'
 import { CiDeliveryTruck } from "react-icons/ci";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 const DeliverOrder = ({ id, order }) => {
    

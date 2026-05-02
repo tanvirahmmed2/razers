@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React from 'react'
 import { GiConfirmed } from "react-icons/gi";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 const ConfirmBooking = ({id}) => {
     const confirmReservation=async()=>{

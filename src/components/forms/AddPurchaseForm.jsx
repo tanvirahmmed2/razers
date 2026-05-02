@@ -3,8 +3,9 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Context } from '../helper/Context'
 import { FaPlus, FaMinus, FaTrash, FaFileInvoiceDollar, FaBarcode } from 'react-icons/fa6'
 import axios from 'axios'
-import { toast } from 'react-toastify'
+import { toast } from 'react-hot-toast'
 import BarScanner from '../helper/BarcodeScanner'
+import { useRouter } from 'next/navigation'
 
 const AddPurchaseForm = () => {
     const {
@@ -58,7 +59,7 @@ const AddPurchaseForm = () => {
                 setSearchTerm('') 
                 toast.success(`${foundItems[0].name} added`)
             } else {
-                setSearchTerm(code) // Fill search if multiple or none found
+                setSearchTerm(code) 
             }
         } catch (error) {
             console.error("Scanner error:", error)
@@ -85,6 +86,7 @@ const AddPurchaseForm = () => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
+    const router=useRouter()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -103,6 +105,8 @@ const AddPurchaseForm = () => {
             toast.success(response.data.message)
             setFormData({ supplier_id: '', invoice_no: '', extra_discount: 0, payment_method: 'cash', transaction_id: '', note: '' })
             setSearchTerm(''); setProducts([]); clearPurchase()
+            router.push(`/dashboard/purchase/${response.data.purchase_id}`)
+
         } catch (error) {
             toast.error(error.response?.data?.message || "Error saving purchase")
         }
@@ -209,21 +213,34 @@ const AddPurchaseForm = () => {
                 </div>
 
                 {/* Checkout Footer */}
-                <div className="w-full md:w-1/4 ml-auto flex flex-col gap-1 p-5  rounded-3xl mt-auto shadow-2xl">
-                    <div className="flex justify-between  text-sm">
+                {/* Checkout Footer */}
+                <div className="w-full md:w-80 ml-auto flex flex-col gap-3 p-6 bg-slate-900 rounded-3xl mt-6 shadow-xl shadow-slate-900/20 text-white">
+                    <div className="flex justify-between items-center text-sm text-slate-300 font-medium">
                         <span>Subtotal</span>
-                        <span>৳{totals.subtotal.toFixed(2)}</span>
+                        <span className="font-mono">৳{totals.subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center  mt-2">
-                        <span className="text-sm">Discount</span>
-                        <input type="number" name="extra_discount" value={formData.extra_discount} onChange={handleChange} className="w-24 bg-slate-800 border border-slate-700 text-right rounded-lg px-2 py-1 text-sky-400 font-bold outline-none" onFocus={(e) => e.target.select()} />
+                    <div className="flex justify-between items-center text-sm text-slate-300 font-medium">
+                        <span>Discount</span>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">৳</span>
+                            <input 
+                                type="number" 
+                                name="extra_discount" 
+                                value={formData.extra_discount} 
+                                onChange={handleChange} 
+                                className="w-24 bg-slate-800 border border-slate-700 text-right rounded-xl pl-6 pr-3 py-1.5 text-white font-mono outline-none focus:border-sky-500 transition-colors" 
+                                onFocus={(e) => e.target.select()} 
+                            />
+                        </div>
                     </div>
-                    <div className="h-px  my-3"></div>
-                    <div className="flex justify-between items-center">
-                        <span className=" font-medium">Grand Total</span>
-                        <span className="text-3xl font-black text-sky-400">৳{totals.total.toFixed(2)}</span>
+                    <div className="h-px bg-slate-800 my-1"></div>
+                    <div className="flex justify-between items-end">
+                        <span className="font-bold text-slate-200">Grand Total</span>
+                        <span className="text-3xl font-black text-sky-400 font-mono tracking-tight">৳{totals.total.toFixed(2)}</span>
                     </div>
-                    <button type="submit" className="w-full bg-sky-500 hover:bg-sky-400 text-white p-3 rounded-2xl font-black text-sm uppercase mt-4 transition-all active:scale-95">Complete Purchase</button>
+                    <button type="submit" className="w-full bg-sky-500 hover:bg-sky-400 text-white p-3.5 rounded-xl font-bold text-sm mt-2 transition-all shadow-lg shadow-sky-500/20 active:scale-[0.98] flex justify-center items-center gap-2">
+                        Complete Purchase
+                    </button>
                 </div>
             </form>
         </div>

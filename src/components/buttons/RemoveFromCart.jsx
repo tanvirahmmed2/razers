@@ -2,7 +2,7 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { MdDeleteOutline } from 'react-icons/md'
-import { toast } from 'react-toastify'
+import { toast } from 'react-hot-toast'
 
 const RemoveFromCart = ({ productId, onRemove }) => {
   const [loading, setLoading] = useState(false)

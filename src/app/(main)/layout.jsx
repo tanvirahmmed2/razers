@@ -10,9 +10,9 @@ export const metadata = {
 
 const MainLayout = ({ children }) => {
   return (
-    <div className="w-full min-h-screen pb-14 sm:pb-0 relative">
+    <div className="w-full min-h-screen relative">
       <Navbar />
-      <div className="w-full mb-14 mt-14 sm:mb-0 min-h-screen">{children}</div>
+      <div className="w-full mt-14  min-h-screen flex">{children}</div>
       
       <Footer />
       <BottomBar/>

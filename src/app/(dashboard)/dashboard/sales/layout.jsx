@@ -1,16 +1,12 @@
-import React from 'react'
+import { isSales } from "@/lib/middleware";
+import { redirect } from "next/navigation";
 
-export const metadata={
-    title:'New Product | Dashboard',
-    description:'New Product Page'
+export default async function SalesLayout({ children }) {
+    const check = await isSales();
+    
+    if (!check.success) {
+        redirect("/dashboard");
+    }
+
+    return <>{children}</>;
 }
-
-const layout = ({children}) => {
-  return (
-    <div className='w-full'>
-      {children}
-    </div>
-  )
-}
-
-export default layout

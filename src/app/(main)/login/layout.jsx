@@ -1,4 +1,4 @@
-import { isUserLogin } from '@/lib/usermiddleware'
+import { isUserLogin } from '@/lib/middleware'
 import { redirect } from 'next/navigation'
 import React from 'react'
 

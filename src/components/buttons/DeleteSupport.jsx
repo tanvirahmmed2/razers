@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React from 'react'
 import { MdDeleteOutline } from "react-icons/md";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 const DeleteSupport = ({id}) => {
     const handleDelete=async () => {

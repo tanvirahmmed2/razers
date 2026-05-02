@@ -1,21 +1,22 @@
 import { pool } from "@/lib/database/db";
+import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
-async function getOrderDetails(client, orderId) {
+async function getOrderDetails(client, orderId, tenantId) {
     const res = await client.query(`
         SELECT 
             o.order_id, o.subtotal_amount, o.total_discount_amount, o.total_amount, o.status, o.created_at,
             c.name, p.payment_method, p.payment_status, p.amount AS actual_paid, 
             p.amount_received, p.change_amount,
             JSON_AGG(JSON_BUILD_OBJECT('name', pr.name, 'quantity', oi.quantity, 'price', oi.price)) AS items
-        FROM orders o
-        JOIN customers c ON o.customer_id = c.customer_id
-        JOIN payments p ON o.order_id = p.order_id
-        JOIN order_items oi ON o.order_id = oi.order_id
-        JOIN products pr ON oi.product_id = pr.product_id
-        WHERE o.order_id = $1
+        FROM ecom_orders o
+        JOIN ecom_customers c ON o.customer_id = c.customer_id AND o.tenant_id = c.tenant_id
+        JOIN ecom_payments p ON o.order_id = p.order_id AND o.tenant_id = p.tenant_id
+        JOIN ecom_order_items oi ON o.order_id = oi.order_id AND o.tenant_id = oi.tenant_id
+        JOIN ecom_products pr ON oi.product_id = pr.product_id AND o.tenant_id = pr.tenant_id
+        WHERE o.order_id = $1 AND o.tenant_id = $2
         GROUP BY o.order_id, c.name, p.payment_method, p.payment_status, p.amount_received, p.change_amount, p.amount
-    `, [orderId]);
+    `, [orderId, tenantId]);
     return res.rows[0];
 }
 
@@ -23,6 +24,12 @@ async function getOrderDetails(client, orderId) {
 export async function POST(req) {
     const client = await pool.connect();
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
+
         const body = await req.json();
         const { 
             customer_id, 
@@ -45,8 +52,8 @@ export async function POST(req) {
 
         // Insert Order
         const orderRes = await client.query(
-            `INSERT INTO orders (customer_id, phone, subtotal_amount, total_discount_amount, total_amount, status, created_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING order_id`,
+            `INSERT INTO ecom_orders (customer_id, phone, subtotal_amount, total_discount_amount, total_amount, status, created_at, tenant_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING order_id`,
             [
                 customer_id, 
                 phone, 
@@ -54,7 +61,8 @@ export async function POST(req) {
                 discount, 
                 total, 
                 status || 'completed', 
-                createdAt || new Date()
+                createdAt || new Date(),
+                tenant_id
             ]
         );
         const orderId = orderRes.rows[0].order_id;
@@ -62,14 +70,14 @@ export async function POST(req) {
         // Process Items and Stock
         for (const item of items) {
             await client.query(
-                "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)", 
-                [orderId, item.product_id, item.quantity, item.price]
+                "INSERT INTO ecom_order_items (order_id, product_id, quantity, price, tenant_id) VALUES ($1, $2, $3, $4, $5)", 
+                [orderId, item.product_id, item.quantity, item.price, tenant_id]
             );
 
             if (status === 'completed' || status === 'confirm' || !status) {
                 const stockUpdate = await client.query(
-                    "UPDATE products SET stock = stock - $1 WHERE product_id = $2 AND stock >= $1", 
-                    [item.quantity, item.product_id]
+                    "UPDATE ecom_products SET stock = stock - $1 WHERE product_id = $2 AND stock >= $1 AND tenant_id = $3", 
+                    [item.quantity, item.product_id, tenant_id]
                 );
                 if (stockUpdate.rowCount === 0) throw new Error(`Insufficient stock for Product ID: ${item.product_id}`);
             }
@@ -79,17 +87,16 @@ export async function POST(req) {
         const pStatus = (status === 'completed' || status === 'confirm' || !status) ? 'paid' : 'pending';
         
         await client.query(
-            `INSERT INTO payments (
-                order_id, payment_method, amount, amount_received, change_amount, payment_status, transaction_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)`, 
-            [orderId, paymentMethod, total, paid_amount, change_amount, pStatus, transactionId || null]
+            `INSERT INTO ecom_payments (
+                order_id, payment_method, amount, amount_received, change_amount, payment_status, transaction_id, tenant_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, 
+            [orderId, paymentMethod, total, paid_amount, change_amount, pStatus, transactionId || null, tenant_id]
         );
 
         await client.query('COMMIT');
         
-        const fullOrder = await getOrderDetails(client, orderId);
+        const fullOrder = await getOrderDetails(client, orderId, tenant_id);
 
-        // Use the imported NextResponse
         return NextResponse.json({ 
             success: true, 
             message: 'Order placed successfully', 
@@ -109,13 +116,19 @@ export async function POST(req) {
 export async function PUT(req) {
     const client = await pool.connect();
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
+
         const { orderId, action } = await req.json();
         await client.query('BEGIN');
 
         // 1. Fetch order info to decide if we need to restore stock
         const currentOrder = await client.query(
-            "SELECT status FROM orders WHERE order_id = $1", 
-            [orderId]
+            "SELECT status FROM ecom_orders WHERE order_id = $1 AND tenant_id = $2", 
+            [orderId, tenant_id]
         );
 
         if (currentOrder.rowCount === 0) throw new Error("Order not found");
@@ -123,19 +136,19 @@ export async function PUT(req) {
 
         // --- ACTION: CONFIRM (Move from pending to completed) ---
         if (action === 'confirm') {
-            const items = await client.query("SELECT product_id, quantity FROM order_items WHERE order_id = $1", [orderId]);
+            const items = await client.query("SELECT product_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
             for (const item of items.rows) {
                 const update = await client.query(
-                    "UPDATE products SET stock = stock - $1 WHERE product_id = $2 AND stock >= $1", 
-                    [item.quantity, item.product_id]
+                    "UPDATE ecom_products SET stock = stock - $1 WHERE product_id = $2 AND stock >= $1 AND tenant_id = $3", 
+                    [item.quantity, item.product_id, tenant_id]
                 );
                 if (update.rowCount === 0) throw new Error("Insufficient stock to confirm order");
             }
-            await client.query("UPDATE orders SET status = 'completed' WHERE order_id = $1", [orderId]);
-            await client.query("UPDATE payments SET payment_status = 'paid' WHERE order_id = $1", [orderId]);
+            await client.query("UPDATE ecom_orders SET status = 'completed' WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+            await client.query("UPDATE ecom_payments SET payment_status = 'paid' WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
             
             await client.query('COMMIT');
-            const fullOrder = await getOrderDetails(client, orderId);
+            const fullOrder = await getOrderDetails(client, orderId, tenant_id);
             return NextResponse.json({ success: true, message: 'Order confirmed', payload: fullOrder });
         }
         
@@ -145,14 +158,14 @@ export async function PUT(req) {
             
             // Only restore stock if it was previously deducted
             if (orderStatus === 'completed' || orderStatus === 'confirm') {
-                const items = await client.query("SELECT product_id, quantity FROM order_items WHERE order_id = $1", [orderId]);
+                const items = await client.query("SELECT product_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
                 for (const item of items.rows) {
-                    await client.query("UPDATE products SET stock = stock + $1 WHERE product_id = $2", [item.quantity, item.product_id]);
+                    await client.query("UPDATE ecom_products SET stock = stock + $1 WHERE product_id = $2 AND tenant_id = $3", [item.quantity, item.product_id, tenant_id]);
                 }
             }
 
-            await client.query("UPDATE orders SET status = 'returned' WHERE order_id = $1", [orderId]);
-            await client.query("UPDATE payments SET payment_status = 'refunded' WHERE order_id = $1", [orderId]);
+            await client.query("UPDATE ecom_orders SET status = 'returned' WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+            await client.query("UPDATE ecom_payments SET payment_status = 'refunded' WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
 
             await client.query('COMMIT');
             return NextResponse.json({ success: true, message: "Order marked as returned and stock restored" });
@@ -160,18 +173,18 @@ export async function PUT(req) {
 
         if (action === 'delete') {
             if (orderStatus === 'completed' || orderStatus === 'confirm') {
-                const items = await client.query("SELECT product_id, quantity FROM order_items WHERE order_id = $1", [orderId]);
+                const items = await client.query("SELECT product_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
                 for (const item of items.rows) {
                     await client.query(
-                        "UPDATE products SET stock = stock + $1 WHERE product_id = $2", 
-                        [item.quantity, item.product_id]
+                        "UPDATE ecom_products SET stock = stock + $1 WHERE product_id = $2 AND tenant_id = $3", 
+                        [item.quantity, item.product_id, tenant_id]
                     );
                 }
             }
 
-            await client.query("DELETE FROM order_items WHERE order_id = $1", [orderId]);
-            await client.query("DELETE FROM payments WHERE order_id = $1", [orderId]);
-            await client.query("DELETE FROM orders WHERE order_id = $1", [orderId]);
+            await client.query("DELETE FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+            await client.query("DELETE FROM ecom_payments WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+            await client.query("DELETE FROM ecom_orders WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
 
             await client.query('COMMIT');
             return NextResponse.json({ success: true, message: "Order deleted successfully" });
@@ -190,6 +203,11 @@ export async function PUT(req) {
 export async function GET() {
     const client = await pool.connect();
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
         const query = `
             SELECT 
                 o.order_id,
@@ -210,16 +228,17 @@ export async function GET() {
                     )
                 ) AS product_list,
                 SUM(oi.quantity) AS total_items_count
-            FROM orders o
-            JOIN customers c ON o.customer_id = c.customer_id
-            JOIN payments p ON o.order_id = p.order_id
-            JOIN order_items oi ON o.order_id = oi.order_id
-            JOIN products pr ON oi.product_id = pr.product_id
+            FROM ecom_orders o
+            JOIN ecom_customers c ON o.customer_id = c.customer_id AND o.tenant_id = c.tenant_id
+            JOIN ecom_payments p ON o.order_id = p.order_id AND o.tenant_id = p.tenant_id
+            JOIN ecom_order_items oi ON o.order_id = oi.order_id AND o.tenant_id = oi.tenant_id
+            JOIN ecom_products pr ON oi.product_id = pr.product_id AND o.tenant_id = pr.tenant_id
+            WHERE o.tenant_id = $1
             GROUP BY o.order_id, c.name, c.phone, p.payment_status, p.payment_method, o.created_at
             ORDER BY o.created_at DESC
         `;
 
-        const data = await client.query(query);
+        const data = await client.query(query, [tenant_id]);
         const result = data.rows;
 
         if (result.length <= 0) {

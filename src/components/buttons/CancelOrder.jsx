@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React from 'react'
 import { ImCancelCircle } from "react-icons/im";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 const CancelOrder = ({id}) => {
     const cancelOrder=async () => {
