@@ -12,7 +12,7 @@ export const metadata = {
 
 const PosLayout = async ({ children, }) => {
   const auth = await isUserLogin()
-  if (!auth.success || auth.payload.role==='user') return redirect('/access')
+  if (!auth.success || auth.payload.role==='user') return redirect('/login')
   return (
     <div className="w-full flex min-h-screen bg-slate-50 relative overflow-x-hidden">
       <DashboardSidebar />

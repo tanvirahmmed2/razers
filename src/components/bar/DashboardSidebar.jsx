@@ -47,7 +47,7 @@ const DashboardSidebar = () => {
     try {
       const response = await axios.get('/api/user/login', { withCredentials: true })
       toast.success(response.data.message)
-      window.location.replace('/access')
+      window.location.replace('/login')
     } catch (error) {
       console.log(error)
       toast.error(error?.response?.data?.message || 'Failed to logout')
@@ -169,6 +169,7 @@ const DashboardSidebar = () => {
             )}
             <MenuItem href="/dashboard/admin/analytics" icon={TbReportAnalytics} label="Business Analytics" isOpen={isOpen} />
             <MenuItem href="/dashboard/admin/rolemanagement" icon={RiUserAddLine} label="Role Management" isOpen={isOpen} />
+            <MenuItem href="/dashboard/admin/settings" icon={RiSettings3Line} label="Store Settings" isOpen={isOpen} />
             <MenuItem href="/dashboard/admin/activity-logs" icon={RiFileChartLine} label="Activity Logs" isOpen={isOpen} />
             
             <button 

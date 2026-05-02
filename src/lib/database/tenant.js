@@ -34,6 +34,13 @@ export async function getTenant(req) {
                 w.address as website_address,
                 w.meta_title,
                 w.meta_description,
+                w.facebook,
+                w.instagram,
+                w.linkedin,
+                w.youtube,
+                w.city,
+                w.country,
+                w.is_public,
                 s.status as subscription_status,
                 s.current_period_end as subscription_expires_at
             FROM tenants t

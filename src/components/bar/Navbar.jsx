@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
 
 const Navbar = () => {
-  const { userData, setUserData, cart } = useContext(Context)
+  const { userData, setUserData, cart, siteData } = useContext(Context)
   const pathname = usePathname()
 
   const isLoggedIn = userData && userData.user_id
@@ -38,10 +38,10 @@ const Navbar = () => {
         {/* Logo */}
         <Link href={'/'} className='flex items-center gap-2 group'>
           <div className='w-8 h-8 relative flex items-center justify-center transition-transform group-hover:scale-110'>
-            <Image src="/icon.png" alt="Nizam Varieties Store" width={32} height={32} className="object-contain" />
+            <Image src={siteData?.logo || "/icon.png"} alt={siteData?.website_name || "Logo"} width={32} height={32} className="object-contain" />
           </div>
           <span className='text-base font-black tracking-tight text-slate-900 uppercase hidden xs:block'>
-            Nizam Varieties Store
+            {siteData?.website_name || 'Nizam Varieties Store'}
           </span>
         </Link>
 

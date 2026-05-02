@@ -10,7 +10,7 @@ export async function POST(req) {
     }
     const tenant_id = website.tenant_id;
 
-    const { name } = await req.json()
+    const { name, parent_id } = await req.json()
 
     if (!name || name.trim() === '') {
       return NextResponse.json(
@@ -19,9 +19,11 @@ export async function POST(req) {
       )
     }
 
+    const parentId = parent_id ? parseInt(parent_id) : null;
+
     const existCat = await pool.query(
-      'SELECT 1 FROM ecom_categories WHERE name = $1 AND tenant_id = $2',
-      [name.trim(), tenant_id]
+      'SELECT 1 FROM ecom_categories WHERE name = $1 AND tenant_id = $2 AND (parent_id = $3 OR (parent_id IS NULL AND $3 IS NULL))',
+      [name.trim(), tenant_id, parentId]
     )
 
     if (existCat.rowCount > 0) {
@@ -32,8 +34,8 @@ export async function POST(req) {
     }
 
     const newCat = await pool.query(
-      'INSERT INTO ecom_categories(name, tenant_id) VALUES($1, $2) RETURNING *',
-      [name.trim(), tenant_id]
+      'INSERT INTO ecom_categories(name, parent_id, tenant_id) VALUES($1, $2, $3) RETURNING *',
+      [name.trim(), parentId, tenant_id]
     )
 
     return NextResponse.json(

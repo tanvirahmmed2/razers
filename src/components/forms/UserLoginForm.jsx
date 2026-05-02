@@ -24,7 +24,12 @@ const UserLoginForm = () => {
     try {
       const response = await axios.post('/api/user/login', formData, { withCredentials: true })
       toast.success(response.data.message)
-      window.location.replace('/profile')
+      const user = response.data.payload
+      if (user.role === 'admin' || user.role === 'manager' || user.role === 'sales') {
+        window.location.replace('/dashboard')
+      } else {
+        window.location.replace('/profile')
+      }
     } catch (error) {
       console.log(error)
       toast.error(error?.response?.data?.message || 'Failed to login')

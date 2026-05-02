@@ -169,13 +169,31 @@ const ContextProvider = ({ children, initialSiteData }) => {
     fetchUser()
   }, [])
 
+  const [variantTypes, setVariantTypes] = useState([])
+  const [variantValues, setVariantValues] = useState([])
+
+  const fetchVariantTypes = async () => {
+    try {
+      const response = await axios.get('/api/product/variant-type', { withCredentials: true })
+      setVariantTypes(response.data.payload || [])
+    } catch (error) { setVariantTypes([]) }
+  }
+
+  const fetchVariantValues = async () => {
+    try {
+      const response = await axios.get('/api/product/variant-value', { withCredentials: true })
+      setVariantValues(response.data.payload || [])
+    } catch (error) { setVariantValues([]) }
+  }
+
   useEffect(() => {
     fetchCategory()
     fetchCart()
     fetchBrand()
     fetchSupplier()
     fetchCustomer()
-
+    fetchVariantTypes()
+    fetchVariantValues()
   }, [])
 
   const [purchaseItems, setPurchaseItems] = useState([]);
@@ -202,17 +220,13 @@ const ContextProvider = ({ children, initialSiteData }) => {
     });
   };
 
-
-
   const removeFromPurchase = (productId) => {
     setPurchaseItems((prev) => prev.filter(item => item.product_id !== productId));
   };
 
-
   const clearPurchase = () => {
     setPurchaseItems([]);
   };
-
 
   return (
     <Context.Provider value={{
@@ -220,7 +234,8 @@ const ContextProvider = ({ children, initialSiteData }) => {
       isSupplierBox, setIsSupplierBox, fetchSupplier, suppliers, setSuppliers, setPurchaseItems,
       isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,fetchBrand, fetchCustomer, fetchSupplier,isDashboardSidebar, setIsDashboardSidebar,
       categories, fetchCategory, cart, setCart, fetchCart, addToCart, clearCart, removeFromCart, decreaseQuantity, clearPurchase,
-      siteData, setSiteData
+      siteData, setSiteData,
+      variantTypes, fetchVariantTypes, variantValues, fetchVariantValues
     }}>
       {children}
     </Context.Provider>

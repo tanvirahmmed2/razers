@@ -1,11 +1,13 @@
 'use client'
 import Image from 'next/image'
-import React from 'react'
+import React, { useContext } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ShoppingBag, ArrowRight } from 'lucide-react'
+import { Context } from '../helper/Context'
 
 const Intro = () => {
+    const { siteData } = useContext(Context)
     return (
         <section className='relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-900'>
             {/* Background Image with Overlay */}
@@ -33,10 +35,10 @@ const Intro = () => {
                         New Season Arrivals
                     </span>
                     <h1 className='text-5xl sm:text-7xl font-black text-white leading-none tracking-tighter uppercase'>
-                        Nizam <span className='text-primary'>Varieties Store</span>
+                        {siteData?.website_name || 'Nizam Varieties Store'}
                     </h1>
                     <p className='max-w-lg text-base sm:text-lg text-slate-300 font-medium leading-relaxed'>
-                        Discover an exclusive collection of premium products curated just for you. Quality meets variety at Nizam Varieties Store.
+                        Discover an exclusive collection of premium products curated just for you. Quality meets variety at {siteData?.website_name || 'Nizam Varieties Store'}.
                     </p>
                 </motion.div>
 

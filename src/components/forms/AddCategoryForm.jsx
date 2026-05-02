@@ -7,14 +7,15 @@ import { toast } from 'react-hot-toast';
 
 const AddCategoryForm = () => {
     const [category, setCategory] = useState('')
-    const { setIsCategoryBox, fetchCategory } = useContext(Context)
+    const [parentId, setParentId] = useState('')
+    const { setIsCategoryBox, fetchCategory, categories } = useContext(Context)
     const [isSubmitting, setIsSubmitting] = useState(false)
     
     const addNewCategory = async (e) => {
         e.preventDefault()
         setIsSubmitting(true)
         try {
-            const response = await axios.post('/api/category', { name: category }, { withCredentials: true })
+            const response = await axios.post('/api/category', { name: category, parent_id: parentId || null }, { withCredentials: true })
             toast.success(response.data.message)
             fetchCategory()
             setIsCategoryBox(false)
@@ -24,6 +25,8 @@ const AddCategoryForm = () => {
             setIsSubmitting(false)
         }
     }
+
+    const topLevelCategories = categories.filter(cat => !cat.parent_id);
 
     return (
         <form onSubmit={addNewCategory} className='flex flex-col w-full bg-white'>
@@ -53,6 +56,22 @@ const AddCategoryForm = () => {
                         onChange={(e) => setCategory(e.target.value)} 
                         className='w-full border border-slate-200 px-4 py-2.5 rounded-xl outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all text-sm font-medium text-slate-800 placeholder:text-slate-400' 
                     />
+                </div>
+
+                <div className='flex flex-col gap-1.5'>
+                    <label htmlFor="parentId" className='text-sm font-semibold text-slate-700'>Parent Category (Optional)</label>
+                    <select 
+                        id='parentId' 
+                        name='parentId' 
+                        value={parentId} 
+                        onChange={(e) => setParentId(e.target.value)} 
+                        className='w-full border border-slate-200 px-4 py-2.5 rounded-xl outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all text-sm font-medium text-slate-800'
+                    >
+                        <option value="">None (Top Level)</option>
+                        {topLevelCategories.map(cat => (
+                            <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 

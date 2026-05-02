@@ -9,7 +9,12 @@ export const metadata={
 
 const UserLoginLayout = async({children}) => {
     const auth= await isUserLogin()
-    if(auth.success) return redirect('/profile')
+    if (auth.success) {
+      if (auth.payload.role === 'admin' || auth.payload.role === 'manager' || auth.payload.role === 'sales') {
+        return redirect('/dashboard')
+      }
+      return redirect('/profile')
+    }
   return (
     <div className='w-full'>
       {children}

@@ -1,27 +1,32 @@
+'use client'
 import Link from 'next/link'
-import React from 'react'
 import FooterTagline from './FooterTagline'
 import Image from 'next/image';
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react'
+import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin } from 'lucide-react'
+import { Context } from '../helper/Context';
+import { useContext } from 'react';
 
 const Footer = () => {
+  const { siteData } = useContext(Context)
+
   return (
     <footer className='w-full bg-slate-900 text-slate-300 pt-12 px-4 border-t border-slate-800 pb-24'>
       <div className='max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-12'>
         <div className='flex flex-col gap-4'>
           <div className='flex items-center gap-2 mb-2'>
-            <Image src="/icon.png" alt="Logo" width={32} height={32} />
+            <Image src={siteData?.logo || "/icon.png"} alt="Logo" width={32} height={32} />
             <h2 className='text-xl font-bold text-white uppercase tracking-tighter'>
-              Nizam <span className='text-primary'>Varieties Store</span>
+              {siteData?.website_name || 'Nizam Varieties Store'}
             </h2>
           </div>
           <p className='text-sm leading-relaxed text-slate-400'>
-            Your one-stop shop for premium quality variety products. We bring excellence to your doorstep with every purchase.
+            {siteData?.meta_description || 'Your one-stop shop for premium quality variety products. We bring excellence to your doorstep with every purchase.'}
           </p>
           <div className='flex items-center gap-4 mt-2'>
-            <SocialIcon icon={<Facebook size={18} />} href='#' />
-            <SocialIcon icon={<Twitter size={18} />} href='#' />
-            <SocialIcon icon={<Instagram size={18} />} href='#' />
+            {siteData?.facebook && <SocialIcon icon={<Facebook size={18} />} href={siteData.facebook} />}
+            {siteData?.instagram && <SocialIcon icon={<Instagram size={18} />} href={siteData.instagram} />}
+            {siteData?.linkedin && <SocialIcon icon={<Linkedin size={18} />} href={siteData.linkedin} />}
+            {siteData?.youtube && <SocialIcon icon={<Youtube size={18} />} href={siteData.youtube} />}
           </div>
         </div>
 
@@ -40,9 +45,9 @@ const Footer = () => {
         </FooterColumn>
 
         <FooterColumn title='Contact Us'>
-          <ContactItem icon={<Mail size={16} />} text='support@nizamvarieties.com' />
-          <ContactItem icon={<Phone size={16} />} text='+880 1234-567890' />
-          <ContactItem icon={<MapPin size={16} />} text='Dhaka, Bangladesh' />
+          <ContactItem icon={<Mail size={16} />} text={siteData?.website_email || 'support@nizamvarieties.com'} />
+          <ContactItem icon={<Phone size={16} />} text={siteData?.website_phone || '+880 1234-567890'} />
+          <ContactItem icon={<MapPin size={16} />} text={`${siteData?.website_address || 'Dhaka'}, ${siteData?.city || ''} ${siteData?.country || ''}`} />
         </FooterColumn>
       </div>
       

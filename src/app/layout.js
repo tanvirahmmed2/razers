@@ -5,13 +5,25 @@ import { headers } from "next/headers";
 import { getTenant } from "@/lib/database/tenant";
 
 
-export const metadata = {
-  title: {
-    default: "Nizam Varieties Store",
-    template: "%s | Nizam Varieties Store",
-  },
-  description: "Nizam Varieties Store app",
-};
+export async function generateMetadata() {
+  const headersList = await headers();
+  const siteData = await getTenant({ headers: headersList });
+
+  const title = siteData?.meta_title || siteData?.website_name || "Nizam Varieties Store";
+  const description = siteData?.meta_description || "Premium Shopping Experience";
+
+  return {
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
+    description: description,
+    icons: {
+      icon: siteData?.favicon || "/icon.png",
+      apple: siteData?.logo || "/icon.png",
+    }
+  };
+}
 
 
 export default async function RootLayout({ children }) {
