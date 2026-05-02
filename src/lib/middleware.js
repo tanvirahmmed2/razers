@@ -52,6 +52,8 @@ export async function isAdmin() {
     return { success: true, payload: user };
 }
 
+
+
 export async function isManager() {
     const user = await getAuthenticatedUser();
     if (!user) return { success: false, message: 'Please login' };
