@@ -3,7 +3,7 @@ import AddBrandForm from '@/components/forms/AddBrandForm'
 import { Context } from '@/components/helper/Context'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
-import { RiAddLine, RiDeleteBinLine, RiArchiveLine } from 'react-icons/ri'
+import { RiAddLine, RiDeleteBinLine, RiArchiveLine, RiEdit2Line } from 'react-icons/ri'
 import { toast } from 'react-hot-toast'
 
 const BrandPage = () => {
@@ -72,7 +72,17 @@ const BrandPage = () => {
                     <td className='py-4 px-6 text-slate-600 text-sm'>
                       {brand.description || <span className="text-slate-400 italic">No description</span>}
                     </td>
-                    <td className='py-4 px-6 text-right'>
+                    <td className='py-4 px-6 text-right flex items-center justify-end gap-2'>
+                      <button 
+                        onClick={() => {
+                          setEditBrand(brand);
+                          setIsBrandBox(true);
+                        }}
+                        className='inline-flex items-center justify-center p-2 rounded-lg text-sky-500 hover:bg-sky-50 hover:text-sky-600 transition-colors'
+                        title="Edit Brand"
+                      >
+                        <RiEdit2Line size={18} /> 
+                      </button>
                       <button 
                         disabled={loadingId === brand.brand_id}
                         onClick={() => removeBrand(brand.brand_id)}

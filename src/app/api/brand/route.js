@@ -131,3 +131,44 @@ export async function DELETE(req) {
     )
   }
 }
+
+export async function PUT(req) {
+  try {
+    const website = await getTenant();
+    if (!website) {
+      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+    }
+    const tenant_id = website.tenant_id;
+
+    const { id, name, description } = await req.json();
+
+    if (!id || !name) {
+      return NextResponse.json(
+        { success: false, message: 'ID and Name are required' },
+        { status: 400 }
+      );
+    }
+
+    const result = await pool.query(
+      'UPDATE ecom_brands SET name = $1, description = $2, updated_at = now() WHERE brand_id = $3 AND tenant_id = $4 RETURNING *',
+      [name.trim(), description || null, id, tenant_id]
+    );
+
+    if (result.rowCount === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Brand not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'Successfully updated brand', data: result.rows[0] },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
+  }
+}

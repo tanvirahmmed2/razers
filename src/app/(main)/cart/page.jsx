@@ -55,6 +55,7 @@ const CartPage = () => {
       status: 'pending',
       items: cart.items.map(item => ({
         product_id: item.product_id,
+        variant_id: item.variant_id,
         quantity: item.quantity,
         price: item.sale_price
       }))
@@ -112,7 +113,7 @@ const CartPage = () => {
             <AnimatePresence mode='popLayout'>
               {cart.items.map((item) => (
                 <motion.div 
-                  key={item?.product_id}
+                  key={item?.cartItemId}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -10 }}
@@ -128,33 +129,40 @@ const CartPage = () => {
 
                   <div className='flex-1 text-center md:text-left'>
                     <h3 className='text-base font-bold text-slate-800 line-clamp-1'>{item?.name}</h3>
-                    <p className='text-xs font-medium text-slate-400 mt-1'>৳{parseFloat(item?.sale_price).toFixed(2)} / unit</p>
+                    {item?.variantName && (
+                      <div className='flex items-center justify-center md:justify-start gap-1.5 mt-1'>
+                        <span className='px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-wider rounded-md border border-primary/10'>
+                          {item.variantName}
+                        </span>
+                      </div>
+                    )}
+                    <p className='text-xs font-medium text-slate-400 mt-1.5'>৳{parseFloat(item?.sale_price).toFixed(2)} / unit</p>
                   </div>
 
                   <div className='flex flex-wrap items-center justify-center gap-4'>
-                    <div className='flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100'>
+                    <div className='flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100'>
                       <button
-                        onClick={() => decreaseQuantity(item?.product_id)}
-                        className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-primary transition-all active:scale-90'
+                        onClick={() => decreaseQuantity(item?.cartItemId)}
+                        className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90 shadow-sm'
                       >
                         <Minus size={14} />
                       </button>
-                      <span className='font-bold text-slate-800 min-w-[16px] text-center text-sm'>{item?.quantity}</span>
+                      <span className='font-bold text-slate-800 min-w-[20px] text-center text-sm'>{item?.quantity}</span>
                       <button
-                        onClick={() => addToCart(item)}
-                        className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-primary transition-all active:scale-90'
+                        onClick={() => increaseQuantity(item?.cartItemId)}
+                        className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-primary hover:bg-primary/5 transition-all active:scale-90 shadow-sm'
                       >
                         <Plus size={14} />
                       </button>
                     </div>
 
-                    <div className='text-right min-w-[80px]'>
-                      <p className='text-base font-black text-slate-900'>৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}</p>
+                    <div className='text-right min-w-[90px]'>
+                      <p className='text-base font-black text-slate-900 tracking-tight'>৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}</p>
                     </div>
 
                     <button
-                      onClick={() => removeFromCart(item?.product_id)}
-                      className='p-2.5 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90'
+                      onClick={() => removeFromCart(item?.cartItemId)}
+                      className='p-2.5 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90'
                     >
                       <Trash2 size={18} />
                     </button>

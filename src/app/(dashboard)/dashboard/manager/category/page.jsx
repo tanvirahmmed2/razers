@@ -3,11 +3,11 @@ import AddCategoryForm from '@/components/forms/AddCategoryForm'
 import { Context } from '@/components/helper/Context'
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
-import { RiAddLine, RiDeleteBinLine, RiArchiveLine } from 'react-icons/ri'
+import { RiAddLine, RiDeleteBinLine, RiArchiveLine, RiEdit2Line } from 'react-icons/ri'
 import { toast } from 'react-hot-toast'
 
 const CategoryPage = () => {
-  const { categories, fetchCategory, isCategoryBox, setIsCategoryBox } = useContext(Context)
+  const { categories, fetchCategory, isCategoryBox, setIsCategoryBox, setEditCategory } = useContext(Context)
   const [loadingId, setLoadingId] = useState(null)
 
   const removeCategory = async (id) => {
@@ -68,7 +68,17 @@ const CategoryPage = () => {
                     <td className='py-4 px-6'>
                       <span className='font-semibold text-slate-800'>{cat.name}</span>
                     </td>
-                    <td className='py-4 px-6 text-right'>
+                    <td className='py-4 px-6 text-right flex items-center justify-end gap-2'>
+                      <button 
+                        onClick={() => {
+                          setEditCategory(cat);
+                          setIsCategoryBox(true);
+                        }}
+                        className='inline-flex items-center justify-center p-2 rounded-lg text-sky-500 hover:bg-sky-50 hover:text-sky-600 transition-colors'
+                        title="Edit Category"
+                      >
+                        <RiEdit2Line size={18} />
+                      </button>
                       <button 
                         disabled={loadingId === cat.category_id}
                         onClick={() => removeCategory(cat.category_id)}

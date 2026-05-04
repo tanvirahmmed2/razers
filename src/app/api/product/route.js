@@ -16,17 +16,17 @@ export async function POST(req) {
         
         const name = formData.get("name");
         const description = formData.get('description');
-        const category_id = parseInt(formData.get('categoryId'));
-        const sub_category_id = formData.get('subCategoryId') ? parseInt(formData.get('subCategoryId')) : null;
-        const brand_id = formData.get('brandId') ? parseInt(formData.get('brandId')) : null;
+        const category_id = parseInt(formData.get('categoryId') || formData.get('category_id'));
+        const sub_category_id = null;
+        const brand_id = (formData.get('brandId') || formData.get('brand_id')) ? parseInt(formData.get('brandId') || formData.get('brand_id')) : null;
         const unit = formData.get('unit');
         const stock = parseFloat(formData.get('stock')) || 0;
-        const purchase_price = parseFloat(formData.get('purchasePrice')) || 0;
-        const sale_price = parseFloat(formData.get('salePrice')) || 0;
-        const discount_price = parseFloat(formData.get('discountPrice')) || 0;
-        const wholesale_price = parseFloat(formData.get('wholeSalePrice')) || 0;
-        const retail_price = parseFloat(formData.get('retailPrice')) || 0;
-        const dealer_price = parseFloat(formData.get('dealerPrice')) || 0;
+        const purchase_price = parseFloat(formData.get('purchasePrice') || formData.get('purchase_price')) || 0;
+        const sale_price = parseFloat(formData.get('salePrice') || formData.get('sale_price')) || 0;
+        const discount_price = parseFloat(formData.get('discountPrice') || formData.get('discount_price')) || 0;
+        const wholesale_price = parseFloat(formData.get('wholeSalePrice') || formData.get('wholesale_price')) || 0;
+        const retail_price = parseFloat(formData.get('retailPrice') || formData.get('retail_price')) || 0;
+        const dealer_price = parseFloat(formData.get('dealerPrice') || formData.get('dealer_price')) || 0;
         const imageFile = formData.get('image');
 
         if (!name || !category_id || !unit || isNaN(purchase_price) || isNaN(sale_price)) {
@@ -100,6 +100,7 @@ export async function POST(req) {
 
             // Handle Variants
             if (variants && variants.length > 0) {
+                console.log(`Processing ${variants.length} variants for product ${productId}`);
                 for (let i = 0; i < variants.length; i++) {
                     const variant = variants[i];
                     let variantImageUrl = null;
@@ -120,38 +121,73 @@ export async function POST(req) {
                         variantImageUrl = vCloud.secure_url;
                     }
 
+                    const vPrice = parseFloat(variant.price) || 0;
+                    const vStock = parseFloat(variant.stock) || 0;
+
                     const variantRes = await client.query(`
-                        INSERT INTO ecom_product_variants (product_id, sku, price, stock, image, tenant_id)
-                        VALUES ($1, $2, $3, $4, $5, $6)
+                        INSERT INTO ecom_product_variants (product_id, price, stock, image, tenant_id)
+                        VALUES ($1, $2, $3, $4, $5)
                         RETURNING variant_id
-                    `, [productId, variant.sku, variant.price, variant.stock, variantImageUrl, tenant_id]);
+                    `, [productId, vPrice, vStock, variantImageUrl, tenant_id]);
                     
                     const variantId = variantRes.rows[0].variant_id;
+                    console.log(`Created variant ${variantId} for product ${productId}`);
 
-                    if (variant.values && variant.values.length > 0) {
+                    if (variant.values && Array.isArray(variant.values) && variant.values.length > 0) {
                         for (const valueId of variant.values) {
                             await client.query(`
-                                INSERT INTO ecom_variant_combination (variant_id, variant_value_id, tenant_id)
-                                VALUES ($1, $2, $3)
-                            `, [variantId, valueId, tenant_id]);
+                                INSERT INTO ecom_variant_combination (product_id, variant_id, variant_value_id, tenant_id)
+                                VALUES ($1, $2, $3, $4)
+                            `, [productId, variantId, valueId, tenant_id]);
                         }
+                        console.log(`Added ${variant.values.length} combinations for variant ${variantId}`);
                     }
                 }
             }
 
+            // Fetch the final product with variants to return
+            const finalProduct = await client.query(`
+                SELECT p.*, c.name as category_name, b.name as brand_name 
+                FROM ecom_products p
+                LEFT JOIN ecom_categories c ON p.category_id = c.category_id
+                LEFT JOIN ecom_brands b ON p.brand_id = b.brand_id
+                WHERE p.product_id = $1 AND p.tenant_id = $2
+            `, [productId, tenant_id]);
+
+            const finalVariants = await client.query(`
+                SELECT 
+                    pv.*,
+                    COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type', vt.name, 'value', vv.value, 'value_id', vv.variant_value_id)) FILTER (WHERE vc.id IS NOT NULL), '[]'::json) as combinations
+                FROM ecom_product_variants pv
+                LEFT JOIN ecom_variant_combination vc ON pv.variant_id = vc.variant_id
+                LEFT JOIN ecom_variant_values vv ON vc.variant_value_id = vv.variant_value_id
+                LEFT JOIN ecom_variant_types vt ON vv.variant_type_id = vt.variant_type_id
+                WHERE pv.product_id = $1 AND pv.tenant_id = $2
+                GROUP BY pv.variant_id
+            `, [productId, tenant_id]);
+
+            const productWithVariants = {
+                ...finalProduct.rows[0],
+                variants: finalVariants.rows
+            };
+
             await client.query('COMMIT');
             return NextResponse.json({
-                success: true, message: `Successfully added product with ${variants.length} variants. Barcode: ${barcode}`
+                success: true, 
+                message: `Successfully added product with ${variants.length} variants. Barcode: ${barcode}`,
+                payload: productWithVariants
             }, { status: 201 });
 
         } catch (error) {
             await client.query('ROLLBACK');
+            console.error("Product POST Transaction Error:", error);
             throw error;
         } finally {
             client.release();
         }
 
     } catch (error) {
+        console.error("Product POST API Error:", error);
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 }
@@ -174,7 +210,14 @@ export async function GET(req) {
         const totalPages = Math.ceil(totalItems / limit);
 
         const data = await pool.query(
-            `SELECT * FROM ecom_products WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+            `SELECT 
+                p.*, 
+                (SELECT COUNT(*) FROM ecom_product_variants WHERE product_id = p.product_id AND tenant_id = $1) as variant_count,
+                (SELECT COALESCE(SUM(stock), 0) FROM ecom_product_variants WHERE product_id = p.product_id AND tenant_id = $1) as total_variant_stock
+             FROM ecom_products p 
+             WHERE p.tenant_id = $1 
+             ORDER BY p.created_at DESC 
+             LIMIT $2 OFFSET $3`,
             [tenant_id, limit, offset]
         );
 
@@ -285,19 +328,20 @@ export async function PUT(req) {
             return NextResponse.json({ success: false, message: 'Product ID is required' }, { status: 400 });
         }
 
+
         const description = formData.get('description');
-        const category_id = parseInt(formData.get('category_id'));
-        const sub_category_id = formData.get('sub_category_id') ? parseInt(formData.get('sub_category_id')) : null;
-        const brand_id = formData.get('brand_id') ? parseInt(formData.get('brand_id')) : null;
+        const category_id = parseInt(formData.get('categoryId') || formData.get('category_id'));
+        const sub_category_id = null;
+        const brand_id = (formData.get('brandId') || formData.get('brand_id')) ? parseInt(formData.get('brandId') || formData.get('brand_id')) : null;
         const barcode = formData.get('barcode');
         const unit = formData.get('unit');
         const stock = parseFloat(formData.get('stock')) || 0;
-        const purchase_price = parseFloat(formData.get('purchase_price')) || 0;
-        const sale_price = parseFloat(formData.get('sale_price')) || 0;
-        const discount_price = parseFloat(formData.get('discount_price')) || 0;
-        const wholesale_price = parseFloat(formData.get('wholesale_price')) || 0;
-        const retail_price = parseFloat(formData.get('retail_price')) || 0;
-        const dealer_price = parseFloat(formData.get('dealer_price')) || 0;
+        const purchase_price = parseFloat(formData.get('purchasePrice') || formData.get('purchase_price')) || 0;
+        const sale_price = parseFloat(formData.get('salePrice') || formData.get('sale_price')) || 0;
+        const discount_price = parseFloat(formData.get('discountPrice') || formData.get('discount_price')) || 0;
+        const wholesale_price = parseFloat(formData.get('wholeSalePrice') || formData.get('wholesale_price')) || 0;
+        const retail_price = parseFloat(formData.get('retailPrice') || formData.get('retail_price')) || 0;
+        const dealer_price = parseFloat(formData.get('dealerPrice') || formData.get('dealer_price')) || 0;
         
         const variantsData = formData.get('variants');
         const variants = variantsData ? JSON.parse(variantsData) : [];
@@ -409,39 +453,65 @@ export async function PUT(req) {
                 // Update
                 await client.query(`
                     UPDATE ecom_product_variants 
-                    SET sku = $1, price = $2, stock = $3, image = $4, updated_at = now()
-                    WHERE variant_id = $5 AND tenant_id = $6
-                `, [v.sku, v.price, v.stock, vImageUrl, v.variant_id, tenant_id]);
+                    SET price = $1, stock = $2, image = $3, updated_at = now()
+                    WHERE variant_id = $4 AND tenant_id = $5
+                `, [v.price, v.stock, vImageUrl, v.variant_id, tenant_id]);
 
                 // Update combinations (Delete and re-insert)
                 await client.query("DELETE FROM ecom_variant_combination WHERE variant_id = $1 AND tenant_id = $2", [v.variant_id, tenant_id]);
                 if (v.values && v.values.length > 0) {
                     for (const valueId of v.values) {
-                        await client.query("INSERT INTO ecom_variant_combination (variant_id, variant_value_id, tenant_id) VALUES ($1, $2, $3)", [v.variant_id, valueId, tenant_id]);
+                        await client.query("INSERT INTO ecom_variant_combination (product_id, variant_id, variant_value_id, tenant_id) VALUES ($1, $2, $3, $4)", [id, v.variant_id, valueId, tenant_id]);
                     }
                 }
             } else {
                 // Insert
                 const newV = await client.query(`
-                    INSERT INTO ecom_product_variants (product_id, sku, price, stock, image, tenant_id)
-                    VALUES ($1, $2, $3, $4, $5, $6)
+                    INSERT INTO ecom_product_variants (product_id, price, stock, image, tenant_id)
+                    VALUES ($1, $2, $3, $4, $5)
                     RETURNING variant_id
-                `, [id, v.sku, v.price, v.stock, vImageUrl, tenant_id]);
+                `, [id, v.price, v.stock, vImageUrl, tenant_id]);
                 const newVid = newV.rows[0].variant_id;
                 
                 if (v.values && v.values.length > 0) {
                     for (const valueId of v.values) {
-                        await client.query("INSERT INTO ecom_variant_combination (variant_id, variant_value_id, tenant_id) VALUES ($1, $2, $3)", [newVid, valueId, tenant_id]);
+                        await client.query("INSERT INTO ecom_variant_combination (product_id, variant_id, variant_value_id, tenant_id) VALUES ($1, $2, $3, $4)", [id, newVid, valueId, tenant_id]);
                     }
                 }
             }
         }
 
+        // Fetch the final product with variants to return
+        const finalProduct = await client.query(`
+            SELECT p.*, c.name as category_name, b.name as brand_name 
+            FROM ecom_products p
+            LEFT JOIN ecom_categories c ON p.category_id = c.category_id
+            LEFT JOIN ecom_brands b ON p.brand_id = b.brand_id
+            WHERE p.product_id = $1 AND p.tenant_id = $2
+        `, [id, tenant_id]);
+
+        const finalVariants = await client.query(`
+            SELECT 
+                pv.*,
+                COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type', vt.name, 'value', vv.value, 'value_id', vv.variant_value_id)) FILTER (WHERE vc.id IS NOT NULL), '[]'::json) as combinations
+            FROM ecom_product_variants pv
+            LEFT JOIN ecom_variant_combination vc ON pv.variant_id = vc.variant_id
+            LEFT JOIN ecom_variant_values vv ON vc.variant_value_id = vv.variant_value_id
+            LEFT JOIN ecom_variant_types vt ON vv.variant_type_id = vt.variant_type_id
+            WHERE pv.product_id = $1 AND pv.tenant_id = $2
+            GROUP BY pv.variant_id
+        `, [id, tenant_id]);
+
+        const productWithVariants = {
+            ...finalProduct.rows[0],
+            variants: finalVariants.rows
+        };
+
         await client.query('COMMIT');
         return NextResponse.json({
             success: true,
             message: 'Successfully updated product and variants',
-            payload: updatedProduct.rows[0]
+            payload: productWithVariants
         }, { status: 200 });
 
     } catch (error) {

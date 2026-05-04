@@ -21,13 +21,13 @@ const Intro = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
-        }, 4000)
+        }, 3000)
         return () => clearInterval(timer)
     }, [])
 
     return (
         <div className='w-full min-h-[80vh] grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-10 py-10 p-4 items-center'>
-            
+
             <div className='w-full overflow-hidden col-span-1 md:col-span-2 lg:col-span-4 order-1 md:order-2 relative aspect-video md:aspect-auto md:h-[600px] rounded-3xl'>
                 <AnimatePresence mode='wait'>
                     <motion.div
@@ -35,7 +35,7 @@ const Intro = () => {
                         initial={{ x: 300, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -300, opacity: 0 }}
-                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                         className='absolute inset-0 w-full h-full'
                     >
                         <Image
@@ -47,12 +47,12 @@ const Intro = () => {
                         />
                     </motion.div>
                 </AnimatePresence>
-                
+
                 <div className='absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10'>
                     {images.map((_, i) => (
-                        <div 
-                            key={i} 
-                            className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/40'}`} 
+                        <div
+                            key={i}
+                            className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/40'}`}
                         />
                     ))}
                 </div>

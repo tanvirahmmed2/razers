@@ -97,10 +97,10 @@ const UpdateProductForm = ({ product }) => {
             const variantsToSubmit = variants.map(v => ({
                 variant_id: v.variant_id || null,
                 sku: v.sku,
-                price: parseFloat(v.price),
-                stock: parseInt(v.stock),
+                price: parseFloat(v.price) || 0,
+                stock: parseFloat(v.stock) || 0,
                 image: typeof v.image === 'string' ? v.image : null, // Keep existing image URL if not a new file
-                values: v.values.map(val => typeof val === 'object' ? val.value_id : val)
+                values: (v.values || []).map(val => typeof val === 'object' ? val.value_id : val)
             }))
             data.append('variants', JSON.stringify(variantsToSubmit))
 
@@ -152,45 +152,47 @@ const UpdateProductForm = ({ product }) => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                     <div className='flex flex-col gap-1.5'>
                         <label htmlFor="category_id" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Category *</label>
-                        <select name='category_id' id='category_id' required value={formData.category_id} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm'>
+                        <select 
+                            name='category_id' 
+                            id='category_id' 
+                            required 
+                            value={formData.category_id} 
+                            onChange={(e) => setFormData({ ...formData, category_id: e.target.value })} 
+                            className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm appearance-none'
+                        >
                             <option value="">Select Category</option>
-                            {mainCategories.map((category) => (
-                                <option value={category.category_id} key={category.category_id}>{category.name}</option>
-                            ))}
+                            {categories.map((cat) => {
+                                const isSub = !!cat.parent_id;
+                                return (
+                                    <option value={cat.category_id} key={cat.category_id}>
+                                        {isSub ? `↳ ${cat.name}` : cat.name}
+                                    </option>
+                                );
+                            })}
                         </select>
                     </div>
-                    <div className='flex flex-col gap-1.5'>
-                        <label htmlFor="sub_category_id" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Sub Category</label>
-                        <select name='sub_category_id' id='sub_category_id' value={formData.sub_category_id} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm' disabled={!formData.category_id}>
-                            <option value="">Select Sub Category</option>
-                            {subCategories.map((category) => (
-                                <option value={category.category_id} key={category.category_id}>{category.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                     <div className='flex flex-col gap-1.5'>
                         <label htmlFor="brand_id" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Brand</label>
-                        <select name='brand_id' id='brand_id' value={formData.brand_id} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm'>
+                        <select name='brand_id' id='brand_id' value={formData.brand_id} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm appearance-none'>
                             <option value="">Select Brand</option>
                             {brands.map((brand) => (
                                 <option value={brand.brand_id} key={brand.brand_id}>{brand.name}</option>
                             ))}
                         </select>
                     </div>
-                    <div className='flex flex-col gap-1.5'>
-                        <label htmlFor="unit" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Unit *</label>
-                        <input type="text" name='unit' id='unit' required value={formData.unit} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm' />
-                    </div>
                 </div>
 
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                     <div className='flex flex-col gap-1.5'>
+                        <label htmlFor="unit" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Unit *</label>
+                        <input type="text" name='unit' id='unit' required value={formData.unit} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm' />
+                    </div>
+                    <div className='flex flex-col gap-1.5'>
                         <label htmlFor="barcode" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Barcode *</label>
                         <input type="text" name='barcode' id='barcode' required value={formData.barcode} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm' />
                     </div>
+                </div>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                     <div className='flex flex-col gap-1.5'>
                         <label htmlFor="stock" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Stock *</label>
                         <input type="number" step="0.01" name='stock' id='stock' required value={formData.stock} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm' />
@@ -248,11 +250,7 @@ const UpdateProductForm = ({ product }) => {
                                     <button type='button' onClick={() => removeVariant(i)} className='text-rose-500 hover:text-rose-600 text-xs font-bold'>Remove</button>
                                 </div>
                                 
-                                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                                    <div className='flex flex-col gap-1'>
-                                        <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>SKU / Barcode</label>
-                                        <input type="text" value={v.sku} onChange={(e) => handleVariantChange(i, 'sku', e.target.value)} className='w-full border border-slate-200 bg-white px-3 py-2 rounded-lg outline-none focus:border-primary text-xs' placeholder='v-sku-001' />
-                                    </div>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                     <div className='flex flex-col gap-1'>
                                         <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>Price (৳)</label>
                                         <input type="number" value={v.price} onChange={(e) => handleVariantChange(i, 'price', e.target.value)} className='w-full border border-slate-200 bg-white px-3 py-2 rounded-lg outline-none focus:border-primary text-xs' placeholder='0.00' />

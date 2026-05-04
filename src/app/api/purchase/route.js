@@ -59,9 +59,16 @@ export async function POST(req) {
         // 4. Loop Items: Insert & Update Stock
         for (const item of items) {
             await client.query(
-                "INSERT INTO ecom_purchase_items (purchase_id, product_id, quantity, purchase_price, tenant_id) VALUES ($1, $2, $3, $4, $5)",
-                [purchaseId, item.product_id, item.quantity, Number(item.purchase_price), tenant_id]
+                "INSERT INTO ecom_purchase_items (purchase_id, product_id, variant_id, quantity, purchase_price, tenant_id) VALUES ($1, $2, $3, $4, $5, $6)",
+                [purchaseId, item.product_id, item.variant_id || null, item.quantity, Number(item.purchase_price), tenant_id]
             );
+
+            if (item.variant_id) {
+                await client.query(
+                    "UPDATE ecom_product_variants SET stock = stock + $1, price = $2 WHERE variant_id = $3 AND tenant_id = $4",
+                    [item.quantity, Number(item.purchase_price), item.variant_id, tenant_id]
+                );
+            }
 
             await client.query(
                 "UPDATE ecom_products SET stock = stock + $1, purchase_price = $2 WHERE product_id = $3 AND tenant_id = $4",
@@ -147,10 +154,16 @@ export async function DELETE(req) {
         await client.query('BEGIN');
 
         // 1. Get items to revert stock
-        const itemsRes = await client.query("SELECT product_id, quantity FROM ecom_purchase_items WHERE purchase_id = $1 AND tenant_id = $2", [id, tenant_id]);
+        const itemsRes = await client.query("SELECT product_id, variant_id, quantity FROM ecom_purchase_items WHERE purchase_id = $1 AND tenant_id = $2", [id, tenant_id]);
 
         // 2. Revert Stock
         for (const item of itemsRes.rows) {
+            if (item.variant_id) {
+                await client.query(
+                    "UPDATE ecom_product_variants SET stock = stock - $1 WHERE variant_id = $2 AND tenant_id = $3",
+                    [item.quantity, item.variant_id, tenant_id]
+                );
+            }
             await client.query(
                 "UPDATE ecom_products SET stock = stock - $1 WHERE product_id = $2 AND tenant_id = $3",
                 [item.quantity, item.product_id, tenant_id]

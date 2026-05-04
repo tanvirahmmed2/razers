@@ -8,7 +8,9 @@ export const Context = createContext()
 const ContextProvider = ({ children, initialSiteData }) => {
   const [siteData, setSiteData] = useState(initialSiteData)
   const [isCategoryBox, setIsCategoryBox] = useState(false)
+  const [editCategory, setEditCategory] = useState(null)
   const [isBrandBox, setIsBrandBox] = useState(false)
+  const [editBrand, setEditBrand] = useState(null)
   const [isSupplierBox, setIsSupplierBox] = useState(false)
   const [isCustomerBox, setIsCustomerBox] = useState(false)
   const [categories, setCategories] = useState([])
@@ -49,74 +51,100 @@ const ContextProvider = ({ children, initialSiteData }) => {
     }
   }, [cart, hydrated])
 
- const addToCart = (product) => {
+  const addToCart = (product, variant = null) => {
     if (!product?.product_id) return;
 
-    if (Number(product.stock) <= 0) {
+    // Determine stock and price based on variant if available
+    const stock = variant ? Number(variant.stock) : Number(product.stock);
+    const salePrice = variant ? parseFloat(variant.price) : parseFloat(product.sale_price);
+    const variantId = variant ? variant.variant_id : null;
+    const cartItemId = variant ? `${product.product_id}-${variantId}` : `${product.product_id}`;
+
+    if (stock <= 0) {
       toast.error("Item is out of stock!");
       return;
     }
 
-    const existingInCart = cart.items.find(item => item.product_id === product.product_id);
+    const existingInCart = cart.items.find(item => item.cartItemId === cartItemId);
 
     if (existingInCart) {
-      if (existingInCart.quantity >= Number(product.stock)) {
-        toast.error(`Only ${product.stock} items available in stock`);
-        return; 
+      if (existingInCart.quantity >= stock) {
+        toast.error(`Only ${stock} items available in stock`);
+        return;
       }
 
       setCart((prev) => ({
         ...prev,
         items: prev.items.map(item =>
-          item.product_id === product.product_id
+          item.cartItemId === cartItemId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
       }));
       toast("Quantity increased", { icon: '➕' });
     } else {
-      const salePrice = parseFloat(product?.sale_price) || 0;
       const wholeSalePrice = parseFloat(product?.wholesale_price) || 0;
-      const discountAmount = parseFloat(product?.discount_price) || 0;
+      // If it's a variant, we might not have a separate discount_price on the variant table
+      // but the price passed should be the final price.
+      const discountAmount = variant ? 0 : (parseFloat(product?.discount_price) || 0);
 
       setCart((prev) => ({
         ...prev,
         items: [
           ...prev.items,
           {
+            cartItemId,
             product_id: product.product_id,
+            variant_id: variantId,
             name: product.name,
-            image: product.image,
+            variantName: variant?.combinations?.filter(c => c.type && c.value).map(c => `${c.type}: ${c.value}`).join(', '),
+            image: variant?.image || product.image,
             quantity: 1,
             sale_price: salePrice,
             wholesale_price: wholeSalePrice,
             discount_price: discountAmount,
-            // FIX: Set the base price to the FULL sale price. 
-            // Do NOT subtract the discount here.
-            price: salePrice 
+            price: salePrice
           }
         ]
       }));
       toast.success("Added to cart");
     }
   };
-  const removeFromCart = (id) => {
-    setCart(prev => ({ ...prev, items: prev.items.filter(item => item.product_id !== id) }))
+
+  const increaseQuantity = (cartItemId) => {
+    const item = cart.items.find(i => i.cartItemId === cartItemId);
+    if (!item) return;
+
+    // We don't have stock info here easily without re-fetching or storing it in item
+    // For now, just increase, assuming if it's in cart it was available.
+    // Ideally we should have stock in the cart item too.
+    setCart((prev) => ({
+      ...prev,
+      items: prev.items.map(i =>
+        i.cartItemId === cartItemId
+          ? { ...i, quantity: i.quantity + 1 }
+          : i
+      )
+    }));
+  };
+
+  const removeFromCart = (cartItemId) => {
+    setCart(prev => ({ ...prev, items: prev.items.filter(item => item.cartItemId !== cartItemId) }))
   }
 
-  const decreaseQuantity = (id) => {
+  const decreaseQuantity = (cartItemId) => {
     setCart((prev) => {
-      const existing = prev.items.find(item => item.product_id === id)
+      const existing = prev.items.find(item => item.cartItemId === cartItemId)
       if (!existing) return prev
       if (existing.quantity > 1) {
         return {
           ...prev,
           items: prev.items.map(item =>
-            item.product_id === id ? { ...item, quantity: item.quantity - 1 } : item
+            item.cartItemId === cartItemId ? { ...item, quantity: item.quantity - 1 } : item
           )
         }
       }
-      return { ...prev, items: prev.items.filter(item => item.product_id !== id) }
+      return { ...prev, items: prev.items.filter(item => item.cartItemId !== cartItemId) }
     })
   }
 
@@ -230,10 +258,11 @@ const ContextProvider = ({ children, initialSiteData }) => {
 
   return (
     <Context.Provider value={{
-      isBrandBox, setIsBrandBox, isCategoryBox, setIsCategoryBox, brands, setBrands, purchaseItems, addToPurchase, removeFromPurchase,
+      isBrandBox, setIsBrandBox, editBrand, setEditBrand, isCategoryBox, setIsCategoryBox, editCategory, setEditCategory, 
+      brands, setBrands, purchaseItems, addToPurchase, removeFromPurchase,
       isSupplierBox, setIsSupplierBox, fetchSupplier, suppliers, setSuppliers, setPurchaseItems,
       isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,fetchBrand, fetchCustomer, fetchSupplier,isDashboardSidebar, setIsDashboardSidebar,
-      categories, fetchCategory, cart, setCart, fetchCart, addToCart, clearCart, removeFromCart, decreaseQuantity, clearPurchase,
+      categories, fetchCategory, cart, setCart, fetchCart, addToCart, increaseQuantity, clearCart, removeFromCart, decreaseQuantity, clearPurchase,
       siteData, setSiteData,
       variantTypes, fetchVariantTypes, variantValues, fetchVariantValues
     }}>

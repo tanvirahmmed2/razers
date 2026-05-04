@@ -390,58 +390,55 @@ CREATE TABLE ecom_refunds (
 
 CREATE TABLE ecom_variant_types (
   variant_type_id SERIAL PRIMARY KEY,
-  tenant_id INT REFERENCES tenants(tenant_id),
+  tenant_id INT REFERENCES tenants(tenant_id) ON DELETE CASCADE,
 
-  name VARCHAR(50) NOT NULL, -- e.g. Size, Color
+  name VARCHAR(50) NOT NULL, -- Size, Color, Material
 
   created_at TIMESTAMP DEFAULT now()
 );
 
+
 CREATE TABLE ecom_variant_values (
   variant_value_id SERIAL PRIMARY KEY,
-  tenant_id INT REFERENCES tenants(tenant_id),
+  tenant_id INT REFERENCES tenants(tenant_id) ON DELETE CASCADE,
 
-  variant_type_id INT REFERENCES ecom_variant_types(variant_type_id),
+  variant_type_id INT REFERENCES ecom_variant_types(variant_type_id) ON DELETE CASCADE,
 
-  value VARCHAR(50) NOT NULL, -- e.g. "M", "Red"
+  value VARCHAR(50) NOT NULL,
 
   created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE ecom_product_variants (
   variant_id SERIAL PRIMARY KEY,
-  tenant_id INT REFERENCES tenants(tenant_id),
+  tenant_id INT REFERENCES tenants(tenant_id) ON DELETE CASCADE,
 
   product_id INT REFERENCES ecom_products(product_id) ON DELETE CASCADE,
 
-  sku VARCHAR(100) UNIQUE,
   price NUMERIC(10,2),
   stock INT DEFAULT 0,
-
   image TEXT,
 
   created_at TIMESTAMP DEFAULT now(),
   updated_at TIMESTAMP DEFAULT now()
 );
 
-
 CREATE TABLE ecom_variant_combination (
   id SERIAL PRIMARY KEY,
-  tenant_id INT REFERENCES tenants(tenant_id),
+  tenant_id INT REFERENCES tenants(tenant_id) ON DELETE CASCADE,
 
+  product_id INT REFERENCES ecom_products(product_id) ON DELETE CASCADE,
   variant_id INT REFERENCES ecom_product_variants(variant_id) ON DELETE CASCADE,
-  variant_value_id INT REFERENCES ecom_variant_values(variant_value_id),
+  variant_value_id INT REFERENCES ecom_variant_values(variant_value_id) ON DELETE CASCADE,
+
+  created_at TIMESTAMP DEFAULT now(),
 
   UNIQUE (variant_id, variant_value_id)
 );
 
-
--- ensures same SKU combination not repeated
-CREATE UNIQUE INDEX idx_unique_variant_combination
-ON ecom_variant_combination (variant_id, variant_value_id);
-
+CREATE UNIQUE INDEX ecom_unique_product_variant_combo
+ON ecom_variant_combination (product_id, variant_id, variant_value_id);
 ALTER TABLE ecom_order_items
 ADD COLUMN variant_id INT REFERENCES ecom_product_variants(variant_id);
-
 ALTER TABLE ecom_purchase_items
 ADD COLUMN variant_id INT REFERENCES ecom_product_variants(variant_id);

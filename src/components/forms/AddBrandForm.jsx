@@ -1,46 +1,66 @@
-'use client'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { RiCloseLine } from 'react-icons/ri'
 import { Context } from '../helper/Context'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
 const AddBrandForm = () => {
+    const { setIsBrandBox, fetchBrand, editBrand, setEditBrand } = useContext(Context)
     const [formData, setFormData] = useState({
         name: '',
         description: ''
     })
-    const { setIsBrandBox, fetchBrand } = useContext(Context)
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    useEffect(() => {
+        if (editBrand) {
+            setFormData({
+                name: editBrand.name,
+                description: editBrand.description || ''
+            })
+        }
+    }, [editBrand])
 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
+
+    const closeBox = () => {
+        setIsBrandBox(false)
+        setEditBrand(null)
+    }
     
-    const addNewBrand = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         setIsSubmitting(true)
         try {
-            const response = await axios.post('/api/brand', formData, { withCredentials: true })
-            toast.success(response.data.message)
+            if (editBrand) {
+                const response = await axios.put('/api/brand', { id: editBrand.brand_id, ...formData }, { withCredentials: true })
+                toast.success(response.data.message)
+            } else {
+                const response = await axios.post('/api/brand', formData, { withCredentials: true })
+                toast.success(response.data.message)
+            }
             fetchBrand()
-            setIsBrandBox(false)
+            closeBox()
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Failed to add brand")
+            toast.error(error?.response?.data?.message || "Failed to save brand")
         } finally {
             setIsSubmitting(false)
         }
     }
 
     return (
-        <form onSubmit={addNewBrand} className='flex flex-col w-full bg-white'>
+        <form onSubmit={handleSubmit} className='flex flex-col w-full bg-white'>
             {/* Header */}
             <div className='flex items-center justify-between p-6 border-b border-slate-100'>
-                <h2 className='text-lg font-bold text-slate-800 tracking-tight'>Add New Brand</h2>
+                <h2 className='text-lg font-bold text-slate-800 tracking-tight'>
+                    {editBrand ? 'Edit Brand' : 'Add New Brand'}
+                </h2>
                 <button 
                     type='button' 
-                    onClick={() => setIsBrandBox(false)} 
+                    onClick={closeBox} 
                     className='p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors'
                 >
                     <RiCloseLine size={24} />
@@ -81,7 +101,7 @@ const AddBrandForm = () => {
             <div className='p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3'>
                 <button 
                     type='button' 
-                    onClick={() => setIsBrandBox(false)}
+                    onClick={closeBox}
                     className='px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200 bg-slate-200/50 rounded-xl transition-colors'
                 >
                     Cancel
@@ -91,7 +111,7 @@ const AddBrandForm = () => {
                     type='submit' 
                     className='px-6 py-2.5 text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 rounded-xl transition-colors shadow-sm shadow-sky-200 disabled:opacity-50 flex items-center gap-2'
                 >
-                    {isSubmitting ? 'Saving...' : 'Save Brand'}
+                    {isSubmitting ? 'Saving...' : (editBrand ? 'Update Brand' : 'Save Brand')}
                 </button>
             </div>
         </form>

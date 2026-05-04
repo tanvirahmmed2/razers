@@ -1,9 +1,16 @@
 import { pool } from "@/lib/database/db";
+import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
     const client = await pool.connect();
     try {
+        const website = await getTenant();
+        if (!website) {
+            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+        }
+        const tenant_id = website.tenant_id;
+
         const { customerName, phone, items, subtotal, discount, total, paymentMethod, transactionId } = await req.json();
 
         if (!phone) throw new Error("Phone number is required");
@@ -11,8 +18,8 @@ export async function POST(req) {
         await client.query('BEGIN');
         let customer_id;
         const customerCheck = await client.query(
-            "SELECT customer_id FROM customers WHERE phone = $1",
-            [phone]
+            "SELECT customer_id FROM ecom_customers WHERE phone = $1 AND tenant_id = $2",
+            [phone, tenant_id]
         );
 
         if (customerCheck.rows.length > 0) {
@@ -20,33 +27,32 @@ export async function POST(req) {
         } else {
             // Create a new guest customer record
             const newCustomer = await client.query(
-                "INSERT INTO customers (name, phone) VALUES ($1, $2) RETURNING customer_id",
-                [customerName || 'Guest Customer', phone]
+                "INSERT INTO ecom_customers (name, phone, tenant_id) VALUES ($1, $2, $3) RETURNING customer_id",
+                [customerName || 'Guest Customer', phone, tenant_id]
             );
             customer_id = newCustomer.rows[0].customer_id;
         }
 
         // 2. Insert Order (Force status to 'pending')
         const orderRes = await client.query(
-            `INSERT INTO orders (customer_id, phone, subtotal_amount, total_discount_amount, total_amount, status) 
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING order_id`,
-            [customer_id, phone, subtotal, discount, total, 'pending']
+            `INSERT INTO ecom_orders (customer_id, phone, subtotal_amount, total_discount_amount, total_amount, status, tenant_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING order_id`,
+            [customer_id, phone, subtotal, discount, total, 'pending', tenant_id]
         );
         const orderId = orderRes.rows[0].order_id;
 
         // 3. Insert Order Items
-        // Note: Stock is NOT deducted because status is 'pending'
         for (const item of items) {
             await client.query(
-                "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)",
-                [orderId, item.product_id, item.quantity, item.price]
+                "INSERT INTO ecom_order_items (order_id, product_id, variant_id, quantity, price, tenant_id) VALUES ($1, $2, $3, $4, $5, $6)",
+                [orderId, item.product_id, item.variant_id || null, item.quantity, item.price, tenant_id]
             );
         }
 
         // 4. Insert Payment (Force status to 'pending')
         await client.query(
-            "INSERT INTO payments (order_id, payment_method, amount, payment_status, transaction_id) VALUES ($1, $2, $3, $4, $5)",
-            [orderId, paymentMethod, total, 'pending', transactionId || null]
+            "INSERT INTO ecom_payments (order_id, payment_method, amount, payment_status, transaction_id, tenant_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            [orderId, paymentMethod, total, 'pending', transactionId || null, tenant_id]
         );
 
         await client.query('COMMIT');
@@ -59,8 +65,9 @@ export async function POST(req) {
 
     } catch (error) {
         await client.query('ROLLBACK');
+        console.error("Order Error:", error);
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     } finally {
         client.release();
     }
-}
+}

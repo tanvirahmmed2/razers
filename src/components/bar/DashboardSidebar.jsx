@@ -87,7 +87,6 @@ const DashboardSidebar = () => {
       
       <aside className={`select-none fixed top-0 left-0 z-[100] text-slate-300 bg-slate-900 h-screen transition-transform duration-300 flex flex-col py-4 overflow-y-auto custom-scrollbar border-r border-slate-800 w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-center h-12 mb-6 px-2">
-        <Image src={'/icon.png'} width={80} height={80} alt='icon'/>
       </div>
 
       <div className="pb-4 border-b border-slate-800 mb-2">
@@ -95,7 +94,6 @@ const DashboardSidebar = () => {
       </div>
 
       <div className="flex flex-col gap-1">
-        {/* SALES ROLE SECTION */}
         {(role === 'sales') && (
           <>
             {(isOpen) && (

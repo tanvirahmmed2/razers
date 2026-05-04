@@ -116,7 +116,7 @@ const ProductListPage = () => {
                             </div>
 
                             <div className="col-span-1 flex justify-end items-center gap-0.5">
-                                <Link href={`/dashboard/products/${item.slug}`} className='p-2 text-slate-400 hover:text-primary hover:bg-sky-50 rounded-lg transition-all'>
+                                <Link href={`/dashboard/manager/products/${item.slug}`} className='p-2 text-slate-400 hover:text-primary hover:bg-sky-50 rounded-lg transition-all'>
                                     <MdEdit size={16} />
                                 </Link>
                                 <button onClick={() => handleDelete(item.product_id)} className='p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all'>

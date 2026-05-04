@@ -1,73 +1,54 @@
-
-import AddtoCart from '@/components/buttons/AddtoCart'
-import SameCategory from '@/components/page/SameCatgory'
-import { BASE_URL } from '@/lib/database/secret'
-import Image from 'next/image'
 import React from 'react'
+import ProductDetails from '@/components/page/ProductDetails'
+import SameCategory from '@/components/page/SameCategory'
+import { getTenant } from '@/lib/database/tenant'
+import { pool } from '@/lib/database/db'
 
 const SingleProduct = async ({ params }) => {
   const { slug } = await params
+  const website = await getTenant()
+  
+  if (!website) return <div>Store not found</div>
+  const tenant_id = website.tenant_id
 
-  const res = await fetch(`${BASE_URL}/api/product/${slug}`, { method: "GET", cache: 'no-store' })
-  const data = await res.json()
-  const product = data.payload?.[0]
-  if (!product) return <p>No data found</p>
-  return (
-    <div className='w-full min-h-screen flex flex-col gap-20 items-center justify-center  rounded-2xl'>
-      <div className='w-full md:w-5/6 lg:w-3/4 mx-auto flex flex-col lg:flex-row gap-8 bg-white m-6 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100'>
+  const productRes = await pool.query(`
+      SELECT p.*, c.category_id, c.name as category_name, b.name as brand_name 
+      FROM ecom_products p
+      LEFT JOIN ecom_categories c ON p.category_id = c.category_id
+      LEFT JOIN ecom_brands b ON p.brand_id = b.brand_id
+      WHERE p.slug = $1 AND p.tenant_id = $2
+  `, [slug, tenant_id]);
 
-        <div className='relative w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-100'>
-          <div className='absolute right-3 top-3 z-10'>
-            {product.stock > 0 ? (
-              <span className='text-[12px] font-bold uppercase tracking-wider text-white py-1.5 px-3 rounded-full bg-emerald-500'>
-                Available
-              </span>
-            ) : (
-              <span className='text-[12px] font-bold uppercase tracking-wider text-white py-1.5 px-3 rounded-full bg-orange-500 '>
-                Out of Stock
-              </span>
-            )}
-          </div>
-          <Image
-            src={product?.image}
-            alt={product?.name}
-            width={1000}
-            height={1000}
-            className="object-cover w-full   transition-transform duration-500 group-hover:scale-105"
-          />
-        </div>
+  let product = productRes.rows[0];
 
+  if (product) {
+      const variantsRes = await pool.query(`
+          SELECT 
+              pv.*,
+              COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type', vt.name, 'value', vv.value, 'value_id', vv.variant_value_id)) FILTER (WHERE vc.id IS NOT NULL), '[]'::json) as combinations
+          FROM ecom_product_variants pv
+          LEFT JOIN ecom_variant_combination vc ON pv.variant_id = vc.variant_id
+          LEFT JOIN ecom_variant_values vv ON vc.variant_value_id = vv.variant_value_id
+          LEFT JOIN ecom_variant_types vt ON vv.variant_type_id = vt.variant_type_id
+          WHERE pv.product_id = $1 AND pv.tenant_id = $2
+          GROUP BY pv.variant_id
+      `, [product.product_id, tenant_id]);
+      product.variants = variantsRes.rows;
+  }
 
-        <div className=' w-full flex flex-col justify-center py-2'>
-          <div className="space-y-4">
-            <h1 className='text-base md:text-xl  font-bold text-slate-900 leading-tight'>
-              {product.name}
-            </h1>
-
-            <div className='w-full flex flex-row items-center justify-between font-semibold'>
-              <p>Category: {product.category_name}</p>
-              {product.stock > 0 && <p>Stock: {product.stock}</p>}
-
-            </div>
-            {
-              product?.discount_price > 0 ? <div>
-                <p className='text-red-400 line-through'>BDT {product.sale_price}</p>
-                <p className='font-semibold text-xl'>BDT {product?.sale_price - product?.discount_price}</p>
-              </div> : <p className='font-semibold text-xl'>BDT {product.sale_price}</p>
-            }
-
-
-            <div className="pt-4 border-t border-slate-100">
-              <AddtoCart product={product} />
-            </div>
-
-            <p className='text-slate-600 leading-relaxed'>
-              {product.description}
-            </p>
-          </div>
-        </div>
+  if (!product) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <h1 className="text-4xl font-bold text-slate-800">404</h1>
+        <p className="text-sm text-slate-400">The product you are looking for does not exist for this store.</p>
       </div>
-      <SameCategory category={product?.category_id}/>
+    )
+  }
+
+  return (
+    <div className='w-full min-h-screen flex flex-col gap-20 items-center justify-center rounded-2xl'>
+      <ProductDetails product={product} />
+      <SameCategory category={product?.category_id} />
     </div>
   )
 }

@@ -12,6 +12,7 @@ const AddProductForm = () => {
         name: '',
         barcode: '',
         categoryId: '',
+        subCategoryId: '',
         brandId: '',
         unit: '',
         stock: '',
@@ -36,7 +37,6 @@ const AddProductForm = () => {
         }
     }
 
-    // Filter categories to get main categories (no parent) and sub-categories
     const mainCategories = categories?.filter(cat => !cat.parent_id) || [];
     const subCategories = categories?.filter(cat => cat.parent_id && cat.parent_id === parseInt(formData.categoryId)) || [];
 
@@ -84,8 +84,8 @@ const AddProductForm = () => {
             // Add Variants (Simplified)
             const variantsToSubmit = variants.map(v => ({
                 sku: v.sku,
-                price: parseFloat(v.price),
-                stock: parseInt(v.stock),
+                price: parseFloat(v.price) || 0,
+                stock: parseFloat(v.stock) || 0,
                 values: v.values
             }))
             newData.append('variants', JSON.stringify(variantsToSubmit))
@@ -155,31 +155,31 @@ const AddProductForm = () => {
                     <div className='flex items-end gap-2'>
                         <div className='flex-1 flex flex-col gap-1.5'>
                             <label htmlFor="categoryId" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Category *</label>
-                            <select name='categoryId' id='categoryId' required value={formData.categoryId} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm appearance-none'>
+                            <select 
+                                name='categoryId' 
+                                id='categoryId' 
+                                required 
+                                value={formData.categoryId} 
+                                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} 
+                                className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm appearance-none'
+                            >
                                 <option value="">Select Category</option>
-                                {mainCategories.map((cat) => (
-                                    <option value={cat.category_id} key={cat.category_id}>{cat.name}</option>
-                                ))}
+                                {categories.map((cat) => {
+                                    const isSub = !!cat.parent_id;
+                                    return (
+                                        <option value={cat.category_id} key={cat.category_id}>
+                                            {isSub ? `↳ ${cat.name}` : cat.name}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
                         <button type='button' className='h-[42px] px-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-primary hover:text-white transition-all text-xs' onClick={() => setIsCategoryBox(true)}>Add</button>
                     </div>
 
-                    <div className='flex items-end gap-2'>
-                        <div className='flex-1 flex flex-col gap-1.5'>
-                            <label htmlFor="subCategoryId" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Sub Category</label>
-                            <select name='subCategoryId' id='subCategoryId' value={formData.subCategoryId} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-2.5 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm appearance-none' disabled={!formData.categoryId}>
-                                <option value="">Select Sub Category</option>
-                                {subCategories.map((cat) => (
-                                    <option value={cat.category_id} key={cat.category_id}>{cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <button type='button' className='h-[42px] px-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-primary hover:text-white transition-all text-xs' onClick={() => setIsCategoryBox(true)}>Add</button>
-                    </div>
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                     <div className='flex items-end gap-2'>
                         <div className='flex-1 flex flex-col gap-1.5'>
                             <label htmlFor="brandId" className='text-xs font-bold text-slate-500 uppercase tracking-wider ml-1'>Brand</label>
@@ -273,11 +273,7 @@ const AddProductForm = () => {
                                     <button type='button' onClick={() => removeVariant(i)} className='text-rose-500 hover:text-rose-600 text-xs font-bold'>Remove</button>
                                 </div>
                                 
-                                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                                    <div className='flex flex-col gap-1'>
-                                        <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>SKU / Barcode</label>
-                                        <input type="text" value={v.sku} onChange={(e) => handleVariantChange(i, 'sku', e.target.value)} className='w-full border border-slate-200 bg-white px-3 py-2 rounded-lg outline-none focus:border-primary text-xs' placeholder='v-sku-001' />
-                                    </div>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                     <div className='flex flex-col gap-1'>
                                         <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>Price (৳)</label>
                                         <input type="number" value={v.price} onChange={(e) => handleVariantChange(i, 'price', e.target.value)} className='w-full border border-slate-200 bg-white px-3 py-2 rounded-lg outline-none focus:border-primary text-xs' placeholder='0.00' />

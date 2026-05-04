@@ -85,6 +85,49 @@ export async function GET() {
     }
 }
 
+export async function PUT(req) {
+  try {
+    const website = await getTenant();
+    if (!website) {
+      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
+    }
+    const tenant_id = website.tenant_id;
+
+    const { id, name, parent_id } = await req.json();
+
+    if (!id || !name) {
+      return NextResponse.json(
+        { success: false, message: 'ID and Name are required' },
+        { status: 400 }
+      );
+    }
+
+    const parentId = parent_id ? parseInt(parent_id) : null;
+
+    const result = await pool.query(
+      'UPDATE ecom_categories SET name = $1, parent_id = $2 WHERE category_id = $3 AND tenant_id = $4 RETURNING *',
+      [name.trim(), parentId, id, tenant_id]
+    );
+
+    if (result.rowCount === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Category not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'Successfully updated category', data: result.rows[0] },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req) {
     try {
         const website = await getTenant();
