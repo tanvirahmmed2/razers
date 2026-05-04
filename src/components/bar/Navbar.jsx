@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import React, { useContext } from 'react'
 import Image from 'next/image';
-import { SearchIcon, ShoppingCart, User, Tag, Package, ShoppingBag, Settings, LogOut } from 'lucide-react';
+import { SearchIcon, ShoppingCart, User, Tag, Package, ShoppingBag, Settings, LogOut, HomeIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Context } from '../helper/Context';
 import axios from 'axios';
@@ -35,24 +35,23 @@ const Navbar = () => {
       className='w-full fixed top-0 left-0 right-0 z-50'
     >
       <nav className='w-full flex flex-row items-center justify-between h-14 px-4 bg-white border-b-2 border-slate-100 shadow-sm'>
-        {/* Logo */}
+       
         <Link href={'/'} className='flex items-center gap-2 group'>
-          
+
           <span className='text-2xl font-black tracking-tight text-slate-900 uppercase '>
-            {siteData?.website_name }
+            {siteData?.website_name}
           </span>
         </Link>
-
-        {/* Center Nav Links */}
+        <div className='hidden md:flex items-center justify-center w-auto gap-0.5'>
+          <NavLink href='/' icon={<HomeIcon size={16} />} label='Home' active={pathname === '/'} />
+          <NavLink href='/offers' icon={<Tag size={16} />} label='Offers' active={pathname === '/offers'} />
+          <NavLink href='/products' icon={<Package size={16} />} label='Products' active={pathname === '/products'} />
+        </div>
         <div className='flex flex-row items-center gap-1 sm:gap-3'>
-          <div className='hidden md:flex items-center gap-0.5'>
-            <NavLink href='/offers' icon={<Tag size={16} />} label='Offers' active={pathname === '/offers'} />
-            <NavLink href='/products' icon={<Package size={16} />} label='Products' active={pathname === '/products'} />
-          </div>
 
-          {/* Right side actions */}
+
           <div className='flex items-center gap-1.5 sm:gap-2'>
-            {/* Search */}
+
             <Link
               href={'/search'}
               className='p-2 rounded-full hover:bg-sky-50 text-slate-600 transition-colors'
@@ -98,11 +97,10 @@ const Navbar = () => {
 const NavLink = ({ href, icon, label, active }) => (
   <Link
     href={href}
-    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition-all text-sm ${
-      active
+    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition-all text-sm ${active
         ? 'text-black bg-slate-100 font-bold'
         : 'text-slate-600 hover:text-black hover:bg-slate-50'
-    }`}
+      }`}
   >
     {icon}
     <span>{label}</span>
