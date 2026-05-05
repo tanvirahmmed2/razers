@@ -44,8 +44,7 @@ export async function POST(req) {
             barcode = maxCode ? (Number(maxCode) + 1).toString() : "10001";
         }
 
-        const variantsData = formData.get('variants');
-        const variants = variantsData ? JSON.parse(variantsData) : [];
+        const computedStock = parseFloat(formData.get('stock')) || 0;
 
         const client = await pool.connect();
         try {
@@ -90,7 +89,7 @@ export async function POST(req) {
 
             const values = [
                 name, description, category_id, sub_category_id, brand_id, slug, barcode, unit,
-                stock, purchase_price, sale_price, discount_price,
+                computedStock, purchase_price, sale_price, discount_price,
                 wholesale_price, retail_price, dealer_price, 
                 cloudImage.secure_url, cloudImage.public_id, tenant_id
             ];
@@ -98,54 +97,7 @@ export async function POST(req) {
             const newProduct = await client.query(query, values);
             const productId = newProduct.rows[0].product_id;
 
-            // Handle Variants
-            if (variants && variants.length > 0) {
-                console.log(`Processing ${variants.length} variants for product ${productId}`);
-                for (let i = 0; i < variants.length; i++) {
-                    const variant = variants[i];
-                    let variantImageUrl = null;
-                    
-                    const variantImageFile = formData.get(`variantImage_${i}`);
-                    if (variantImageFile && typeof variantImageFile !== 'string') {
-                        const vBuffer = Buffer.from(await variantImageFile.arrayBuffer());
-                        const vCloud = await new Promise((resolve, reject) => {
-                            const vStream = cloudinary.uploader.upload_stream(
-                                { folder: `tenant_${tenant_id}/variants` },
-                                (err, result) => {
-                                    if (err) reject(err);
-                                    else resolve(result);
-                                }
-                            );
-                            vStream.end(vBuffer);
-                        });
-                        variantImageUrl = vCloud.secure_url;
-                    }
-
-                    const vPrice = parseFloat(variant.price) || 0;
-                    const vStock = parseFloat(variant.stock) || 0;
-
-                    const variantRes = await client.query(`
-                        INSERT INTO ecom_product_variants (product_id, price, stock, image, tenant_id)
-                        VALUES ($1, $2, $3, $4, $5)
-                        RETURNING variant_id
-                    `, [productId, vPrice, vStock, variantImageUrl, tenant_id]);
-                    
-                    const variantId = variantRes.rows[0].variant_id;
-                    console.log(`Created variant ${variantId} for product ${productId}`);
-
-                    if (variant.values && Array.isArray(variant.values) && variant.values.length > 0) {
-                        for (const valueId of variant.values) {
-                            await client.query(`
-                                INSERT INTO ecom_variant_combination (product_id, variant_id, variant_value_id, tenant_id)
-                                VALUES ($1, $2, $3, $4)
-                            `, [productId, variantId, valueId, tenant_id]);
-                        }
-                        console.log(`Added ${variant.values.length} combinations for variant ${variantId}`);
-                    }
-                }
-            }
-
-            // Fetch the final product with variants to return
+            // Fetch the final product to return
             const finalProduct = await client.query(`
                 SELECT p.*, c.name as category_name, b.name as brand_name 
                 FROM ecom_products p
@@ -154,28 +106,13 @@ export async function POST(req) {
                 WHERE p.product_id = $1 AND p.tenant_id = $2
             `, [productId, tenant_id]);
 
-            const finalVariants = await client.query(`
-                SELECT 
-                    pv.*,
-                    COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type', vt.name, 'value', vv.value, 'value_id', vv.variant_value_id)) FILTER (WHERE vc.id IS NOT NULL), '[]'::json) as combinations
-                FROM ecom_product_variants pv
-                LEFT JOIN ecom_variant_combination vc ON pv.variant_id = vc.variant_id
-                LEFT JOIN ecom_variant_values vv ON vc.variant_value_id = vv.variant_value_id
-                LEFT JOIN ecom_variant_types vt ON vv.variant_type_id = vt.variant_type_id
-                WHERE pv.product_id = $1 AND pv.tenant_id = $2
-                GROUP BY pv.variant_id
-            `, [productId, tenant_id]);
-
-            const productWithVariants = {
-                ...finalProduct.rows[0],
-                variants: finalVariants.rows
-            };
+            const productToReturn = finalProduct.rows[0];
 
             await client.query('COMMIT');
             return NextResponse.json({
                 success: true, 
-                message: `Successfully added product with ${variants.length} variants. Barcode: ${barcode}`,
-                payload: productWithVariants
+                message: `Successfully added product. Barcode: ${barcode}`,
+                payload: productToReturn
             }, { status: 201 });
 
         } catch (error) {
@@ -211,9 +148,7 @@ export async function GET(req) {
 
         const data = await pool.query(
             `SELECT 
-                p.*, 
-                (SELECT COUNT(*) FROM ecom_product_variants WHERE product_id = p.product_id AND tenant_id = $1) as variant_count,
-                (SELECT COALESCE(SUM(stock), 0) FROM ecom_product_variants WHERE product_id = p.product_id AND tenant_id = $1) as total_variant_stock
+                p.*
              FROM ecom_products p 
              WHERE p.tenant_id = $1 
              ORDER BY p.created_at DESC 
@@ -343,8 +278,7 @@ export async function PUT(req) {
         const retail_price = parseFloat(formData.get('retailPrice') || formData.get('retail_price')) || 0;
         const dealer_price = parseFloat(formData.get('dealerPrice') || formData.get('dealer_price')) || 0;
         
-        const variantsData = formData.get('variants');
-        const variants = variantsData ? JSON.parse(variantsData) : [];
+        const computedStock = parseFloat(formData.get('stock')) || 0;
 
         await client.query('BEGIN');
 
@@ -394,7 +328,7 @@ export async function PUT(req) {
 
         const values = [
             name, description, category_id, sub_category_id, brand_id, slug, barcode, unit,
-            stock, purchase_price, sale_price, discount_price,
+            computedStock, purchase_price, sale_price, discount_price,
             wholesale_price, retail_price, dealer_price
         ];
 
@@ -413,75 +347,7 @@ export async function PUT(req) {
             return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
         }
 
-        // --- Variant Sync Logic ---
-        const currentVariants = await client.query("SELECT variant_id FROM ecom_product_variants WHERE product_id = $1 AND tenant_id = $2", [id, tenant_id]);
-        const currentVariantIds = currentVariants.rows.map(r => r.variant_id);
-        const incomingVariantIds = variants.filter(v => v.variant_id).map(v => v.variant_id);
-
-        // 1. Delete removed variants
-        const toDelete = currentVariantIds.filter(vid => !incomingVariantIds.includes(vid));
-        for (const vid of toDelete) {
-            // Check if variant is in orders before deleting
-            const orderCheck = await client.query("SELECT order_item_id FROM ecom_order_items WHERE variant_id = $1 LIMIT 1", [vid]);
-            if (orderCheck.rowCount === 0) {
-                await client.query("DELETE FROM ecom_product_variants WHERE variant_id = $1 AND tenant_id = $2", [vid, tenant_id]);
-            }
-        }
-
-        // 2. Update/Insert variants
-        for (let i = 0; i < variants.length; i++) {
-            const v = variants[i];
-            let vImageUrl = v.image;
-
-            // Handle variant image upload if a file is provided
-            const vImageFile = formData.get(`variantImage_${i}`);
-            if (vImageFile && typeof vImageFile !== 'string') {
-                const vBuffer = Buffer.from(await vImageFile.arrayBuffer());
-                const vCloud = await new Promise((resolve, reject) => {
-                    cloudinary.uploader.upload_stream(
-                        { folder: `tenant_${tenant_id}/variants` },
-                        (err, result) => {
-                            if (err) reject(err);
-                            else resolve(result);
-                        }
-                    ).end(vBuffer);
-                });
-                vImageUrl = vCloud.secure_url;
-            }
-
-            if (v.variant_id) {
-                // Update
-                await client.query(`
-                    UPDATE ecom_product_variants 
-                    SET price = $1, stock = $2, image = $3, updated_at = now()
-                    WHERE variant_id = $4 AND tenant_id = $5
-                `, [v.price, v.stock, vImageUrl, v.variant_id, tenant_id]);
-
-                // Update combinations (Delete and re-insert)
-                await client.query("DELETE FROM ecom_variant_combination WHERE variant_id = $1 AND tenant_id = $2", [v.variant_id, tenant_id]);
-                if (v.values && v.values.length > 0) {
-                    for (const valueId of v.values) {
-                        await client.query("INSERT INTO ecom_variant_combination (product_id, variant_id, variant_value_id, tenant_id) VALUES ($1, $2, $3, $4)", [id, v.variant_id, valueId, tenant_id]);
-                    }
-                }
-            } else {
-                // Insert
-                const newV = await client.query(`
-                    INSERT INTO ecom_product_variants (product_id, price, stock, image, tenant_id)
-                    VALUES ($1, $2, $3, $4, $5)
-                    RETURNING variant_id
-                `, [id, v.price, v.stock, vImageUrl, tenant_id]);
-                const newVid = newV.rows[0].variant_id;
-                
-                if (v.values && v.values.length > 0) {
-                    for (const valueId of v.values) {
-                        await client.query("INSERT INTO ecom_variant_combination (product_id, variant_id, variant_value_id, tenant_id) VALUES ($1, $2, $3, $4)", [id, newVid, valueId, tenant_id]);
-                    }
-                }
-            }
-        }
-
-        // Fetch the final product with variants to return
+        // Fetch the final product to return
         const finalProduct = await client.query(`
             SELECT p.*, c.name as category_name, b.name as brand_name 
             FROM ecom_products p
@@ -490,28 +356,13 @@ export async function PUT(req) {
             WHERE p.product_id = $1 AND p.tenant_id = $2
         `, [id, tenant_id]);
 
-        const finalVariants = await client.query(`
-            SELECT 
-                pv.*,
-                COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type', vt.name, 'value', vv.value, 'value_id', vv.variant_value_id)) FILTER (WHERE vc.id IS NOT NULL), '[]'::json) as combinations
-            FROM ecom_product_variants pv
-            LEFT JOIN ecom_variant_combination vc ON pv.variant_id = vc.variant_id
-            LEFT JOIN ecom_variant_values vv ON vc.variant_value_id = vv.variant_value_id
-            LEFT JOIN ecom_variant_types vt ON vv.variant_type_id = vt.variant_type_id
-            WHERE pv.product_id = $1 AND pv.tenant_id = $2
-            GROUP BY pv.variant_id
-        `, [id, tenant_id]);
-
-        const productWithVariants = {
-            ...finalProduct.rows[0],
-            variants: finalVariants.rows
-        };
+        const productToReturn = finalProduct.rows[0];
 
         await client.query('COMMIT');
         return NextResponse.json({
             success: true,
-            message: 'Successfully updated product and variants',
-            payload: productWithVariants
+            message: 'Successfully updated product',
+            payload: productToReturn
         }, { status: 200 });
 
     } catch (error) {

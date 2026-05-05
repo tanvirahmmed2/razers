@@ -55,7 +55,6 @@ const CartPage = () => {
       status: 'pending',
       items: cart.items.map(item => ({
         product_id: item.product_id,
-        variant_id: item.variant_id,
         quantity: item.quantity,
         price: item.sale_price
       }))
@@ -129,13 +128,7 @@ const CartPage = () => {
 
                   <div className='flex-1 text-center md:text-left'>
                     <h3 className='text-base font-bold text-slate-800 line-clamp-1'>{item?.name}</h3>
-                    {item?.variantName && (
-                      <div className='flex items-center justify-center md:justify-start gap-1.5 mt-1'>
-                        <span className='px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-wider rounded-md border border-primary/10'>
-                          {item.variantName}
-                        </span>
-                      </div>
-                    )}
+
                     <p className='text-xs font-medium text-slate-400 mt-1.5'>৳{parseFloat(item?.sale_price).toFixed(2)} / unit</p>
                   </div>
 

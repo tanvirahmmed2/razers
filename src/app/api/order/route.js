@@ -14,7 +14,6 @@ async function getOrderDetails(client, orderId, tenantId) {
         JOIN ecom_payments p ON o.order_id = p.order_id AND o.tenant_id = p.tenant_id
         JOIN ecom_order_items oi ON o.order_id = oi.order_id AND o.tenant_id = oi.tenant_id
         JOIN ecom_products pr ON oi.product_id = pr.product_id AND o.tenant_id = pr.tenant_id
-        LEFT JOIN ecom_product_variants pv ON oi.variant_id = pv.variant_id
         WHERE o.order_id = $1 AND o.tenant_id = $2
         GROUP BY o.order_id, c.name, p.payment_method, p.payment_status, p.amount_received, p.change_amount, p.amount
     `, [orderId, tenantId]);
@@ -71,19 +70,11 @@ export async function POST(req) {
         // Process Items and Stock
         for (const item of items) {
             await client.query(
-                "INSERT INTO ecom_order_items (order_id, product_id, variant_id, quantity, price, tenant_id) VALUES ($1, $2, $3, $4, $5, $6)", 
-                [orderId, item.product_id, item.variant_id || null, item.quantity, item.price, tenant_id]
+                "INSERT INTO ecom_order_items (order_id, product_id, quantity, price, tenant_id) VALUES ($1, $2, $3, $4, $5)", 
+                [orderId, item.product_id, item.quantity, item.price, tenant_id]
             );
 
             if (status === 'completed' || status === 'confirm' || !status) {
-                if (item.variant_id) {
-                    const vUpdate = await client.query(
-                        "UPDATE ecom_product_variants SET stock = stock - $1 WHERE variant_id = $2 AND stock >= $1 AND tenant_id = $3",
-                        [item.quantity, item.variant_id, tenant_id]
-                    );
-                    if (vUpdate.rowCount === 0) throw new Error(`Insufficient stock for Variant ID: ${item.variant_id}`);
-                }
-                
                 const stockUpdate = await client.query(
                     "UPDATE ecom_products SET stock = stock - $1 WHERE product_id = $2 AND stock >= $1 AND tenant_id = $3", 
                     [item.quantity, item.product_id, tenant_id]
@@ -145,15 +136,8 @@ export async function PUT(req) {
 
         // --- ACTION: CONFIRM (Move from pending to completed) ---
         if (action === 'confirm') {
-            const items = await client.query("SELECT product_id, variant_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+            const items = await client.query("SELECT product_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
             for (const item of items.rows) {
-                if (item.variant_id) {
-                    const vUpdate = await client.query(
-                        "UPDATE ecom_product_variants SET stock = stock - $1 WHERE variant_id = $2 AND stock >= $1 AND tenant_id = $3",
-                        [item.quantity, item.variant_id, tenant_id]
-                    );
-                    if (vUpdate.rowCount === 0) throw new Error("Insufficient variant stock to confirm order");
-                }
                 const update = await client.query(
                     "UPDATE ecom_products SET stock = stock - $1 WHERE product_id = $2 AND stock >= $1 AND tenant_id = $3", 
                     [item.quantity, item.product_id, tenant_id]
@@ -174,11 +158,8 @@ export async function PUT(req) {
             
             // Only restore stock if it was previously deducted
             if (orderStatus === 'completed' || orderStatus === 'confirm') {
-                const items = await client.query("SELECT product_id, variant_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+                const items = await client.query("SELECT product_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
                 for (const item of items.rows) {
-                    if (item.variant_id) {
-                        await client.query("UPDATE ecom_product_variants SET stock = stock + $1 WHERE variant_id = $2 AND tenant_id = $3", [item.quantity, item.variant_id, tenant_id]);
-                    }
                     await client.query("UPDATE ecom_products SET stock = stock + $1 WHERE product_id = $2 AND tenant_id = $3", [item.quantity, item.product_id, tenant_id]);
                 }
             }
@@ -192,11 +173,8 @@ export async function PUT(req) {
 
         if (action === 'delete') {
             if (orderStatus === 'completed' || orderStatus === 'confirm') {
-                const items = await client.query("SELECT product_id, variant_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
+                const items = await client.query("SELECT product_id, quantity FROM ecom_order_items WHERE order_id = $1 AND tenant_id = $2", [orderId, tenant_id]);
                 for (const item of items.rows) {
-                    if (item.variant_id) {
-                        await client.query("UPDATE ecom_product_variants SET stock = stock + $1 WHERE variant_id = $2 AND tenant_id = $3", [item.quantity, item.variant_id, tenant_id]);
-                    }
                     await client.query(
                         "UPDATE ecom_products SET stock = stock + $1 WHERE product_id = $2 AND tenant_id = $3", 
                         [item.quantity, item.product_id, tenant_id]

@@ -4,83 +4,110 @@ import { motion } from 'framer-motion'
 import React, { useContext } from 'react'
 import Image from 'next/image'
 import { Context } from '../helper/Context'
-import { ShoppingCart, Eye } from 'lucide-react'
+import { ShoppingCart, ArrowRight } from 'lucide-react'
 
 const Item = ({ product }) => {
   const { addToCart } = useContext(Context)
-  const currentPrice = product?.discount_price > 0 
-    ? product.sale_price - product.discount_price 
-    : product.sale_price;
+
+  const currentPrice =
+    product?.discount_price > 0
+      ? product.sale_price - product.discount_price
+      : product.sale_price
+
+  const isNew = product?.is_new ?? true
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      transition={{ duration: 0.4 }} 
-      className='group relative bg-white rounded-2xl p-2 border border-slate-100 hover:border-primary/20 hover:shadow-lg transition-all duration-300 flex flex-col gap-3'
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
+      className="group relative w-full"
     >
-      {/* Image Container */}
-      <div className='relative w-full aspect-square overflow-hidden rounded-xl bg-slate-50'>
-        {product?.discount_price > 0 && (
-          <div className='absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full'>
+      {/* ── Image box ── */}
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/4' }}>
+
+        {/* Badge */}
+        {product?.discount_price > 0 ? (
+          <div className="absolute top-3 left-4 z-20 bg-sky-500 text-white text-[11px] font-bold px-3 py-1 rounded-sm select-none">
             -{Math.round((product.discount_price / product.sale_price) * 100)}%
           </div>
-        )}
-        
-        <Link href={`/products/${product.slug}`} className='block w-full h-full overflow-hidden'>
-          <Image 
-            src={`${product?.image}`} 
-            alt={product?.name} 
-            width={400} 
-            height={400} 
-            className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105' 
+        ) : isNew ? (
+          <div className="absolute top-3 left-4 z-20 bg-sky-500 text-white text-[11px] font-bold px-3 py-1 rounded-sm select-none">
+            New
+          </div>
+        ) : null}
+
+        {/* Product image */}
+        <Link href={`/products/${product.slug}`} className="block w-full h-full">
+          <Image
+            src={product?.image || '/placeholder.jpg'}
+            alt={product?.name || 'Product'}
+            width={400}
+            height={400}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
 
-        {/* Hover Actions */}
-        <div className='absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2'>
-          <Link 
-            href={`/products/${product.slug}`}
-            className='w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-800 hover:bg-primary hover:text-white transition-all shadow-sm'
-          >
-            <Eye size={16} />
-          </Link>
-          <button 
-            onClick={() => addToCart(product)}
-            className='w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-800 hover:bg-primary hover:text-white transition-all shadow-sm'
-          >
-            <ShoppingCart size={16} />
-          </button>
+        {/* ── Slide-up action panel ── */}
+        <div
+          className="
+            absolute bottom-0 left-0 right-0 h-24
+            bg-white
+            translate-y-full group-hover:translate-y-0
+            transition-transform duration-500 ease-in-out
+            z-10
+            border-l border-r border-b border-gray-200
+          "
+        >
+          <ul className="h-full flex flex-col items-end justify-center gap-2 px-3 font-sans">
+
+            {/* Add to Cart */}
+            <li
+              onClick={() => addToCart(product)}
+              className="
+                w-full flex items-center justify-end gap-2
+                text-[13px] text-gray-500 hover:text-sky-500
+                border-b border-gray-100 hover:border-sky-400
+                pb-1.5 cursor-pointer transition-colors duration-200
+              "
+            >
+              Add to Cart
+              <ShoppingCart size={14} />
+            </li>
+
+            {/* View Details */}
+            <li className="
+              w-full flex items-center justify-end gap-2
+              text-[13px] text-gray-500 hover:text-sky-500
+              border-b border-gray-100 hover:border-sky-400
+              pb-1.5 cursor-pointer transition-colors duration-200
+            ">
+              <Link href={`/products/${product.slug}`} className="flex items-center gap-2 w-full justify-end">
+                View Details
+                <ArrowRight size={14} />
+              </Link>
+            </li>
+
+          </ul>
         </div>
       </div>
 
-      {/* Content */}
-      <div className='flex flex-col gap-0.5 px-0.5'>
-        <Link href={`/products/${product.slug}`}>
-          <h3 className='text-xs font-bold text-slate-800 line-clamp-1 group-hover:text-primary transition-colors'>
-            {product?.name}
-          </h3>
-        </Link>
-        
-        <div className='flex items-center justify-between mt-1'>
-          <div className='flex flex-col'>
-            {product?.discount_price > 0 && (
-              <span className='text-[9px] text-slate-400 line-through leading-none'>
-                ৳{product.sale_price}
-              </span>
-            )}
-            <span className='text-base font-black text-slate-900 leading-tight'>
-              ৳{currentPrice}
-            </span>
-          </div>
-          
-          <button 
-            onClick={() => addToCart(product)}
-            className='p-2 rounded-lg bg-sky-50 text-primary hover:bg-primary hover:text-white transition-all active:scale-95 shadow-sm'
-          >
-            <ShoppingCart size={16} />
-          </button>
+      {/* ── Info box ── */}
+      <div className="w-full py-4 px-3 border border-t-0 border-gray-200 flex flex-col gap-1">
+        <div className="flex items-center justify-between font-sans">
+          <Link href={`/products/${product.slug}`}>
+            <h2 className="text-sm font-bold text-gray-800 hover:text-sky-500 transition-colors line-clamp-1">
+              {product?.name}
+            </h2>
+          </Link>
+          <p className="text-[13px] text-gray-500 font-medium whitespace-nowrap ml-2">
+            ৳{currentPrice}
+          </p>
         </div>
+        <p className="text-[12px] text-gray-400 line-clamp-1">
+          {product?.category_name || product?.brand_name || ''}
+        </p>
       </div>
     </motion.div>
   )

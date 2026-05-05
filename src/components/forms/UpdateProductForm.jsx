@@ -5,7 +5,7 @@ import { Context } from '../helper/Context'
 import axios from 'axios'
 
 const UpdateProductForm = ({ product }) => {
-    const { categories, brands, variantTypes, variantValues } = useContext(Context)
+    const { categories, brands } = useContext(Context)
     const [imageFile, setImageFile] = useState(null)
     const [loading, setLoading] = useState(false)
 
@@ -27,7 +27,7 @@ const UpdateProductForm = ({ product }) => {
         description: product?.description || '',
     })
 
-    const [variants, setVariants] = useState(product?.variants || [])
+
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -38,36 +38,6 @@ const UpdateProductForm = ({ product }) => {
     const mainCategories = categories?.filter(cat => !cat.parent_id) || [];
     const subCategories = categories?.filter(cat => cat.parent_id && cat.parent_id === parseInt(formData.category_id)) || [];
 
-    const addVariant = () => {
-        setVariants([...variants, { sku: '', price: '', stock: '', values: [], image: null }])
-    }
-
-    const removeVariant = (index) => {
-        setVariants(variants.filter((_, i) => i !== index))
-    }
-
-    const handleVariantChange = (index, field, value) => {
-        const updated = [...variants]
-        if (field === 'image') {
-            updated[index][field] = value.target.files[0]
-        } else if (field === 'values') {
-            // value is the valueId
-            if (!updated[index].values) updated[index].values = []
-            
-            // Extract IDs if values is array of objects (from API)
-            let currentIds = updated[index].values.map(v => typeof v === 'object' ? v.value_id : v)
-            
-            if (currentIds.includes(value)) {
-                currentIds = currentIds.filter(id => id !== value)
-            } else {
-                currentIds = [...currentIds, value]
-            }
-            updated[index].values = currentIds
-        } else {
-            updated[index][field] = value
-        }
-        setVariants(updated)
-    }
 
     const SubmitUpdateProduct = async (e) => {
         e.preventDefault()
@@ -93,23 +63,7 @@ const UpdateProductForm = ({ product }) => {
                 data.append("image", imageFile)
             }
 
-            // Variants Logic
-            const variantsToSubmit = variants.map(v => ({
-                variant_id: v.variant_id || null,
-                sku: v.sku,
-                price: parseFloat(v.price) || 0,
-                stock: parseFloat(v.stock) || 0,
-                image: typeof v.image === 'string' ? v.image : null, // Keep existing image URL if not a new file
-                values: (v.values || []).map(val => typeof val === 'object' ? val.value_id : val)
-            }))
-            data.append('variants', JSON.stringify(variantsToSubmit))
 
-            // Variant Images
-            variants.forEach((v, i) => {
-                if (v.image && typeof v.image !== 'string') {
-                    data.append(`variantImage_${i}`, v.image)
-                }
-            })
 
             const response = await axios.put('/api/product', data, {
                 withCredentials: true,
@@ -230,70 +184,7 @@ const UpdateProductForm = ({ product }) => {
                     <textarea name="description" id="description" required value={formData.description} onChange={handleChange} className='w-full border border-slate-200 bg-slate-50/30 px-4 py-3 rounded-xl outline-none focus:border-primary focus:bg-white transition-all text-sm h-32 resize-none'></textarea>
                 </div>
 
-                {/* Variants Section */}
-                <div className='pt-6 border-t border-slate-100'>
-                    <div className='flex items-center justify-between mb-4'>
-                        <div>
-                            <h3 className='text-sm font-bold text-slate-800 uppercase tracking-wider'>Product Variants</h3>
-                            <p className='text-[10px] text-slate-400'>Add or update variations of this product</p>
-                        </div>
-                        <button type='button' onClick={addVariant} className='px-4 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all flex items-center gap-2'>
-                            + Add Variant
-                        </button>
-                    </div>
 
-                    <div className='flex flex-col gap-4'>
-                        {variants.map((v, i) => (
-                            <div key={i} className='p-4 border border-slate-200 rounded-2xl bg-slate-50/20 flex flex-col gap-4'>
-                                <div className='flex items-center justify-between'>
-                                    <span className='text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full'>Variant #{i + 1}</span>
-                                    <button type='button' onClick={() => removeVariant(i)} className='text-rose-500 hover:text-rose-600 text-xs font-bold'>Remove</button>
-                                </div>
-                                
-                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                    <div className='flex flex-col gap-1'>
-                                        <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>Price (৳)</label>
-                                        <input type="number" value={v.price} onChange={(e) => handleVariantChange(i, 'price', e.target.value)} className='w-full border border-slate-200 bg-white px-3 py-2 rounded-lg outline-none focus:border-primary text-xs' placeholder='0.00' />
-                                    </div>
-                                    <div className='flex flex-col gap-1'>
-                                        <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>Stock</label>
-                                        <input type="number" value={v.stock} onChange={(e) => handleVariantChange(i, 'stock', e.target.value)} className='w-full border border-slate-200 bg-white px-3 py-2 rounded-lg outline-none focus:border-primary text-xs' placeholder='0' />
-                                    </div>
-                                </div>
-
-                                <div className='flex flex-col gap-1.5'>
-                                    <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>Select Attributes</label>
-                                    <div className='flex flex-wrap gap-2'>
-                                        {variantValues.map((val) => {
-                                            const currentIds = v.values?.map(valObj => typeof valObj === 'object' ? valObj.value_id : valObj) || []
-                                            const isActive = currentIds.includes(val.variant_value_id)
-                                            return (
-                                                <button
-                                                    key={val.variant_value_id}
-                                                    type='button'
-                                                    onClick={() => handleVariantChange(i, 'values', val.variant_value_id)}
-                                                    className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all border ${
-                                                        isActive
-                                                        ? 'bg-primary border-primary text-white'
-                                                        : 'bg-white border-slate-200 text-slate-500 hover:border-primary'
-                                                    }`}
-                                                >
-                                                    {val.type_name}: {val.value}
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-
-                                <div className='flex flex-col gap-1'>
-                                    <label className='text-[10px] font-bold text-slate-500 uppercase ml-1'>Variant Image</label>
-                                    <input type="file" onChange={(e) => handleVariantChange(i, 'image', e)} className='text-[10px] text-slate-400' />
-                                    {v.image && typeof v.image === 'string' && <p className='text-[8px] text-slate-400'>Current: {v.image}</p>}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
 
                 <div className='pt-6 border-t border-slate-100 flex justify-center'>
                     <button

@@ -41,11 +41,10 @@ export async function POST(req) {
         );
         const orderId = orderRes.rows[0].order_id;
 
-        // 3. Insert Order Items
         for (const item of items) {
             await client.query(
-                "INSERT INTO ecom_order_items (order_id, product_id, variant_id, quantity, price, tenant_id) VALUES ($1, $2, $3, $4, $5, $6)",
-                [orderId, item.product_id, item.variant_id || null, item.quantity, item.price, tenant_id]
+                "INSERT INTO ecom_order_items (order_id, product_id, quantity, price, tenant_id) VALUES ($1, $2, $3, $4, $5)",
+                [orderId, item.product_id, item.quantity, item.price, tenant_id]
             );
         }
 

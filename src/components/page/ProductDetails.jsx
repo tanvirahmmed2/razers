@@ -8,88 +8,15 @@ import { Check } from 'lucide-react'
 
 const ProductDetails = ({ product }) => {
     const { addToCart } = useContext(Context)
-    const [selectedOptions, setSelectedOptions] = useState({})
-    const [selectedVariant, setSelectedVariant] = useState(null)
 
-    // Group variant options by type
-    const variantOptions = {}
-    const variants = product.variants || []
-    
-    variants.forEach(v => {
-        // Handle combinations even if they are stringified JSON (depends on DB driver)
-        let combs = v.combinations
-        if (typeof combs === 'string') {
-            try { combs = JSON.parse(combs) } catch (e) { combs = [] }
-        }
-        
-        const validCombs = (Array.isArray(combs) ? combs : []).filter(c => c && c.type && c.value)
-        validCombs.forEach(c => {
-            if (!variantOptions[c.type]) {
-                variantOptions[c.type] = new Set()
-            }
-            variantOptions[c.type].add(c.value)
-        })
-    });
 
-    // Convert sets to sorted arrays for consistent display
-    const sortedVariantOptions = {}
-    Object.keys(variantOptions).forEach(type => {
-        sortedVariantOptions[type] = Array.from(variantOptions[type]).sort()
-    })
-
-    const optionTypes = Object.keys(sortedVariantOptions)
-
-    // Initialize selection if there are variants
-    useEffect(() => {
-        if (optionTypes.length > 0) {
-            const initial = {}
-            optionTypes.forEach(type => {
-                initial[type] = sortedVariantOptions[type][0]
-            })
-            setSelectedOptions(initial)
-        }
-    }, [product])
-
-    // Find matching variant based on selection
-    useEffect(() => {
-        if (optionTypes.length === 0) {
-            setSelectedVariant(null)
-            return
-        }
-
-        const match = variants.find(v => {
-            let combs = v.combinations
-            if (typeof combs === 'string') {
-                try { combs = JSON.parse(combs) } catch (e) { combs = [] }
-            }
-            const validCombs = (Array.isArray(combs) ? combs : []).filter(c => c && c.type && c.value)
-            
-            if (validCombs.length === 0) return false
-            
-            return optionTypes.every(type => {
-                const comb = validCombs.find(c => c.type === type)
-                return comb && comb.value === selectedOptions[type]
-            })
-        })
-
-        setSelectedVariant(match)
-    }, [selectedOptions, product])
-
-    const handleOptionChange = (type, value) => {
-        setSelectedOptions(prev => ({ ...prev, [type]: value }))
-    }
-
-    const currentPrice = selectedVariant ? selectedVariant.price : (product.sale_price - product.discount_price)
-    const currentStock = selectedVariant ? selectedVariant.stock : product.stock
-    const currentImage = selectedVariant?.image || product.image
+    const currentPrice = product.sale_price - product.discount_price
+    const currentStock = product.stock
+    const currentImage = product.image
     const isOutOfStock = currentStock <= 0
 
     const handleAddToCart = () => {
-        if (optionTypes.length > 0 && !selectedVariant) {
-            alert("Please select all options")
-            return
-        }
-        addToCart(product, selectedVariant)
+        addToCart(product)
     }
 
     return (
@@ -149,42 +76,14 @@ const ProductDetails = ({ product }) => {
                         </h1>
                     </div>
 
-                    {/* Variant Selectors */}
-                    {optionTypes.length > 0 && (
-                        <div className="space-y-6 pt-6 border-t border-slate-100">
-                            {optionTypes.map(type => (
-                                <div key={type} className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">{type}</h4>
-                                        <span className="text-[11px] font-bold text-primary">{selectedOptions[type]}</span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2.5">
-                                        {sortedVariantOptions[type].map(value => (
-                                            <button
-                                                key={value}
-                                                onClick={() => handleOptionChange(type, value)}
-                                                className={`relative px-5 py-2.5 text-sm font-bold rounded-2xl border transition-all duration-300 flex items-center gap-2 ${
-                                                    selectedOptions[type] === value
-                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/20'
-                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                                                }`}
-                                            >
-                                                {value}
-                                                {selectedOptions[type] === value && <Check size={14} className="text-white" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+
 
                     <div className='flex items-center justify-between pt-8 border-t border-slate-100'>
                         <div className='flex flex-col'>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Price</p>
                             <div className="flex items-baseline gap-3">
                                 <p className='font-black text-4xl text-slate-900 tracking-tighter'>৳{currentPrice}</p>
-                                {product?.discount_price > 0 && !selectedVariant && (
+                                {product?.discount_price > 0 && (
                                     <p className='text-slate-400 text-sm line-through font-medium'>৳{product.sale_price}</p>
                                 )}
                             </div>

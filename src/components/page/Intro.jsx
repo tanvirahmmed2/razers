@@ -7,11 +7,11 @@ import { ArrowRight, RefreshCw } from 'lucide-react'
 import { Context } from '../helper/Context'
 
 const images = [
-    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777758910/pexels-yankrukov-5793641_cpjxja.jpg',
-    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777758910/pexels-chipi1189-34976479_oyvaze.jpg',
-    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777758910/pexels-knownasovan-62689_bqfkmu.jpg',
-    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777758911/pexels-fatih-sucu-43042350-7512609_kxf7kb.jpg',
-    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777758912/pexels-zhenxing-cai-724200611-31359734_i8pcyk.jpg'
+    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777972932/pexels-rachel-claire-5531549_akfkue.jpg',
+    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777972936/pexels-zion-30109290_xqle28.jpg',
+    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777972934/pexels-ron-lach-8387837_ph8ssc.jpg',
+    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777972930/pexels-cup-of-couple-6956903_rmsgdx.jpg',
+    'https://res.cloudinary.com/dv30hn53t/image/upload/v1777972929/pexels-silverkblack-36730379_ibmwfz.jpg'
 ]
 
 const Intro = () => {
@@ -26,27 +26,16 @@ const Intro = () => {
     }, [])
 
     return (
-        <div className='w-full min-h-[80vh] grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-10 py-10 p-4 items-center'>
+        <div className='w-full h-auto flex flex-col items-center justify-center gap-4 md:gap-12'>
 
-            <div className='w-full overflow-hidden col-span-1 md:col-span-2 lg:col-span-4 order-1 md:order-2 relative aspect-video md:aspect-auto md:h-[600px] rounded-3xl'>
-                <AnimatePresence mode='wait'>
-                    <motion.div
-                        key={currentIndex}
-                        initial={{ x: 300, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: -300, opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className='absolute inset-0 w-full h-full'
-                    >
-                        <Image
-                            src={images[currentIndex]}
-                            fill
-                            className='object-cover rounded-3xl shadow-lg'
-                            alt='Fashion Showcase'
-                            priority
-                        />
-                    </motion.div>
-                </AnimatePresence>
+            <div className='w-full overflow-hidden '>
+                <Image
+                    src={images[currentIndex]}
+                    height={1000}
+                    className='object-cover w-full aspect-video md:aspect-16/5 overflow-hidden shadow-lg'
+                    alt='Fashion Showcase'
+                    width={1000}
+                />
 
                 <div className='absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10'>
                     {images.map((_, i) => (
@@ -58,18 +47,18 @@ const Intro = () => {
                 </div>
             </div>
 
-            <div className='w-full flex flex-col items-center lg:items-start justify-center gap-8 col-span-1 lg:col-span-2 order-2 md:order-1 px-4'>
+            <div className='w-full flex flex-col items-center justify-center gap-2 p-10'>
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8 }}
-                    className='text-center lg:text-left'
+                    className='w-full flex flex-col items-center justify-center'
                 >
                     <div className='inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest text-primary mb-6 shadow-sm'>
                         <RefreshCw size={12} className='animate-spin' />
                         Updated Collection 2026
                     </div>
-                    <h2 className='text-5xl md:text-6xl lg:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-6'>
+                    <h2 className='text-4xl flex gap-4  md:text-6xl lg:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-6'>
                         STYLE <br />
                         <span className='text-primary underline underline-offset-8 decoration-primary/20'>EVOLVED.</span>
                     </h2>
@@ -82,7 +71,7 @@ const Intro = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className='flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full'
+                    className='w-full flex items-center justify-center md:gap-10 flex-col gap-4 md:flex-row'
                 >
                     <Link href='/products' className='w-full sm:w-auto group px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-primary transition-all active:scale-95'>
                         Shop Now

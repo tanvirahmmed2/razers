@@ -51,14 +51,12 @@ const ContextProvider = ({ children, initialSiteData }) => {
     }
   }, [cart, hydrated])
 
-  const addToCart = (product, variant = null) => {
+  const addToCart = (product) => {
     if (!product?.product_id) return;
 
-    // Determine stock and price based on variant if available
-    const stock = variant ? Number(variant.stock) : Number(product.stock);
-    const salePrice = variant ? parseFloat(variant.price) : parseFloat(product.sale_price);
-    const variantId = variant ? variant.variant_id : null;
-    const cartItemId = variant ? `${product.product_id}-${variantId}` : `${product.product_id}`;
+    const stock = Number(product.stock);
+    const salePrice = parseFloat(product.sale_price);
+    const cartItemId = `${product.product_id}`;
 
     if (stock <= 0) {
       toast.error("Item is out of stock!");
@@ -84,9 +82,7 @@ const ContextProvider = ({ children, initialSiteData }) => {
       toast("Quantity increased", { icon: '➕' });
     } else {
       const wholeSalePrice = parseFloat(product?.wholesale_price) || 0;
-      // If it's a variant, we might not have a separate discount_price on the variant table
-      // but the price passed should be the final price.
-      const discountAmount = variant ? 0 : (parseFloat(product?.discount_price) || 0);
+      const discountAmount = parseFloat(product?.discount_price) || 0;
 
       setCart((prev) => ({
         ...prev,
@@ -95,10 +91,8 @@ const ContextProvider = ({ children, initialSiteData }) => {
           {
             cartItemId,
             product_id: product.product_id,
-            variant_id: variantId,
             name: product.name,
-            variantName: variant?.combinations?.filter(c => c.type && c.value).map(c => `${c.type}: ${c.value}`).join(', '),
-            image: variant?.image || product.image,
+            image: product.image,
             quantity: 1,
             sale_price: salePrice,
             wholesale_price: wholeSalePrice,
@@ -197,22 +191,7 @@ const ContextProvider = ({ children, initialSiteData }) => {
     fetchUser()
   }, [])
 
-  const [variantTypes, setVariantTypes] = useState([])
-  const [variantValues, setVariantValues] = useState([])
 
-  const fetchVariantTypes = async () => {
-    try {
-      const response = await axios.get('/api/product/variant-type', { withCredentials: true })
-      setVariantTypes(response.data.payload || [])
-    } catch (error) { setVariantTypes([]) }
-  }
-
-  const fetchVariantValues = async () => {
-    try {
-      const response = await axios.get('/api/product/variant-value', { withCredentials: true })
-      setVariantValues(response.data.payload || [])
-    } catch (error) { setVariantValues([]) }
-  }
 
   useEffect(() => {
     fetchCategory()
@@ -220,8 +199,7 @@ const ContextProvider = ({ children, initialSiteData }) => {
     fetchBrand()
     fetchSupplier()
     fetchCustomer()
-    fetchVariantTypes()
-    fetchVariantValues()
+
   }, [])
 
   const [purchaseItems, setPurchaseItems] = useState([]);
@@ -263,8 +241,7 @@ const ContextProvider = ({ children, initialSiteData }) => {
       isSupplierBox, setIsSupplierBox, fetchSupplier, suppliers, setSuppliers, setPurchaseItems,
       isCustomerBox, setIsCustomerBox, customers, setCustomers,userData, setUserData,fetchBrand, fetchCustomer, fetchSupplier,isDashboardSidebar, setIsDashboardSidebar,
       categories, fetchCategory, cart, setCart, fetchCart, addToCart, increaseQuantity, clearCart, removeFromCart, decreaseQuantity, clearPurchase,
-      siteData, setSiteData,
-      variantTypes, fetchVariantTypes, variantValues, fetchVariantValues
+      siteData, setSiteData
     }}>
       {children}
     </Context.Provider>

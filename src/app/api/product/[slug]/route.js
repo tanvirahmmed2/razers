@@ -27,19 +27,7 @@ export async function GET(req, { params }) {
             return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
         }
 
-        const variantsRes = await pool.query(`
-            SELECT 
-                pv.*,
-                COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type', vt.name, 'value', vv.value, 'value_id', vv.variant_value_id)) FILTER (WHERE vc.id IS NOT NULL), '[]'::json) as combinations
-            FROM ecom_product_variants pv
-            LEFT JOIN ecom_variant_combination vc ON pv.variant_id = vc.variant_id
-            LEFT JOIN ecom_variant_values vv ON vc.variant_value_id = vv.variant_value_id
-            LEFT JOIN ecom_variant_types vt ON vv.variant_type_id = vt.variant_type_id
-            WHERE pv.product_id = $1 AND pv.tenant_id = $2
-            GROUP BY pv.variant_id
-        `, [product.product_id, tenant_id]);
-
-        product.variants = variantsRes.rows;        return NextResponse.json({
+        return NextResponse.json({
             success: true,
             payload: product
         });
