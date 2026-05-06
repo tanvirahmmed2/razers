@@ -133,7 +133,7 @@ const ProfilePage = () => {
             icon={<MdReviews size={20} />}
             label='Reviews'
             desc='Update your name, email, phone, or password'
-            color='from-slate-600 to-slate-800'
+            color='from-amber-600 to-amber-800'
           />
           <QuickLink
             href='/user/settings'

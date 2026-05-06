@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CartPage = () => {
-  const { cart, removeFromCart, addToCart, decreaseQuantity, clearCart, userData } = useContext(Context)
+  const { cart, removeFromCart, addToCart, decreaseQuantity, increaseQuantity, clearCart, userData } = useContext(Context)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: userData?.name || '',
@@ -128,8 +128,18 @@ const CartPage = () => {
 
                   <div className='flex-1 text-center md:text-left'>
                     <h3 className='text-base font-bold text-slate-800 line-clamp-1'>{item?.name}</h3>
-
-                    <p className='text-xs font-medium text-slate-400 mt-1.5'>৳{parseFloat(item?.sale_price).toFixed(2)} / unit</p>
+                    
+                    <div className='flex items-center justify-center md:justify-start gap-2 mt-1.5'>
+                      <p className='text-xs font-bold text-slate-600'>
+                        ৳{(parseFloat(item?.sale_price) - parseFloat(item?.discount_price || 0)).toFixed(2)}
+                      </p>
+                      {parseFloat(item?.discount_price) > 0 && (
+                        <p className='text-[10px] font-medium text-slate-400 line-through'>
+                          ৳{parseFloat(item?.sale_price).toFixed(2)}
+                        </p>
+                      )}
+                      <span className='text-[10px] text-slate-400 font-medium'>/ unit</span>
+                    </div>
                   </div>
 
                   <div className='flex flex-wrap items-center justify-center gap-4'>
@@ -149,8 +159,15 @@ const CartPage = () => {
                       </button>
                     </div>
 
-                    <div className='text-right min-w-[90px]'>
-                      <p className='text-base font-black text-slate-900 tracking-tight'>৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}</p>
+                    <div className='text-right min-w-[100px]'>
+                      <p className='text-base font-black text-slate-900 tracking-tight'>
+                        ৳{((parseFloat(item.sale_price) - parseFloat(item.discount_price || 0)) * item.quantity).toFixed(2)}
+                      </p>
+                      {parseFloat(item.discount_price) > 0 && (
+                        <p className='text-[10px] font-bold text-slate-400 line-through decoration-rose-400/50'>
+                          ৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}
+                        </p>
+                      )}
                     </div>
 
                     <button
