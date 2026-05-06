@@ -10,7 +10,7 @@ const SalesReport = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const res = await axios.get('/api/report/sales')
+                const res = await axios.get('/api/report/sales', { withCredentials: true })
                 setReportData(res.data.payload)
             } catch (error) {
                 console.error("Report error", error)

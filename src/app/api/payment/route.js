@@ -5,19 +5,19 @@ export async function GET() {
     try {
         const query = `
             SELECT 
-                p.payment_id ,
+                p.payment_id,
                 p.transaction_id,
                 o.subtotal_amount AS subtotal,
                 o.total_amount AS payment_amount,
                 o.total_discount_amount AS discount,
                 c.phone,
                 c.name,
-                p.paid_at AS date
-            FROM payments p
-            JOIN orders o ON p.order_id = o.order_id
-            JOIN customers c ON o.customer_id = c.customer_id
-            WHERE o.status='completed'
-            ORDER BY p.paid_at DESC
+                p.created_at AS date
+            FROM ecom_payments p
+            JOIN ecom_orders o ON p.order_id = o.order_id AND p.tenant_id = o.tenant_id
+            JOIN ecom_customers c ON o.customer_id = c.customer_id AND o.tenant_id = c.tenant_id
+            WHERE o.status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm')
+            ORDER BY p.created_at DESC
         `;
 
         const data = await pool.query(query);

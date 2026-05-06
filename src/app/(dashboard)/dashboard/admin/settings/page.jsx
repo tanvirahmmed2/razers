@@ -40,7 +40,7 @@ const SettingsPage = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get('/api/website')
+      const response = await axios.get('/api/website', { withCredentials: true })
       if (response.data.success) {
         setData(response.data.payload)
       }
@@ -63,7 +63,7 @@ const SettingsPage = () => {
     e.preventDefault()
     setSaving(true)
     try {
-      const response = await axios.put('/api/website', data)
+      const response = await axios.put('/api/website', data, { withCredentials: true })
       if (response.data.success) {
         toast.success('Settings updated successfully')
       }

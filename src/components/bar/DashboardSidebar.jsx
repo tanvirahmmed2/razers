@@ -6,7 +6,7 @@ import {
   RiRefund2Line, RiAlertLine, RiUser3Line, RiTruckLine, 
   RiSettings3Line, RiFileChartLine, RiArchiveLine, 
   RiPriceTag3Line, RiShoppingBag3Line, RiUserAddLine, 
-  RiUserCommunityLine, RiSuperscript, RiMenuLine, RiCloseLine 
+  RiUserCommunityLine, RiSuperscript, RiMenuLine, RiCloseLine, RiCheckboxCircleLine 
 } from "react-icons/ri"
 import { TbReport, TbMoneybag, TbReportMoney, TbReportAnalytics, TbReportSearch } from "react-icons/tb"
 import { usePathname } from 'next/navigation'
@@ -102,10 +102,12 @@ const DashboardSidebar = () => {
               </p>
             )}
             <MenuItem href="/dashboard/sales/pos" icon={RiShoppingCart2Line} label="POS System" isOpen={isOpen} />
-            <MenuItem href="/dashboard/sales/sale" icon={RiShoppingBag3Line} label="New Sale" isOpen={isOpen} />
             <MenuItem href="/dashboard/sales/pendingorders" icon={RiAlertLine} label="Pending Orders" isOpen={isOpen} />
+            <MenuItem href="/dashboard/sales/confirmed-orders" icon={RiCheckboxCircleLine} label="Confirmed Orders" isOpen={isOpen} />
+            <MenuItem href="/dashboard/sales/shipped-orders" icon={RiTruckLine} label="Shipped Orders" isOpen={isOpen} />
             <MenuItem href="/dashboard/sales/sales-list" icon={RiShoppingBag3Line} label="Order History" isOpen={isOpen} />
             <MenuItem href="/dashboard/sales/sales-transactions" icon={TbReportMoney} label="Sales Transactions" isOpen={isOpen} />
+            <MenuItem href="/dashboard/sales/sale" icon={RiShoppingBag3Line} label="Sales" isOpen={isOpen} />
           </>
         )}
 

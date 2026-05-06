@@ -15,7 +15,7 @@ const PurchaseList = () => {
 
     const fetchPurchases = useCallback(async () => {
         try {
-            const res = await axios.get(`/api/purchase?q=${searchTerm}`)
+            const res = await axios.get(`/api/purchase?q=${searchTerm}`, { withCredentials: true })
             if (res.data.success) setPurchases(res.data.payload || [])
         } catch (error) {
             setPurchases([])
@@ -31,7 +31,7 @@ const PurchaseList = () => {
 
     const handleDelete = async (id) => {
         try {
-            const res = await axios.delete('/api/purchase', { data: { id } })
+            const res = await axios.delete('/api/purchase', { data: { id }, withCredentials: true })
             if (res.data.success) {
                 toast.success("Purchase deleted and stock reverted")
                 setConfirmDelete(null)

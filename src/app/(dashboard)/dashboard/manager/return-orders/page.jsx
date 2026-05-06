@@ -15,7 +15,7 @@ const ReturnedOrdersPage = () => {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await axios.get(`/api/order/status?q=returned`)
+      const res = await axios.get(`/api/order/status?q=returned`, { withCredentials: true })
       if (res.data.success) {
         setOrders(res.data.payload)
       } else {
@@ -35,7 +35,7 @@ const ReturnedOrdersPage = () => {
 
   const confirmOrder = async (orderId) => {
     try {
-      const res = await axios.put('/api/order', { orderId, action: 'confirm' })
+      const res = await axios.put('/api/order', { orderId, action: 'confirm' }, { withCredentials: true })
       if (res.data.success) {
         toast.success("Order Confirmed")
         fetchOrders()
@@ -47,7 +47,7 @@ const ReturnedOrdersPage = () => {
 
   const deleteOrder = async (orderId) => {
     try {
-      const res = await axios.put('/api/order', { orderId, action: 'delete' })
+      const res = await axios.put('/api/order', { orderId, action: 'delete' }, { withCredentials: true })
       if (res.data.success) {
         toast.success("Order Deleted")
         setConfirmDelete(null)

@@ -14,9 +14,9 @@ export async function GET() {
         const statsQuery = `
             SELECT 
                 COALESCE(SUM(total_amount), 0) AS total_revenue,
-                (SELECT COALESCE(SUM(quantity), 0) FROM ecom_order_items WHERE tenant_id = $1) AS total_items_sold
+                (SELECT COALESCE(SUM(oi.quantity), 0) FROM ecom_order_items oi JOIN ecom_orders o ON oi.order_id = o.order_id WHERE o.status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND oi.tenant_id = $1) AS total_items_sold
             FROM ecom_orders 
-            WHERE status = 'completed' AND tenant_id = $1;
+            WHERE status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND tenant_id = $1;
         `;
 
         const topProductsQuery = `
@@ -27,7 +27,7 @@ export async function GET() {
             FROM ecom_order_items oi
             JOIN ecom_products p ON oi.product_id = p.product_id AND oi.tenant_id = p.tenant_id
             JOIN ecom_orders o ON oi.order_id = o.order_id AND oi.tenant_id = o.tenant_id
-            WHERE o.status = 'completed' AND o.tenant_id = $1
+            WHERE o.status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND o.tenant_id = $1
             GROUP BY p.product_id, p.name
             ORDER BY sold_qty DESC
             LIMIT 10;

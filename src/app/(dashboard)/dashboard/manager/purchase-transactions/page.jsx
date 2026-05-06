@@ -10,7 +10,7 @@ const PurchasePaymentsPage = () => {
 
     const fetchPayments = async () => {
         try {
-            const res = await axios.get(`/api/purchase-payment?q=${searchTerm}`)
+            const res = await axios.get(`/api/purchase-payment?q=${searchTerm}`, { withCredentials: true })
             if (res.data.success) {
                 setPayments(res.data.payload)
             }

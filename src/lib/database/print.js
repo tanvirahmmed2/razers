@@ -1,4 +1,4 @@
-export const generateReceipt = (order) => {
+export const generateReceipt = (order, siteData) => {
   if (!order) return;
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
@@ -7,6 +7,11 @@ export const generateReceipt = (order) => {
   const orderDate = new Date(order.created_at || Date.now());
   const formattedDate = orderDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const formattedTime = orderDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const storeName = siteData?.business_name || siteData?.name || "Nizam Varieties Store";
+  const storeAddress = siteData?.address || "Pakuritala Bazar, Tarakanda";
+  const storePhone = siteData?.phone || "01645-172356";
+  const storeLogo = siteData?.logo || "";
 
   const receiptContent = `
     <!DOCTYPE html>
@@ -36,6 +41,12 @@ export const generateReceipt = (order) => {
             padding-bottom: 10px;
             margin-bottom: 10px;
             border-bottom: 2px solid #1a1a2e;
+          }
+          .store-logo {
+            max-width: 40mm;
+            max-height: 20mm;
+            margin-bottom: 5px;
+            object-fit: contain;
           }
           .store-name {
             font-family: 'Playfair Display', serif;
@@ -287,9 +298,9 @@ export const generateReceipt = (order) => {
       <body>
 
         <div class="header">
-          <p class="store-name">Nizam Varieties Store</p>
-          <p class="store-contact">Pakuritala Bazar, Tarakanda &nbsp;·&nbsp; 01645-172356</p>
-          <p class="store-contact">Contact: 01645-172356</p>
+          ${storeLogo ? `<img src="${storeLogo}" alt="${storeName}" class="store-logo" />` : ''}
+          <p class="store-name">${storeName}</p>
+          <p class="store-contact">${storeAddress} &nbsp;·&nbsp; ${storePhone}</p>
           <p class="receipt-type">— Sales Receipt —</p>
         </div>
 

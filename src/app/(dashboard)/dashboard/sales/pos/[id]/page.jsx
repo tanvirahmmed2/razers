@@ -2,9 +2,11 @@
 import { generateReceipt } from '@/lib/database/print'
 import axios from 'axios'
 import Link from 'next/link'
-import React, { use, useEffect, useState } from 'react'
+import React, { use, useEffect, useState, useContext } from 'react'
+import { Context } from '@/components/helper/Context'
 
 const POSSLIPPAGE = ({ params }) => {
+    const { siteData } = useContext(Context)
     const { id } = use(params)
     const [order, setOrder] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -51,9 +53,9 @@ const POSSLIPPAGE = ({ params }) => {
                 
                 
                 <header className="text-center space-y-1">
-                    <h1 className="text-xl font-bold text-gray-900 leading-tight warp-break-word">Nizam Varieties Store</h1>
-                    <p className="text-[10px] text-gray-500">Pakuritala Bazar, Tarakanda</p>
-                    <p className="text-[11px] font-mono">01645-172356</p>
+                    <h1 className="text-xl font-bold text-gray-900 leading-tight warp-break-word">{siteData?.business_name || siteData?.name || "Nizam Varieties Store"}</h1>
+                    <p className="text-[10px] text-gray-500">{siteData?.address || "Pakuritala Bazar, Tarakanda"}</p>
+                    <p className="text-[11px] font-mono">{siteData?.phone || "01645-172356"}</p>
                     <div className="py-2">
                         <div className="h-px w-full border-t border-dashed border-gray-300" />
                         <span className="text-[8px] font-bold uppercase tracking-[4px] text-gray-400 bg-white px-2 -mt-2 relative">Receipt</span>
@@ -154,7 +156,7 @@ const POSSLIPPAGE = ({ params }) => {
 
                 <div className="mt-6 flex flex-col gap-2 print:hidden">
                     <button 
-                        onClick={() => generateReceipt(order)} 
+                        onClick={() => generateReceipt(order, siteData)} 
                         className="w-full bg-black text-white cursor-pointer py-3 text-[10px] font-bold uppercase tracking-widest rounded active:bg-gray-800 transition-colors shadow-lg"
                     >
                         Print Receipt

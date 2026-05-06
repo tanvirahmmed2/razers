@@ -11,7 +11,7 @@ const StockReport = () => {
     useEffect(() => {
         const fetchStockData = async () => {
             try {
-                const res = await axios.get('/api/report/stock')
+                const res = await axios.get('/api/report/stock', { withCredentials: true })
                 setData(res.data.payload)
             } catch (error) {
                 console.error("Stock fetch error", error)

@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { ShoppingBag } from 'lucide-react'
 
 const Orderform = ({ cartItems = [] }) => {
-    const { decreaseQuantity, clearCart, addToCart, removeFromCart, setCart, customers, setIsCustomerBox } = useContext(Context)
+    const { decreaseQuantity, clearCart, addToCart, removeFromCart, setCart, customers, setIsCustomerBox, siteData } = useContext(Context)
     const [saleType, setSaleType] = useState('retail')
     const [products, setProducts] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
@@ -157,7 +157,7 @@ const Orderform = ({ cartItems = [] }) => {
             paymentMethod: data.paymentMethod,
             transactionId: data.transactionId,
             saleType: saleType,
-            status: 'completed',
+            status: 'delivered',
             createdAt: data.createdAt,
             items: cartItems.map(item => ({
                 product_id: item.product_id,
@@ -170,7 +170,7 @@ const Orderform = ({ cartItems = [] }) => {
         try {
             const response = await axios.post('/api/order', payload, { withCredentials: true })
             toast.success(response.data.message)
-            // if (generateReceipt) generateReceipt(response.data.payload)
+            // if (generateReceipt) generateReceipt(response.data.payload, siteData)
             // console.log(response.data.payload)
 
 

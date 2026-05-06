@@ -121,7 +121,7 @@ const AllCategories = () => {
               return (
                 <Link
                   key={cat.category_id}
-                  href={`/products?category=${cat.category_id}`}
+                  href={`/products/category/${cat.category_id}`}
                   className="group flex-shrink-0 flex flex-col items-center gap-3 p-5 bg-white rounded-xl border border-gray-100 hover:border-gray-300 hover:shadow-md transition-all duration-200 w-28"
                 >
                   <div

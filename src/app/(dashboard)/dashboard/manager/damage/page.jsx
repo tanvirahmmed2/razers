@@ -15,7 +15,7 @@ const DamagePage = () => {
         if (searchTerm.length > 1) {
             const delay = setTimeout(async () => {
                 try {
-                    const res = await axios.get(`/api/product/search?q=${searchTerm}`)
+                    const res = await axios.get(`/api/product/search?q=${searchTerm}`, { withCredentials: true })
                     setProducts(res.data.payload)
                 } catch (err) { setProducts([]) }
             }, 300)
@@ -31,7 +31,7 @@ const DamagePage = () => {
                 product_id: selectedProduct.product_id,
                 quantity: quantity,
                 reason: reason
-            })
+            }, { withCredentials: true })
             if (res.data.success) {
                 toast.error(res.data.message)
                 setSelectedProduct(null)

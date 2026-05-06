@@ -22,8 +22,8 @@ export async function GET(req) {
                 (SELECT COUNT(*) FROM ecom_products WHERE tenant_id = $1) as total_products,
                 (SELECT COALESCE(SUM(stock), 0) FROM ecom_products WHERE tenant_id = $1) as total_stock_qty,
                 (SELECT COALESCE(SUM(stock * purchase_price), 0) FROM ecom_products WHERE tenant_id = $1) as total_stock_value,
-                (SELECT COUNT(*) FROM ecom_orders WHERE status = 'completed' AND tenant_id = $1) as total_confirmed_orders,
-                (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_orders WHERE status = 'completed' AND tenant_id = $1) as total_sales_amount,
+                (SELECT COUNT(*) FROM ecom_orders WHERE status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND tenant_id = $1) as total_confirmed_orders,
+                (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_orders WHERE status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND tenant_id = $1) as total_sales_amount,
                 (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_orders WHERE status = 'returned' AND tenant_id = $1) as total_returned_amount,
                 (SELECT COUNT(*) FROM ecom_purchases WHERE tenant_id = $1) as total_purchase_count,
                 (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_purchases WHERE tenant_id = $1) as total_purchase_amount,
@@ -31,7 +31,7 @@ export async function GET(req) {
                  FROM ecom_order_items oi 
                  JOIN ecom_products pr ON oi.product_id = pr.product_id AND oi.tenant_id = pr.tenant_id
                  JOIN ecom_orders o ON oi.order_id = o.order_id AND oi.tenant_id = o.tenant_id
-                 WHERE o.status = 'completed' AND o.tenant_id = $1) as total_profit_amount
+                 WHERE o.status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND o.tenant_id = $1) as total_profit_amount
         `, [tenant_id]);
 
         // 2. DYNAMIC FILTER LOGIC
@@ -58,7 +58,7 @@ export async function GET(req) {
         const rangeStats = await pool.query(`
             SELECT 
                 (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_orders o 
-                 WHERE status = 'completed' AND ${dateFilter}) as sales,
+                 WHERE status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND ${dateFilter}) as sales,
                 (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_orders o 
                  WHERE status = 'returned' AND ${dateFilter}) as returns,
                 (SELECT COALESCE(SUM(total_amount), 0) FROM ecom_purchases p 
@@ -67,7 +67,7 @@ export async function GET(req) {
                  FROM ecom_order_items oi
                  JOIN ecom_products pr ON oi.product_id = pr.product_id AND oi.tenant_id = pr.tenant_id
                  JOIN ecom_orders o ON oi.order_id = o.order_id AND oi.tenant_id = o.tenant_id
-                 WHERE o.status = 'completed' AND ${dateFilter}) as profit
+                 WHERE o.status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm') AND ${dateFilter}) as profit
         `, params);
 
         // 4. ACTIVITY LOGS (New)

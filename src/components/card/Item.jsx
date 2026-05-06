@@ -1,108 +1,112 @@
 'use client'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import Image from 'next/image'
 import { Context } from '../helper/Context'
-import { ShoppingCart, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Check } from 'lucide-react'
 
 const Item = ({ product }) => {
   const { addToCart } = useContext(Context)
+  const [added, setAdded] = useState(false)
 
-  const currentPrice =
-    product?.discount_price > 0
-      ? product.sale_price - product.discount_price
-      : product.sale_price
-
+  const salePrice = Number(product?.sale_price) || 0
+  const discountPrice = Number(product?.discount_price) || 0
+  const currentPrice = discountPrice > 0 ? salePrice - discountPrice : salePrice
+  const discountPct = discountPrice > 0 ? Math.round((discountPrice / salePrice) * 100) : 0
   const isNew = product?.is_new ?? true
+
+  const handleAddToCart = (e) => {
+    e.preventDefault()
+    addToCart(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1800)
+  }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
-      className="group relative w-full"
+      transition={{ duration: 0.35 }}
+      className="group relative w-full flex flex-col bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
     >
-      {/* ── Image box ── */}
-      <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/4' }}>
+      {/* ── Image ── */}
+      <Link href={`/products/${product.slug}`} className="relative block w-full overflow-hidden" style={{ aspectRatio: '1/1' }}>
 
-        {/* Badge */}
-        {product?.discount_price > 0 ? (
-          <div className="absolute top-3 left-4 z-20 bg-sky-500 text-white text-[11px] font-bold px-3 py-1 rounded-sm select-none">
-            -{Math.round((product.discount_price / product.sale_price) * 100)}%
-          </div>
-        ) : isNew ? (
-          <div className="absolute top-3 left-4 z-20 bg-sky-500 text-white text-[11px] font-bold px-3 py-1 rounded-sm select-none">
-            New
-          </div>
-        ) : null}
+        {/* Badges */}
+        <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
+          {discountPct > 0 && (
+            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-tight">
+              -{discountPct}%
+            </span>
+          )}
+          {isNew && discountPct === 0 && (
+            <span className="bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-tight">
+              New
+            </span>
+          )}
+        </div>
 
-        <Link href={`/products/${product.slug}`} className="block w-full h-full">
-          <Image
-            src={product?.image || '/placeholder.jpg'}
-            alt={product?.name || 'Product'}
-            width={400}
-            height={400}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+        <Image
+          src={product?.image || '/placeholder.jpg'}
+          alt={product?.name || 'Product'}
+          width={400}
+          height={400}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      </Link>
+
+      {/* ── Info ── */}
+      <div className="flex flex-col flex-1 p-3 gap-2">
+
+        {/* Category / Brand */}
+        {(product?.category_name || product?.brand_name) && (
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 line-clamp-1">
+            {product.category_name || product.brand_name}
+          </p>
+        )}
+
+        {/* Name */}
+        <Link href={`/products/${product.slug}`}>
+          <h2 className="text-sm font-semibold text-gray-800 hover:text-sky-600 transition-colors line-clamp-2 leading-snug">
+            {product?.name}
+          </h2>
         </Link>
 
-        <div
-          className="
-            absolute bottom-0 left-0 right-0 h-24
-            bg-white
-            translate-y-full group-hover:translate-y-0
-            transition-transform duration-500 ease-in-out
-            z-10
-            border-l border-r border-b border-gray-200
-          "
+        {/* Price row */}
+        <div className="flex items-baseline gap-2 mt-auto pt-1">
+          <span className="text-base font-bold text-gray-900">৳{currentPrice}</span>
+          {discountPct > 0 && (
+            <span className="text-xs text-gray-400 line-through">৳{salePrice}</span>
+          )}
+        </div>
+
+        {/* Add to Cart button — always visible, touch-friendly */}
+        <button
+          onClick={handleAddToCart}
+          className={`
+            mt-1 w-full flex items-center justify-center gap-2
+            py-2.5 rounded-lg text-sm font-semibold
+            transition-all duration-300
+            ${added
+              ? 'bg-green-500 text-white'
+              : 'bg-gray-900 text-white hover:bg-sky-600 active:scale-95'
+            }
+          `}
         >
-          <ul className="h-full flex flex-col items-end justify-center gap-2 px-3 font-sans">
-
-            <li
-              onClick={() => addToCart(product)}
-              className="
-                w-full flex items-center justify-end gap-2
-                text-[13px] text-gray-500 hover:text-sky-500
-                border-b border-gray-100 hover:border-sky-400
-                pb-1.5 cursor-pointer transition-colors duration-200
-              "
-            >
+          {added ? (
+            <>
+              <Check size={15} />
+              Added
+            </>
+          ) : (
+            <>
+              <ShoppingCart size={15} />
               Add to Cart
-              <ShoppingCart size={14} />
-            </li>
-
-            <li className="
-              w-full flex items-center justify-end gap-2
-              text-[13px] text-gray-500 hover:text-sky-500
-              border-b border-gray-100 hover:border-sky-400
-              pb-1.5 cursor-pointer transition-colors duration-200
-            ">
-              <Link href={`/products/${product.slug}`} className="flex items-center gap-2 w-full justify-end">
-                View Details
-                <ArrowRight size={14} />
-              </Link>
-            </li>
-
-          </ul>
-        </div>
-      </div>
-
-      <div className="w-full py-4 px-3 border border-t-0 border-gray-200 flex flex-col gap-1">
-        <div className="flex items-center justify-between font-sans">
-          <Link href={`/products/${product.slug}`}>
-            <h2 className="text-sm font-bold text-gray-800 hover:text-sky-500 transition-colors line-clamp-1">
-              {product?.name}
-            </h2>
-          </Link>
-          <p className="text-[13px] text-gray-500 font-medium whitespace-nowrap ml-2">
-            ৳{currentPrice}
-          </p>
-        </div>
-        <p className="text-[12px] text-gray-400 line-clamp-1">
-          {product?.category_name || product?.brand_name || ''}
-        </p>
+            </>
+          )}
+        </button>
       </div>
     </motion.div>
   )

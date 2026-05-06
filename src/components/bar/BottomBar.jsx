@@ -14,7 +14,6 @@ const BottomBar = () => {
         <BottomNavItem href='/' icon={<Home size={22} />} label='Home' />
         <BottomNavItem href='/offers' icon={<Tag size={22} />} label='Offers' />
         <BottomNavItem href='/products' icon={<Package size={22} />} label='Products' />
-        <BottomNavItem href='/login' icon={<User size={22} />} label='Profile' />
         
         <Link href='/cart' className='relative flex flex-col items-center justify-center text-white/70 hover:text-primary transition-colors'>
           {cart?.items?.length > 0 && (

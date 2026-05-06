@@ -30,7 +30,7 @@ const Dashboard = () => {
         try {
             const s = format(startDate, 'yyyy-MM-dd')
             const e = format(endDate, 'yyyy-MM-dd')
-            const res = await axios.get(`/api/report/dashboard?type=${activeTab}&start=${s}&end=${e}`)
+            const res = await axios.get(`/api/report/dashboard?type=${activeTab}&start=${s}&end=${e}`, { withCredentials: true })
             if (res.data.success) setData(res.data)
         } catch (err) {
             console.error("Fetch Error:", err)

@@ -27,7 +27,7 @@ export default function AccountPage() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res  = await axios.get("/api/user/islogin");
+                const res  = await axios.get("/api/user/islogin", { withCredentials: true });
                 const info = res.data.payload;
                 setStaffInfo(info);
                 setFormData(prev => ({ ...prev, name: info.name, email: info.email }));
@@ -57,7 +57,7 @@ export default function AccountPage() {
                 email:    formData.email,
                 ...(formData.password ? { password: formData.password } : {}),
             };
-            const res = await axios.put("/api/user", payload);
+            const res = await axios.put("/api/user", payload, { withCredentials: true });
             toast.success(res.data.message || "Account updated successfully");
             const updated = res.data.payload;
             setStaffInfo(prev => ({ ...prev, ...updated }));
@@ -73,7 +73,7 @@ export default function AccountPage() {
 
     const handleLogout = async () => {
         try {
-            await axios.get("/api/user/login");
+            await axios.get("/api/user/login", { withCredentials: true });
             toast.success("Logged out successfully");
             window.location.replace("/login");
         } catch {

@@ -34,6 +34,7 @@ const Footer = () => {
           <FooterLink href='/offers'>Special Offers</FooterLink>
           <FooterLink href='/products'>New Arrivals</FooterLink>
           <FooterLink href='/products/category'>Categories</FooterLink>
+          <FooterLink href='/track-order'>Track Order</FooterLink>
           <FooterLink href='/dashboard'>Admin Access</FooterLink>
         </FooterColumn>
 

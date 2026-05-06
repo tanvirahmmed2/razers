@@ -26,7 +26,7 @@ const PosPage = () => {
   }
     const fetchProduct=async()=>{
       try {
-        const res= await axios.get(`/api/product/category/${categoryId}`)
+        const res= await axios.get(`/api/product/category/${categoryId}`, { withCredentials: true })
         setProducts(res.data.payload)
       } catch (error) {
         setProducts([])
