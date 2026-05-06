@@ -3,7 +3,7 @@ import "./globals.css";
 import ToastProvider from "@/components/helper/ToastProvider";
 import { headers } from "next/headers";
 import { getTenant } from "@/lib/database/tenant";
-
+import StatusBlocker from "@/components/helper/StatusBlocker";
 
 export async function generateMetadata() {
   const headersList = await headers();
@@ -25,7 +25,6 @@ export async function generateMetadata() {
   };
 }
 
-
 export default async function RootLayout({ children }) {
   const headersList = await headers();
   const siteData = await getTenant({ headers: headersList });
@@ -35,7 +34,13 @@ export default async function RootLayout({ children }) {
       <body className="w-full overflow-x-hidden relative bg-white">
         <ContextProvider initialSiteData={siteData}>
           <ToastProvider>
-            <main>{children}</main>
+            <StatusBlocker 
+              status={siteData?.status} 
+              subscriptionStatus={siteData?.subscription_status}
+              websiteStatus={siteData?.website_status}
+            >
+              <main>{children}</main>
+            </StatusBlocker>
           </ToastProvider>
         </ContextProvider>
       </body>

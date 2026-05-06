@@ -6,7 +6,7 @@ import {
   RiRefund2Line, RiAlertLine, RiUser3Line, RiTruckLine, 
   RiSettings3Line, RiFileChartLine, RiArchiveLine, 
   RiPriceTag3Line, RiShoppingBag3Line, RiUserAddLine, 
-  RiUserCommunityLine, RiSuperscript, RiMenuLine, RiCloseLine, RiCheckboxCircleLine 
+  RiUserCommunityLine, RiSuperscript, RiMenuLine, RiCloseLine, RiCheckboxCircleLine, RiStarLine
 } from "react-icons/ri"
 import { TbReport, TbMoneybag, TbReportMoney, TbReportAnalytics, TbReportSearch } from "react-icons/tb"
 import { usePathname } from 'next/navigation'
@@ -154,6 +154,7 @@ const DashboardSidebar = () => {
             )}
             <MenuItem href="/dashboard/manager/ledger" icon={RiFileChartLine} label="Payment Ledger" isOpen={isOpen} />
             <MenuItem href="/dashboard/manager/return-orders" icon={RiRefund2Line} label="Return Orders" isOpen={isOpen} />
+            <MenuItem href="/dashboard/manager/reviews" icon={RiStarLine} label="Customer Reviews" isOpen={isOpen} />
             <MenuItem href="/dashboard/manager/support" icon={RiSuperscript} label="Support Tickets" isOpen={isOpen} />
             <MenuItem href="/dashboard/help" icon={RiUserCommunityLine} label="Help Center" isOpen={isOpen} />
           </>

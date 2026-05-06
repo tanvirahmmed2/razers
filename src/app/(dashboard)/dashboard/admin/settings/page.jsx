@@ -5,7 +5,8 @@ import { toast } from 'react-hot-toast'
 import { 
   Save, Globe, Mail, Phone, MapPin, 
   Facebook, Instagram, Linkedin, Youtube,
-  Layout, Search, Palette, ShoppingBag, Loader2
+  Layout, Search, Palette, ShoppingBag, Loader2,
+  CreditCard, Calendar, CheckCircle2, AlertCircle
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -31,7 +32,10 @@ const SettingsPage = () => {
     primary_color: '#10b981',
     secondary_color: '#ffffff',
     is_public: true,
-    is_store_enabled: true
+    is_store_enabled: true,
+    subscription_status: '',
+    subscription_expires_at: '',
+    tenant_status: ''
   })
 
   useEffect(() => {
@@ -88,6 +92,53 @@ const SettingsPage = () => {
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Store Settings</h1>
         <p className="text-slate-500 font-medium">Manage your website information and preferences.</p>
       </div>
+
+      {/* --- Subscription Status (New Section) --- */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-3xl p-1 border border-slate-100 shadow-sm overflow-hidden"
+      >
+        <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
+          <div className="p-4 bg-slate-900 rounded-2xl text-white">
+            <CreditCard size={32} />
+          </div>
+          <div className="flex-1 text-center md:text-left space-y-1">
+            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Subscription Plan</h2>
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-3">
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+                data.subscription_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
+              }`}>
+                {data.subscription_status === 'active' ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                {data.subscription_status || 'Unknown'}
+              </span>
+              <span className="text-slate-400 font-bold text-xs uppercase tracking-widest">•</span>
+              <span className="text-slate-500 font-bold text-sm">
+                Expires on: <span className="text-slate-900">{data.subscription_expires_at ? new Date(data.subscription_expires_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}</span>
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col items-center md:items-end gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Website & Account Status</span>
+            <div className="flex gap-2">
+              <div className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest border ${
+                data.status === 'active' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-amber-100 bg-amber-50 text-amber-600'
+              }`}>
+                Site: {data.status || 'Unknown'}
+              </div>
+              <div className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest border ${
+                data.tenant_status === 'active' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-rose-100 bg-rose-50 text-rose-600'
+              }`}>
+                Tenant: {data.tenant_status || 'Inactive'}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-slate-50 px-8 py-3 flex items-center justify-between border-t border-slate-100">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">For billing inquiries or plan upgrades, please visit disibin.com</p>
+          <a href="https://www.disibin.com" target="_blank" className="text-xs font-black text-sky-500 uppercase tracking-widest hover:text-sky-600 transition-colors">Contact Support</a>
+        </div>
+      </motion.div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         

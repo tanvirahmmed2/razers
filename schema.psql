@@ -409,3 +409,22 @@ CREATE TABLE ecom_refunds (
 
   created_at TIMESTAMP DEFAULT now()
 );
+
+
+CREATE TABLE ecom_reviews (
+  review_id SERIAL PRIMARY KEY,
+
+  tenant_id INT REFERENCES tenants(tenant_id) ON DELETE CASCADE,
+  user_id INT REFERENCES ecom_users(user_id) ON DELETE SET NULL,
+
+  rating INT NOT NULL
+    CHECK (rating BETWEEN 1 AND 5),
+
+  title VARCHAR(150),
+  comment TEXT,
+
+  is_approved BOOLEAN DEFAULT TRUE,
+
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now()
+);

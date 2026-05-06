@@ -21,7 +21,14 @@ export async function GET() {
             [website.website_id]
         );
 
-        return NextResponse.json({ success: true, payload: res.rows[0] });
+        const payload = {
+            ...res.rows[0],
+            subscription_status: website.subscription_status,
+            subscription_expires_at: website.subscription_expires_at,
+            tenant_status: website.status // Also include tenant status for completeness
+        };
+
+        return NextResponse.json({ success: true, payload });
     } catch (error) {
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }

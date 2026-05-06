@@ -6,6 +6,7 @@ import Service from '@/components/page/Service'
 import StoreVisit from '@/components/page/StoreVisit'
 import Support from '@/components/page/Support'
 import TopProducts from '@/components/page/TopProducts'
+import Reviews from '@/components/pages/Reviews'
 import React from 'react'
 
 const MainPage = () => {
@@ -16,6 +17,7 @@ const MainPage = () => {
       <Service/>
       <LatestProducts/>
       <AllCategories/>
+      <Reviews />
       <StoreVisit/>
       <Support />
     </div>

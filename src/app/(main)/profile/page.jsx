@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast'
 import { User, Mail, Phone, Calendar, ShoppingBag, Settings, LogOut, Loader2, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { MdReviews } from 'react-icons/md'
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null)
@@ -126,6 +127,13 @@ const ProfilePage = () => {
             label='My Orders'
             desc='View all your purchases and order history'
             color='from-blue-500 to-indigo-600'
+          />
+          <QuickLink
+            href='/user/reviews'
+            icon={<MdReviews size={20} />}
+            label='Reviews'
+            desc='Update your name, email, phone, or password'
+            color='from-slate-600 to-slate-800'
           />
           <QuickLink
             href='/user/settings'

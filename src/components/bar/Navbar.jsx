@@ -8,6 +8,8 @@ import { Context } from '../helper/Context';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
+import { MdReviews } from 'react-icons/md';
+import { BsDashSquare } from 'react-icons/bs';
 
 const Navbar = () => {
   const { userData, setUserData, cart, siteData } = useContext(Context)
@@ -60,7 +62,6 @@ const Navbar = () => {
               <SearchIcon size={19} />
             </Link>
 
-            {/* Cart with badge */}
             <Link
               href={'/cart'}
               className='relative p-2 rounded-full hover:bg-sky-50 text-slate-600 transition-colors'
@@ -74,7 +75,6 @@ const Navbar = () => {
               )}
             </Link>
 
-            {/* Auth: show avatar dropdown when logged in, login button when not */}
             {isLoggedIn ? (
               <UserMenu userData={userData} handleLogout={handleLogout} />
             ) : (
@@ -163,14 +163,25 @@ const UserMenu = ({ userData, handleLogout }) => {
                 onClick={() => setOpen(false)}
               />
               <DropdownLink
+                href='/user/reviews'
+                icon={<MdReviews size={15} />}
+                label='Reviews'
+                onClick={() => setOpen(false)}
+              />
+              <DropdownLink
                 href='/user/settings'
                 icon={<Settings size={15} />}
                 label='Settings'
                 onClick={() => setOpen(false)}
               />
+              <DropdownLink
+                href='/user'
+                icon={<BsDashSquare size={15} />}
+                label='Dashboard'
+                onClick={() => setOpen(false)}
+              />
             </div>
 
-            {/* Logout */}
             <div className='border-t border-slate-100 py-1.5'>
               <button
                 onClick={() => { setOpen(false); handleLogout(); }}

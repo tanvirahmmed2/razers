@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { User, Mail, Phone, Settings, ShoppingBag, ShieldCheck } from "lucide-react";
+import { User, Mail, Phone, Settings, ShoppingBag, ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -116,6 +116,21 @@ export default function UserProfile() {
                                     <div>
                                         <h3 className="font-bold text-gray-900">Settings</h3>
                                         <p className="text-sm text-gray-500">Update profile & security</p>
+                                    </div>
+                                </div>
+                                <span className="text-gray-300 group-hover:text-black transition-colors">→</span>
+                            </div>
+                        </Link>
+
+                        <Link href="/user/reviews" className="block">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-black transition-all group">
+                                <div className="flex items-center space-x-4">
+                                    <div className="bg-gray-100 p-3 rounded-lg group-hover:bg-black group-hover:text-white transition-colors">
+                                        <Star className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">My Reviews</h3>
+                                        <p className="text-sm text-gray-500">Share your feedback</p>
                                     </div>
                                 </div>
                                 <span className="text-gray-300 group-hover:text-black transition-colors">→</span>
