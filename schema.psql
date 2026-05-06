@@ -288,22 +288,45 @@ CREATE TABLE ecom_purchase_payments (
 -- =====================================================
 -- ORDERS (SALES)
 -- =====================================================
-CREATE TABLE ecom_orders (
+CREATE TABLE public.ecom_orders (
   order_id SERIAL PRIMARY KEY,
-  tenant_id INT REFERENCES tenants(tenant_id),
 
-  customer_id INT REFERENCES ecom_customers(customer_id),
+  tenant_id INTEGER,
+  customer_id INTEGER,
 
   phone VARCHAR(20) NOT NULL,
 
   status VARCHAR(30) DEFAULT 'pending',
 
-  subtotal_amount NUMERIC(10,2),
-  total_discount_amount NUMERIC(10,2) DEFAULT 0,
-  total_amount NUMERIC(10,2),
+  subtotal_amount NUMERIC(10, 2),
+  total_discount_amount NUMERIC(10, 2) DEFAULT 0,
+  total_amount NUMERIC(10, 2),
 
-  created_at TIMESTAMP DEFAULT now()
-);
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+
+  CONSTRAINT ecom_orders_customer_id_fkey
+    FOREIGN KEY (customer_id)
+    REFERENCES ecom_customers (customer_id),
+
+  CONSTRAINT ecom_orders_tenant_id_fkey
+    FOREIGN KEY (tenant_id)
+    REFERENCES tenants (tenant_id),
+
+  CONSTRAINT ecom_orders_status_check
+    CHECK (
+      status IN (
+        'pending',
+        'confirmed',
+        'processing',
+        'shipped',
+        'out_for_delivery',
+        'delivered',
+        'cancelled',
+        'returned',
+        'failed'
+      )
+    )
+) 
 
 -- =====================================================
 -- ORDER ITEMS

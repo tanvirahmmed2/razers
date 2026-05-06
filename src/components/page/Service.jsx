@@ -1,50 +1,74 @@
 'use client'
 import React from 'react'
-import { CiDeliveryTruck } from 'react-icons/ci'
-import { GrReturn } from 'react-icons/gr'
-import { LiaStoreAltSolid } from 'react-icons/lia'
-import { MdVerified } from 'react-icons/md'
+import { motion } from 'framer-motion'
+import { Truck, BadgeCheck, RefreshCw, Headphones } from 'lucide-react'
 
-const data=[
-    {
-        id:1,
-        icon: <CiDeliveryTruck/>,
-        title:'Home Delivery',
-        description:'Free on 2000+'
-    },
-    {
-        id:2,
-        icon: <LiaStoreAltSolid/>,
-        title:'100% Original',
-        description:'Authentic guarantee'
-    },
-    {
-        id:3,
-        icon: <MdVerified/>,
-        title:'Cash On Delivery',
-        description:'Outside Dhaka'
-    },
-    {
-        id:4,
-        icon: <GrReturn/>,
-        title:'7 Days Return',
-        description:'Easy policy'
-    },
+const data = [
+  {
+    id: 1,
+    icon: <Truck size={26} />,
+    title: 'Home Delivery',
+    description: 'Free on ৳2000+',
+    bg: '#EFF6FF',
+    color: '#2563EB',
+  },
+  {
+    id: 2,
+    icon: <BadgeCheck size={26} />,
+    title: '100% Original',
+    description: 'Authentic guarantee',
+    bg: '#F0FDF4',
+    color: '#16A34A',
+  },
+  {
+    id: 3,
+    icon: <RefreshCw size={26} />,
+    title: '7 Days Return',
+    description: 'Easy return policy',
+    bg: '#FFF7ED',
+    color: '#EA580C',
+  },
+  {
+    id: 4,
+    icon: <Headphones size={26} />,
+    title: '24/7 Support',
+    description: 'Always here to help',
+    bg: '#F5F3FF',
+    color: '#7C3AED',
+  },
 ]
+
 const Service = () => {
   return (
-    <div className='w-full p-4 py-10 bg-slate-400 grid grid-cols-2 md:grid-cols-4 md:px-10 gap-4 md:gap-8'>
-        {
-            data.map((d)=>(
-                <div key={d.id} className='w-full bg-white p-2 md:p-4 flex flex-col items-center justify-center rounded-2xl text-center'>
-                    <p className='text-3xl'>{d.icon}</p>
-                    <h1 className='text-base md:text-xl font-semibold'>{d.title}</h1>
-                    <p>{d.description}</p>
-                </div>
-            ))
-        }
-      
-    </div>
+    <section className="w-full py-10 px-4 md:px-10 lg:px-20 bg-white">
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+      >
+        {data.map((d) => (
+          <motion.div
+            key={d.id}
+            variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center text-center gap-3 p-5 rounded-2xl border border-gray-100 hover:shadow-md transition-all duration-200"
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: d.bg, color: d.color }}
+            >
+              {d.icon}
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-gray-800">{d.title}</h3>
+              <p className="text-[12px] text-gray-400 mt-0.5">{d.description}</p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </section>
   )
 }
 

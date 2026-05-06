@@ -57,7 +57,6 @@ const ProductDetails = ({ product }) => {
                 </div>
             </div>
 
-            {/* Right: Product Info */}
             <div className='w-full lg:w-1/2 flex flex-col justify-between py-2'>
                 <div className="space-y-8">
                     <div className="space-y-2">
@@ -100,7 +99,7 @@ const ProductDetails = ({ product }) => {
                         <button 
                             onClick={handleAddToCart}
                             disabled={isOutOfStock}
-                            className={`flex-1 py-5 rounded-[1.25rem] flex items-center justify-center gap-3 text-white font-black text-sm uppercase tracking-widest transition-all duration-300 active:scale-95 ${
+                            className={`flex-1 py-3 cursor-pointer rounded-md flex items-center justify-center gap-3 text-white font-black text-sm uppercase tracking-widest transition-all duration-300 active:scale-95 ${
                                 isOutOfStock 
                                 ? 'bg-slate-200 cursor-not-allowed text-slate-400' 
                                 : 'bg-primary hover:bg-slate-900 shadow-xl shadow-primary/20 hover:shadow-slate-900/20'

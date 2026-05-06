@@ -38,7 +38,6 @@ const Item = ({ product }) => {
           </div>
         ) : null}
 
-        {/* Product image */}
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
           <Image
             src={product?.image || '/placeholder.jpg'}
@@ -49,7 +48,6 @@ const Item = ({ product }) => {
           />
         </Link>
 
-        {/* ── Slide-up action panel ── */}
         <div
           className="
             absolute bottom-0 left-0 right-0 h-24
@@ -62,7 +60,6 @@ const Item = ({ product }) => {
         >
           <ul className="h-full flex flex-col items-end justify-center gap-2 px-3 font-sans">
 
-            {/* Add to Cart */}
             <li
               onClick={() => addToCart(product)}
               className="
@@ -76,7 +73,6 @@ const Item = ({ product }) => {
               <ShoppingCart size={14} />
             </li>
 
-            {/* View Details */}
             <li className="
               w-full flex items-center justify-end gap-2
               text-[13px] text-gray-500 hover:text-sky-500
@@ -93,7 +89,6 @@ const Item = ({ product }) => {
         </div>
       </div>
 
-      {/* ── Info box ── */}
       <div className="w-full py-4 px-3 border border-t-0 border-gray-200 flex flex-col gap-1">
         <div className="flex items-center justify-between font-sans">
           <Link href={`/products/${product.slug}`}>

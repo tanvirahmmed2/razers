@@ -1,11 +1,13 @@
 'use client'
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
-import { Send, Mail, User, MessageSquare, HelpCircle } from 'lucide-react'
+import { Send, Mail, User, MessageSquare, HelpCircle, Phone, MapPin } from 'lucide-react'
+import { Context } from '../helper/Context'
 
 const Support = () => {
+  const { siteData } = useContext(Context)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -58,16 +60,34 @@ const Support = () => {
           </motion.div>
 
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-            <ContactCard 
-              icon={<Mail size={18} />} 
-              title='Email Us' 
-              content='support@nizamvarieties.com' 
-            />
-            <ContactCard 
-              icon={<MessageSquare size={18} />} 
-              title='Live Chat' 
-              content='Available 9AM - 10PM' 
-            />
+            {siteData?.website_email && (
+              <ContactCard
+                icon={<Mail size={18} />}
+                title='Email Us'
+                content={siteData.website_email}
+              />
+            )}
+            {siteData?.website_phone && (
+              <ContactCard
+                icon={<Phone size={18} />}
+                title='Call Us'
+                content={siteData.website_phone}
+              />
+            )}
+            {siteData?.website_address && (
+              <ContactCard
+                icon={<MapPin size={18} />}
+                title='Address'
+                content={`${siteData.website_address}${siteData.city ? ', ' + siteData.city : ''}${siteData.country ? ', ' + siteData.country : ''}`}
+              />
+            )}
+            {!siteData?.website_email && !siteData?.website_phone && (
+              <ContactCard
+                icon={<MessageSquare size={18} />}
+                title='Live Chat'
+                content='Available 9AM - 10PM'
+              />
+            )}
           </div>
         </div>
 
