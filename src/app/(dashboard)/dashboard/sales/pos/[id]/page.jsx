@@ -46,7 +46,7 @@ const POSSLIPPAGE = ({ params }) => {
     const formattedTime = orderDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
 
     return (
-        <div className="min-h-screen w-full bg-stone-200 flex flex-col items-center py-6 sm:py-12 px-4 print:p-0 print:bg-white overflow-x-hidden">
+        <div className="min-h-screen w-full  flex flex-col items-center py-6 sm:py-12 px-4 print:p-0 print:bg-white overflow-x-hidden">
             
             
             <div className="w-full max-w-150 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-5 sm:p-7 border border-gray-100 flex flex-col gap-4 print:shadow-none print:border-none print:w-full">
@@ -150,7 +150,7 @@ const POSSLIPPAGE = ({ params }) => {
                 <footer className="mt-6 text-center">
                     <p className="text-[12px] italic font-medium">Thank you! Come again.</p>
                     <p className="mt-6 text-[8px] uppercase tracking-widest text-gray-400">
-                        © {new Date().getFullYear()} Nizam Varieties Store
+                        © {new Date().getFullYear()} Disibin
                     </p>
                 </footer>
 
@@ -162,7 +162,7 @@ const POSSLIPPAGE = ({ params }) => {
                         Print Receipt
                     </button>
                     <Link 
-                        href="/dashboard/pos" 
+                        href="/dashboard/sales/pos" 
                         className="w-full text-center py-3 text-[10px] font-bold uppercase tracking-widest border border-gray-200 rounded text-gray-500 hover:bg-gray-50"
                     >
                         Return to POS

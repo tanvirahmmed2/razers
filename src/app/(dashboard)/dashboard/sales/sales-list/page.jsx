@@ -194,7 +194,7 @@ const SalesListPage = () => {
                             <GiConfirmed size={18} />
                           </button>
                         )}
-                        <Link href={`/dashboard/pos/${order.order_id}`} className='bg-sky-50 text-sky-600 hover:bg-sky-100 p-2.5 rounded-xl flex items-center justify-center transition-colors' title="View Invoice">
+                        <Link href={`/dashboard/sales/pos/${order.order_id}`} className='bg-sky-50 text-sky-600 hover:bg-sky-100 p-2.5 rounded-xl flex items-center justify-center transition-colors' title="View Invoice">
                           <LuView size={18} />
                         </Link>
                         <button onClick={() => generateReceipt(order, siteData)} className='bg-slate-50 text-slate-600 hover:bg-slate-100 p-2.5 rounded-xl flex items-center justify-center transition-colors' title="Print Receipt">

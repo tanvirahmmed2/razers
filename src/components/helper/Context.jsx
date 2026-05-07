@@ -56,14 +56,14 @@ const ContextProvider = ({ children, initialSiteData }) => {
 
     const stock = Number(product.stock);
     const salePrice = parseFloat(product.sale_price);
-    const cartItemId = `${product.product_id}`;
+    const cartItemId = String(product.product_id);
 
     if (stock <= 0) {
       toast.error("Item is out of stock!");
       return;
     }
 
-    const existingInCart = cart.items.find(item => item.cartItemId === cartItemId);
+    const existingInCart = cart.items.find(item => String(item.cartItemId) === cartItemId);
 
     if (existingInCart) {
       if (existingInCart.quantity >= stock) {
@@ -74,7 +74,7 @@ const ContextProvider = ({ children, initialSiteData }) => {
       setCart((prev) => ({
         ...prev,
         items: prev.items.map(item =>
-          item.cartItemId === cartItemId
+          String(item.cartItemId) === cartItemId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -94,10 +94,11 @@ const ContextProvider = ({ children, initialSiteData }) => {
             name: product.name,
             image: product.image,
             quantity: 1,
+            stock: stock,
             sale_price: salePrice,
             wholesale_price: wholeSalePrice,
             discount_price: discountAmount,
-            price: salePrice
+            price: product.price !== undefined ? parseFloat(product.price) : salePrice
           }
         ]
       }));
@@ -106,39 +107,46 @@ const ContextProvider = ({ children, initialSiteData }) => {
   };
 
   const increaseQuantity = (cartItemId) => {
-    const item = cart.items.find(i => i.cartItemId === cartItemId);
-    if (!item) return;
+    const id = String(cartItemId);
+    setCart((prev) => {
+      const item = prev.items.find(i => String(i.cartItemId) === id);
+      if (!item) return prev;
 
-    // We don't have stock info here easily without re-fetching or storing it in item
-    // For now, just increase, assuming if it's in cart it was available.
-    // Ideally we should have stock in the cart item too.
-    setCart((prev) => ({
-      ...prev,
-      items: prev.items.map(i =>
-        i.cartItemId === cartItemId
-          ? { ...i, quantity: i.quantity + 1 }
-          : i
-      )
-    }));
+      if (item.quantity >= item.stock) {
+        toast.error(`Only ${item.stock} items available in stock`);
+        return prev;
+      }
+
+      return {
+        ...prev,
+        items: prev.items.map(i =>
+          String(i.cartItemId) === id
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        )
+      };
+    });
   };
 
   const removeFromCart = (cartItemId) => {
-    setCart(prev => ({ ...prev, items: prev.items.filter(item => item.cartItemId !== cartItemId) }))
+    const id = String(cartItemId);
+    setCart(prev => ({ ...prev, items: prev.items.filter(item => String(item.cartItemId) !== id) }))
   }
 
   const decreaseQuantity = (cartItemId) => {
+    const id = String(cartItemId);
     setCart((prev) => {
-      const existing = prev.items.find(item => item.cartItemId === cartItemId)
+      const existing = prev.items.find(item => String(item.cartItemId) === id)
       if (!existing) return prev
       if (existing.quantity > 1) {
         return {
           ...prev,
           items: prev.items.map(item =>
-            item.cartItemId === cartItemId ? { ...item, quantity: item.quantity - 1 } : item
+            String(item.cartItemId) === id ? { ...item, quantity: item.quantity - 1 } : item
           )
         }
       }
-      return { ...prev, items: prev.items.filter(item => item.cartItemId !== cartItemId) }
+      return { ...prev, items: prev.items.filter(item => String(item.cartItemId) !== id) }
     })
   }
 

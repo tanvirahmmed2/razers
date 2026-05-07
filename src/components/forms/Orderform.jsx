@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { ShoppingBag } from 'lucide-react'
 
 const Orderform = ({ cartItems = [] }) => {
-    const { decreaseQuantity, clearCart, addToCart, removeFromCart, setCart, customers, setIsCustomerBox, siteData } = useContext(Context)
+    const { decreaseQuantity, increaseQuantity, clearCart, addToCart, removeFromCart, setCart, customers, setIsCustomerBox, siteData } = useContext(Context)
     const [saleType, setSaleType] = useState('retail')
     const [products, setProducts] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
@@ -40,7 +40,7 @@ const Orderform = ({ cartItems = [] }) => {
             }
             try {
                 const response = await axios.get(`/api/product/search?q=${searchTerm}`, { withCredentials: true })
-                setProducts(response.data.payload)
+                setProducts(response.data.payload || [])
             } catch (error) {
                 console.error(error)
                 setProducts([])
@@ -84,11 +84,11 @@ const Orderform = ({ cartItems = [] }) => {
         }))
     }
 
-    const handlePriceChange = (productId, newPrice) => {
+    const handlePriceChange = (cartItemId, newPrice) => {
         setCart(prev => ({
             ...prev,
             items: prev.items.map(item =>
-                item.product_id === productId
+                String(item.cartItemId) === String(cartItemId)
                     ? { ...item, price: parseFloat(newPrice) || 0 }
                     : item
             )
@@ -187,7 +187,7 @@ const Orderform = ({ cartItems = [] }) => {
                 createdAt: new Date().toISOString().split('T')[0]
             })
             setSaleType('retail')
-            router.push(`/dashboard/pos/${response.data.payload.order_id}`)
+            router.push(`/dashboard/sales/pos/${response.data.payload.order_id}`)
         } catch (error) {
             toast.error(error?.response?.data?.message || "Checkout failed")
         }
@@ -273,10 +273,11 @@ const Orderform = ({ cartItems = [] }) => {
 
                 <div className='w-full flex flex-col gap-2 max-h-[400px] overflow-y-auto border-y border-slate-100 py-3 custom-scrollbar'>
                     <div className='w-full grid grid-cols-6 sm:grid-cols-12 gap-2 px-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
-                        <p className='col-span-3 sm:col-span-5'>Product</p>
+                        <p className='col-span-2 sm:col-span-4'>Product</p>
                         <p className='col-span-2 sm:col-span-3 text-center'>Qty</p>
                         <p className='hidden sm:block col-span-2 text-center'>Rate</p>
                         <p className='col-span-1 sm:col-span-2 text-right'>Total</p>
+                        <p className='col-span-1 sm:col-span-1 text-center'>Action</p>
                     </div>
 
                     {cartItems.length === 0 ? (
@@ -296,32 +297,35 @@ const Orderform = ({ cartItems = [] }) => {
                         const rowTotal = (itemRate - itemDiscount) * (item.quantity || 0);
 
                         return (
-                            <div key={item.product_id} className='w-full grid grid-cols-6 sm:grid-cols-12 gap-2 p-2 rounded-xl hover:bg-slate-50 transition-all items-center'>
-                                <div className='col-span-3 sm:col-span-5 flex flex-col pr-1'>
+                            <div key={item.cartItemId} className='w-full grid grid-cols-6 sm:grid-cols-12 gap-2 p-2 rounded-xl hover:bg-slate-50 transition-all items-center'>
+                                <div className='col-span-2 sm:col-span-4 flex flex-col pr-1'>
                                     <p className='text-xs font-bold text-slate-700 truncate' title={item.name}>{item.name}</p>
-                                    <div className='flex items-center gap-2'>
-                                        <button onClick={() => removeFromCart(item?.product_id)} className='text-[9px] text-rose-500 font-bold uppercase'>Remove</button>
-                                        <span className='sm:hidden text-[9px] text-slate-400'>@ ৳{itemRate}</span>
-                                    </div>
+                                    <span className='sm:hidden text-[9px] text-slate-400'>@ ৳{itemRate}</span>
                                 </div>
 
                                 <div className='col-span-2 sm:col-span-3 flex items-center justify-between bg-slate-100 px-1.5 py-1 rounded-lg'>
-                                    <button type='button' onClick={() => decreaseQuantity(item?.product_id)} className='p-1 text-slate-400 hover:text-rose-500'><FaMinus size={8} /></button>
+                                    <button type='button' onClick={() => decreaseQuantity(item.cartItemId)} className='p-1 text-slate-400 hover:text-rose-500'><FaMinus size={8} /></button>
                                     <span className='text-xs font-bold text-slate-700'>{item?.quantity}</span>
-                                    <button type='button' onClick={() => addToCart(item)} className='p-1 text-slate-400 hover:text-primary'><FaPlus size={8} /></button>
+                                    <button type='button' onClick={() => increaseQuantity(item.cartItemId)} className='p-1 text-slate-400 hover:text-primary'><FaPlus size={8} /></button>
                                 </div>
 
                                 <div className='hidden sm:block col-span-2 text-center'>
                                     <input
                                         type="number"
                                         value={itemRate}
-                                        onChange={(e) => handlePriceChange(item.product_id, e.target.value)}
+                                        onChange={(e) => handlePriceChange(item.cartItemId, e.target.value)}
                                         className='w-full bg-transparent text-center text-xs font-bold text-slate-600 outline-none border-b border-transparent focus:border-primary'
                                         step="0.01"
                                     />
                                 </div>
 
                                 <p className='col-span-1 sm:col-span-2 text-right font-black text-slate-900 text-xs'>৳{rowTotal.toFixed(0)}</p>
+                                
+                                <div className='col-span-1 sm:col-span-1 flex items-center justify-center'>
+                                    <button type='button' onClick={() => removeFromCart(item.cartItemId)} className='p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors'>
+                                        <MdDeleteOutline size={18} />
+                                    </button>
+                                </div>
                             </div>
                         )
                     })}
