@@ -317,6 +317,21 @@ export const generateReceipt = (order, siteData) => {
             <span class="meta-label">Time</span>
             <span class="meta-value">${formattedTime}</span>
           </div>
+          ${order.phone ? `
+          <div class="meta-row">
+            <span class="meta-label">Customer Ph.</span>
+            <span class="meta-value">${order.phone}</span>
+          </div>` : ''}
+          ${order.shipping_address && order.shipping_address !== 'POS Sale' ? `
+          <div class="meta-row">
+            <span class="meta-label">Address</span>
+            <span class="meta-value" style="text-align: right; max-width: 50mm;">${order.shipping_address}</span>
+          </div>` : ''}
+          ${order.note ? `
+          <div class="meta-row">
+            <span class="meta-label">Note</span>
+            <span class="meta-value" style="text-align: right; max-width: 50mm; font-style: italic;">${order.note}</span>
+          </div>` : ''}
         </div>
 
         <div class="customer-row">
@@ -352,6 +367,11 @@ export const generateReceipt = (order, siteData) => {
             <span class="t-label">Total Discount</span>
             <span class="t-value">− ৳${Number(order.total_discount_amount).toFixed(2)}</span>
           </div>` : ''}
+          ${order.delivery_charge > 0 ? `
+          <div class="total-row">
+            <span class="t-label">Delivery Charge</span>
+            <span class="t-value">+ ৳${Number(order.delivery_charge).toFixed(2)}</span>
+          </div>` : ''}
         </div>
 
         <hr class="solid">
@@ -365,22 +385,31 @@ export const generateReceipt = (order, siteData) => {
 
         <div class="cash-row">
           <span class="c-label">Paid Amount</span>
-          <span class="c-value">৳${Number(order.paid_amount || 0).toFixed(2)}</span>
+          <span class="c-value">৳${Number(order.paid_amount || order.amount_received || 0).toFixed(2)}</span>
         </div>
+        ${Number(order.due_amount) > 0 ? `
+        <div class="cash-row" style="color: #dc2626; font-weight: bold;">
+          <span class="c-label" style="color: #dc2626;">Balance Due</span>
+          <span class="c-value" style="color: #dc2626;">৳${Number(order.due_amount).toFixed(2)}</span>
+        </div>` : ''}
         <div class="cash-row change">
-          <span class="c-label">Change Due</span>
+          <span class="c-label">Change Given</span>
           <span class="c-value">৳${Number(order.change_amount || 0).toFixed(2)}</span>
         </div>
 
         <div class="barcode-area">
-          <div class="barcode-lines">
-            ${Array.from({ length: 44 }, (_, i) => {
-              const h = [18,24,16,28,20,14,26,22,18,28,12,24,20,16,28,18,22,14,26,20,18,28,16,24,20,18,12,26,22,28,14,20,18,24,16,28,22,18,26,14,20,24,16,22][i];
-              const w = [1,2,1,3,1,2,1,1,2,3,1,2,1,1,3,1,2,1,3,1,2,3,1,2,1,2,1,3,2,3,1,2,1,2,1,3,2,1,3,1,2,2,1,2][i];
-              return `<span class="bar" style="height:${h}px;width:${w}px;"></span>`;
-            }).join('')}
-          </div>
-          <div class="barcode-number">${String(order.order_id).padStart(12, '0')}</div>
+          <svg id="barcode"></svg>
+          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+          <script>
+            JsBarcode("#barcode", "${String(order.order_id).padStart(12, '0')}", {
+              format: "CODE128",
+              width: 1.2,
+              height: 30,
+              displayValue: true,
+              fontSize: 10,
+              margin: 0
+            });
+          </script>
         </div>
 
         <div class="footer">

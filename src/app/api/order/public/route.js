@@ -11,7 +11,7 @@ export async function POST(req) {
         }
         const tenant_id = website.tenant_id;
 
-        const { customerName, phone, items, subtotal, discount, total, paymentMethod, transactionId } = await req.json();
+        const { customerName, phone, items, subtotal, discount, total, paymentMethod, transactionId, address, note, deliveryCharge } = await req.json();
 
         if (!phone) throw new Error("Phone number is required");
 
@@ -24,20 +24,27 @@ export async function POST(req) {
 
         if (customerCheck.rows.length > 0) {
             customer_id = customerCheck.rows[0].customer_id;
+            // Update customer address if provided
+            if (address) {
+                await client.query(
+                    "UPDATE ecom_customers SET address = $1, name = $2 WHERE customer_id = $3",
+                    [address, customerName, customer_id]
+                );
+            }
         } else {
             // Create a new guest customer record
             const newCustomer = await client.query(
-                "INSERT INTO ecom_customers (name, phone, tenant_id) VALUES ($1, $2, $3) RETURNING customer_id",
-                [customerName || 'Guest Customer', phone, tenant_id]
+                "INSERT INTO ecom_customers (name, phone, address, tenant_id) VALUES ($1, $2, $3, $4) RETURNING customer_id",
+                [customerName || 'Guest Customer', phone, address || '', tenant_id]
             );
             customer_id = newCustomer.rows[0].customer_id;
         }
 
         // 2. Insert Order (Force status to 'pending')
         const orderRes = await client.query(
-            `INSERT INTO ecom_orders (customer_id, phone, subtotal_amount, total_discount_amount, total_amount, status, tenant_id) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING order_id`,
-            [customer_id, phone, subtotal, discount, total, 'pending', tenant_id]
+            `INSERT INTO ecom_orders (customer_id, phone, shipping_address, delivery_charge, note, subtotal_amount, total_discount_amount, total_amount, due_amount, status, tenant_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING order_id`,
+            [customer_id, phone, address || '', deliveryCharge || 0, note || '', subtotal, discount, total, total, 'pending', tenant_id]
         );
         const orderId = orderRes.rows[0].order_id;
 

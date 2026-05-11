@@ -30,13 +30,18 @@ export async function GET(req) {
                 o.subtotal_amount,
                 o.total_discount_amount,
                 o.total_amount,
+                o.due_amount,
+                o.delivery_charge,
+                o.shipping_address,
+                o.note,
                 o.status,
                 o.created_at,
-                c.name   AS customer_name,
-                c.phone  AS customer_phone,
+                c.name,
+                c.phone,
                 p.payment_method,
                 p.payment_status,
                 p.amount_received AS paid_amount,
+                p.change_amount,
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
                         'name',     pr.name,
@@ -57,13 +62,19 @@ export async function GET(req) {
         if (orderId) {
             query = `${baseSelect}
                 WHERE o.order_id = $1 AND o.tenant_id = $2
-                GROUP BY o.order_id, c.name, c.phone, p.payment_method, p.payment_status, p.amount_received`;
+                GROUP BY 
+                    o.order_id, o.subtotal_amount, o.total_discount_amount, o.total_amount, 
+                    o.due_amount, o.delivery_charge, o.shipping_address, o.note, o.status, o.created_at,
+                    c.name, c.phone, p.payment_method, p.payment_status, p.amount_received, p.change_amount`;
             values = [orderId, tenant_id];
         } else {
             // Phone search — return all orders for that phone, newest first
             query = `${baseSelect}
                 WHERE c.phone = $1 AND o.tenant_id = $2
-                GROUP BY o.order_id, c.name, c.phone, p.payment_method, p.payment_status, p.amount_received
+                GROUP BY 
+                    o.order_id, o.subtotal_amount, o.total_discount_amount, o.total_amount, 
+                    o.due_amount, o.delivery_charge, o.shipping_address, o.note, o.status, o.created_at,
+                    c.name, c.phone, p.payment_method, p.payment_status, p.amount_received, p.change_amount
                 ORDER BY o.created_at DESC`;
             values = [phone, tenant_id];
         }

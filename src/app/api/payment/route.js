@@ -16,6 +16,9 @@ export async function GET() {
                 o.subtotal_amount AS subtotal,
                 o.total_amount AS payment_amount,
                 o.total_discount_amount AS discount,
+                o.shipping_address,
+                o.delivery_charge,
+                o.note,
                 c.phone,
                 c.name,
                 p.paid_at AS date
@@ -23,7 +26,7 @@ export async function GET() {
             JOIN ecom_orders o ON p.order_id = o.order_id AND p.tenant_id = o.tenant_id
             JOIN ecom_customers c ON o.customer_id = c.customer_id AND o.tenant_id = c.tenant_id
             WHERE o.tenant_id = $1 
-              AND o.status IN ('confirmed', 'shipped', 'delivered', 'completed', 'confirm')
+              AND o.status IN ('confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered')
             ORDER BY p.paid_at DESC
         `;
 

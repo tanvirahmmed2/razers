@@ -27,6 +27,7 @@ export async function GET(req) {
                 c.name,
                 c.phone,
                 o.total_amount,
+                o.due_amount,
                 o.total_discount_amount AS discount,
                 o.subtotal_amount AS subtotal,
                 o.status,
@@ -35,6 +36,9 @@ export async function GET(req) {
                 p.transaction_id,
                 p.amount_received,
                 p.change_amount,
+                o.shipping_address,
+                o.delivery_charge,
+                o.note,
                 o.created_at AS date,
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
@@ -53,9 +57,10 @@ export async function GET(req) {
             WHERE o.status = $1 AND o.tenant_id = $2
             GROUP BY 
                 o.order_id, c.name, c.phone,
-                o.total_amount, o.total_discount_amount, o.subtotal_amount, o.status,
+                o.total_amount, o.due_amount, o.total_discount_amount, o.subtotal_amount, o.status,
                 p.payment_status, p.payment_method, p.transaction_id,
-                p.amount_received, p.change_amount, o.created_at
+                p.amount_received, p.change_amount, o.created_at,
+                o.shipping_address, o.delivery_charge, o.note
             ORDER BY o.created_at DESC
         `;
 

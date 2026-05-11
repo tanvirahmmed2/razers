@@ -90,6 +90,18 @@ const ConfirmedOrdersPage = () => {
               <p className='font-bold text-slate-800 text-lg leading-tight'>{order.name || 'Customer'}</p>
               <p className='text-sm text-slate-500 font-medium'>{order.phone || '—'}</p>
               <p className='text-[10px] font-mono text-slate-400 mt-2'>ID: #{order.order_id}</p>
+              {order.shipping_address && (
+                <p className='text-[10px] text-slate-500 mt-2 italic line-clamp-2'>
+                  <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Address:</span> 
+                  {order.shipping_address}
+                </p>
+              )}
+              {order.note && (
+                <p className='text-[10px] text-sky-600 mt-1 italic font-medium line-clamp-2'>
+                  <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Note:</span> 
+                  {order.note}
+                </p>
+              )}
             </div>
 
             {/* Items */}
@@ -115,10 +127,19 @@ const ConfirmedOrdersPage = () => {
               <div className='flex justify-between text-xs text-rose-500'>
                 <span>Discount</span><span>−৳{order.discount || 0}</span>
               </div>
-              <div className='flex justify-between items-center border-t border-slate-200 pt-2 mt-1'>
-                <span className='text-[10px] font-black text-emerald-600 uppercase'>Paid</span>
-                <span className='text-lg font-black text-emerald-600'>৳{Number(order.total_amount || 0).toLocaleString()}</span>
+              <div className='flex justify-between text-xs text-blue-500'>
+                <span>Delivery</span><span>+৳{order.delivery_charge || 0}</span>
               </div>
+              <div className='flex justify-between items-center border-t border-slate-200 pt-2 mt-1'>
+                <span className='text-[10px] font-black text-emerald-600 uppercase tracking-wider'>Paid</span>
+                <span className='text-lg font-black text-emerald-600'>৳{(Number(order.total_amount || 0) - Number(order.due_amount || 0)).toLocaleString()}</span>
+              </div>
+              {Number(order.due_amount || 0) > 0 && (
+                <div className='flex justify-between items-center'>
+                  <span className='text-[10px] font-black text-rose-600 uppercase tracking-wider'>Due</span>
+                  <span className='text-sm font-black text-rose-600'>৳{Number(order.due_amount).toLocaleString()}</span>
+                </div>
+              )}
             </div>
 
             {/* Actions */}

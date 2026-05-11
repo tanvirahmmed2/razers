@@ -88,6 +88,18 @@ const TransactionsPage = async () => {
                                             <span>{t.date.slice(0, 10)}</span>
                                         </div>
                                     </div>
+                                    {t.shipping_address && (
+                                        <p className='text-[10px] text-slate-500 mt-2 line-clamp-1 italic'>
+                                            <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Ship to:</span> 
+                                            {t.shipping_address}
+                                        </p>
+                                    )}
+                                    {t.note && (
+                                        <p className='text-[10px] text-primary mt-1 line-clamp-1 italic font-medium'>
+                                            <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Note:</span> 
+                                            {t.note}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -98,6 +110,7 @@ const TransactionsPage = async () => {
                             <div className='grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8'>
                                 <TransactionMetric label="Sub Total" value={t.subtotal} icon={<DollarSign size={14} />} />
                                 <TransactionMetric label="Discount" value={t.discount} color="text-rose-500" icon={<Tag size={14} />} />
+                                <TransactionMetric label="Shipping" value={t.delivery_charge} color="text-blue-500" icon={<Receipt size={14} />} />
                                 <TransactionMetric label="Paid Amount" value={t.payment_amount} color="text-primary" icon={<Wallet size={14} />} />
                                 
                                 <div className='flex flex-col justify-center items-end'>

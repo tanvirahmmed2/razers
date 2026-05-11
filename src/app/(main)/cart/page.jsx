@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 const CartPage = () => {
   const { cart, removeFromCart, addToCart, decreaseQuantity, increaseQuantity, clearCart, userData } = useContext(Context)
@@ -13,6 +14,10 @@ const CartPage = () => {
   const [formData, setFormData] = useState({
     name: userData?.name || '',
     phone: userData?.phone || '',
+    address: '',
+    note: '',
+    deliveryLocation: 'inside',
+    deliveryCharge: 70,
     subTotal: 0,
     discount: 0,
     totalPrice: 0,
@@ -34,19 +39,23 @@ const CartPage = () => {
     const totalDiscount = cart.items.reduce((sum, item) =>
       sum + (parseFloat(item.discount_price || 0) * (item.quantity || 0)), 0)
 
-    const totalPrice = subTotal - totalDiscount
+    const deliveryCharge = formData.deliveryLocation === 'inside' ? 70 : 120
+    const totalPrice = subTotal - totalDiscount + deliveryCharge
 
-    setFormData(prev => ({ ...prev, subTotal, discount: totalDiscount, totalPrice }))
-  }, [cart?.items])
+    setFormData(prev => ({ ...prev, subTotal, discount: totalDiscount, deliveryCharge, totalPrice }))
+  }, [cart?.items, formData.deliveryLocation])
 
   const placeOrder = async (e) => {
     e.preventDefault()
     if (cart.items.length === 0) return toast.error("Your cart is empty");
-    
+
     setIsSubmitting(true)
     const payload = {
       customerName: formData.name,
       phone: formData.phone,
+      address: formData.address,
+      note: formData.note,
+      deliveryCharge: formData.deliveryCharge,
       subtotal: formData.subTotal,
       discount: formData.discount,
       total: formData.totalPrice,
@@ -65,8 +74,8 @@ const CartPage = () => {
       toast.success(response.data.message || 'Order placed successfully!');
       clearCart()
       setFormData({
-        name: '', phone: '', subTotal: 0, discount: 0,
-        totalPrice: 0, paymentMethod: 'cash', transactionId: ''
+        name: '', phone: '', address: '', note: '', deliveryLocation: 'inside', deliveryCharge: 70,
+        subTotal: 0, discount: 0, totalPrice: 0, paymentMethod: 'cash', transactionId: ''
       })
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Failed to place order')
@@ -93,133 +102,171 @@ const CartPage = () => {
 
   return (
     <div className='w-full max-w-7xl mx-auto px-4 py-16'>
-      <div className='flex flex-col lg:flex-row gap-8'>
-        
-        {/* Cart Items */}
-        <div className='flex-1'>
-          <div className='flex items-center justify-between mb-6'>
-            <h1 className='text-3xl font-black text-slate-900 tracking-tight'>Shopping <span className='text-primary'>Cart</span></h1>
-            <button 
-              onClick={clearCart}
-              className='flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-500 transition-colors uppercase tracking-widest'
-            >
-              <Trash2 size={14} />
-              Clear Cart
-            </button>
-          </div>
-
-          <div className='flex flex-col gap-4'>
-            <AnimatePresence mode='popLayout'>
-              {cart.items.map((item) => (
-                <motion.div 
-                  key={item?.cartItemId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className='group bg-white rounded-2xl border border-slate-100 p-3 md:p-4 flex flex-col md:flex-row items-center gap-4 hover:shadow-md transition-all duration-300'
-                >
-                  <div className='w-20 h-20 rounded-xl bg-slate-50 flex-shrink-0 overflow-hidden border border-slate-100 flex items-center justify-center'>
-                    {item?.image ? (
-                      <img src={item?.image} alt={item?.name} className='w-full h-full object-cover group-hover:scale-105 transition-transform' />
-                    ) : (
-                      <ShoppingBag size={24} className='text-slate-200' />
-                    )}
-                  </div>
-
-                  <div className='flex-1 text-center md:text-left'>
-                    <h3 className='text-base font-bold text-slate-800 line-clamp-1'>{item?.name}</h3>
-                    
-                    <div className='flex items-center justify-center md:justify-start gap-2 mt-1.5'>
-                      <p className='text-xs font-bold text-slate-600'>
-                        ৳{(parseFloat(item?.sale_price) - parseFloat(item?.discount_price || 0)).toFixed(2)}
-                      </p>
-                      {parseFloat(item?.discount_price) > 0 && (
-                        <p className='text-[10px] font-medium text-slate-400 line-through'>
-                          ৳{parseFloat(item?.sale_price).toFixed(2)}
-                        </p>
-                      )}
-                      <span className='text-[10px] text-slate-400 font-medium'>/ unit</span>
-                    </div>
-                  </div>
-
-                  <div className='flex flex-wrap items-center justify-center gap-4'>
-                    <div className='flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100'>
-                      <button
-                        onClick={() => decreaseQuantity(item?.cartItemId)}
-                        className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90 shadow-sm'
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className='font-bold text-slate-800 min-w-[20px] text-center text-sm'>{item?.quantity}</span>
-                      <button
-                        onClick={() => increaseQuantity(item?.cartItemId)}
-                        className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-primary hover:bg-primary/5 transition-all active:scale-90 shadow-sm'
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-
-                    <div className='text-right min-w-[100px]'>
-                      <p className='text-base font-black text-slate-900 tracking-tight'>
-                        ৳{((parseFloat(item.sale_price) - parseFloat(item.discount_price || 0)) * item.quantity).toFixed(2)}
-                      </p>
-                      {parseFloat(item.discount_price) > 0 && (
-                        <p className='text-[10px] font-bold text-slate-400 line-through decoration-rose-400/50'>
-                          ৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => removeFromCart(item?.cartItemId)}
-                      className='p-2.5 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90'
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+      
+      <div className='w-full flex flex-col items-center gap-5'>
+        <div className='w-full flex flex-row items-center justify-between'>
+          
+          <p className='border-b-2 border-sky-500 font-bold text-slate-800 pr-4 pb-1'>Checkout</p>
+          <button
+            onClick={clearCart}
+            className='flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-500 transition-colors uppercase tracking-widest'
+          >
+            <Trash2 size={14} />
+            Clear Cart
+          </button>
         </div>
 
-        {/* Checkout Sidebar */}
-        <div className='w-full lg:w-[360px]'>
-          <div className='bg-slate-900 rounded-3xl p-6 md:p-8 sticky top-20 shadow-xl shadow-slate-900/10'>
-            <h2 className='text-xl font-bold text-white mb-6 flex items-center gap-3'>
-              Checkout
-              <div className='h-1 w-10 bg-primary rounded-full'></div>
-            </h2>
+        <form onSubmit={placeOrder} className='w-full flex flex-col lg:flex-row gap-8 lg:gap-10'>
+          
+          <div className='w-full flex flex-col lg:w-3/5 gap-4'>
+            <div className='relative'>
+              <User className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+              <input
+                type="text" name='name' required placeholder="Full Name"
+                onChange={handleChange} value={formData.name}
+                className='w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-sky-500 transition-colors'
+              />
+            </div>
+            
+            <div className='relative w-full'>
+              <Phone className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+              <input
+                type="text" name='phone' required placeholder="Phone Number"
+                onChange={handleChange} value={formData.phone}
+                className='w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-sky-500 transition-colors'
+              />
+            </div>
 
-            <form onSubmit={placeOrder} className='flex flex-col gap-4'>
-              <div className='space-y-3'>
-                <div className='relative'>
-                  <User className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500' size={16} />
-                  <input
-                    type="text" name='name' required placeholder="Full Name"
-                    onChange={handleChange} value={formData.name}
-                    className='w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-primary transition-all text-white font-medium placeholder:text-slate-600 text-sm'
-                  />
-                </div>
-                <div className='relative'>
-                  <Phone className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500' size={16} />
-                  <input
-                    type="text" name='phone' required placeholder="Phone Number"
-                    onChange={handleChange} value={formData.phone}
-                    className='w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-primary transition-all text-white font-medium placeholder:text-slate-600 text-sm'
-                  />
+            <div className='relative w-full'>
+              <textarea
+                name='address' required placeholder="Delivery Address"
+                onChange={handleChange} value={formData.address}
+                rows={3}
+                className='w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-sky-500 transition-colors resize-none'
+              />
+            </div>
+
+            <div className='relative w-full'>
+              <textarea
+                name='note' placeholder="Special Note (Optional)"
+                onChange={handleChange} value={formData.note}
+                rows={4}
+                className='w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none focus:border-sky-500 transition-colors resize-none'
+              />
+            </div>
+          </div>
+
+          <div className='w-full flex flex-col gap-6'>
+            <div className='flex flex-col gap-4 w-full'>
+              <AnimatePresence mode='popLayout'>
+                {cart.items.map((item) => (
+                  <motion.div
+                    key={item?.cartItemId}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className='group bg-white rounded-2xl border border-slate-100 p-3 md:p-4 flex flex-col md:flex-row items-center gap-4 hover:shadow-md transition-all duration-300'
+                  >
+                    <div className='w-20 h-20 rounded-xl bg-slate-50 shrink-0 overflow-hidden border border-slate-100 flex items-center justify-center'>
+                      {item?.image ? (
+                        <Image src={item?.image} alt={item?.name} width={100} height={100} className='w-full h-full object-cover group-hover:scale-105 transition-transform' />
+                      ) : (
+                        <ShoppingBag size={24} className='text-slate-200' />
+                      )}
+                    </div>
+
+                    <div className='flex-1 text-center md:text-left w-full'>
+                      <h3 className='text-base font-bold text-slate-800 line-clamp-1'>{item?.name}</h3>
+
+                      <div className='flex items-center justify-center md:justify-start gap-2 mt-1.5'>
+                        <p className='text-xs font-bold text-slate-600'>
+                          ৳{(parseFloat(item?.sale_price) - parseFloat(item?.discount_price || 0)).toFixed(2)}
+                        </p>
+                        {parseFloat(item?.discount_price) > 0 && (
+                          <p className='text-[10px] font-medium text-slate-400 line-through'>
+                            ৳{parseFloat(item?.sale_price).toFixed(2)}
+                          </p>
+                        )}
+                        <span className='text-[10px] text-slate-400 font-medium'>/ unit</span>
+                      </div>
+                    </div>
+
+                    <div className='flex flex-wrap items-center justify-center md:justify-end gap-4 w-full md:w-auto'>
+                      <div className='flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100'>
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(item?.cartItemId)}
+                          className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90 shadow-sm'
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className='font-bold text-slate-800 min-w-4 text-center text-sm'>{item?.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => increaseQuantity(item?.cartItemId)}
+                          className='w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-600 hover:text-primary hover:bg-primary/10 transition-all active:scale-90 shadow-sm'
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+
+                      <div className='text-right min-w-18'>
+                        <p className='text-base font-black text-slate-900 tracking-tight'>
+                          ৳{((parseFloat(item.sale_price) - parseFloat(item.discount_price || 0)) * item.quantity).toFixed(2)}
+                        </p>
+                        {parseFloat(item.discount_price) > 0 && (
+                          <p className='text-[10px] font-bold text-slate-400 line-through decoration-rose-400/50'>
+                            ৳{(parseFloat(item.sale_price) * item.quantity).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item?.cartItemId)}
+                        className='p-2.5 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90'
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            <div className='w-full bg-white p-5 rounded-2xl border border-slate-100 shadow-sm'>
+              <div className='space-y-4'>
+
+                <div className='flex flex-col gap-2'>
+                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1'>Delivery Area</label>
+                  <div className='grid grid-cols-2 gap-3'>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, deliveryLocation: 'inside' }))}
+                      className={`py-3 rounded-xl border-2 font-bold text-sm transition-all ${formData.deliveryLocation === 'inside' ? 'bg-primary border-primary text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}
+                    >
+                      Inside Dhaka
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, deliveryLocation: 'outside' }))}
+                      className={`py-3 rounded-xl border-2 font-bold text-sm transition-all ${formData.deliveryLocation === 'outside' ? 'bg-primary border-primary text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}
+                    >
+                      Outside Dhaka
+                    </button>
+                  </div>
                 </div>
 
-                <div className='flex flex-col gap-1.5 pt-1'>
-                  <label className='text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1'>Payment Method</label>
-                  <div className='flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300'>
-                    <CreditCard size={16} className='text-primary' />
-                    <span className='font-bold uppercase tracking-wider text-[11px]'>{formData.paymentMethod} on Delivery</span>
+                <div className='flex flex-col gap-2 pt-1'>
+                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1'>Payment Method</label>
+                  <div className='flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700'>
+                    <CreditCard size={18} className='text-primary' />
+                    <span className='font-bold uppercase tracking-wider text-xs'>{formData.paymentMethod} on Delivery</span>
                   </div>
                 </div>
               </div>
 
-              <div className='flex flex-col gap-3 border-t border-white/10 pt-4 mt-1'>
+              <div className='flex flex-col gap-3 border-t border-slate-100 pt-5 mt-5'>
                 <div className='flex justify-between text-slate-500 font-medium text-sm'>
                   <span>Subtotal</span>
                   <span>৳{formData.subTotal.toFixed(2)}</span>
@@ -228,8 +275,12 @@ const CartPage = () => {
                   <span>Discount</span>
                   <span>-৳{formData.discount.toFixed(2)}</span>
                 </div>
-                <div className='flex justify-between text-xl font-black mt-1 text-white'>
-                  <span>Total</span>
+                <div className='flex justify-between text-slate-500 font-medium text-sm'>
+                  <span>Delivery Charge</span>
+                  <span>৳{formData.deliveryCharge.toFixed(2)}</span>
+                </div>
+                <div className='flex justify-between text-xl font-black mt-2 pt-2 border-t border-slate-100'>
+                  <span className='text-slate-800'>Total</span>
                   <span className='text-primary'>৳{formData.totalPrice.toFixed(2)}</span>
                 </div>
               </div>
@@ -237,7 +288,7 @@ const CartPage = () => {
               <button
                 type='submit'
                 disabled={isSubmitting}
-                className='group flex items-center justify-center gap-2.5 w-full py-3.5 bg-primary text-white rounded-xl font-bold text-base hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-50 shadow-md'
+                className='group mt-6 flex items-center justify-center gap-2.5 w-full py-4 bg-primary text-white rounded-xl font-bold text-base hover:bg-primary-dark transition-all active:scale-[0.98] disabled:opacity-70 shadow-md'
               >
                 {isSubmitting ? (
                   <Loader2 size={20} className='animate-spin' />
@@ -248,14 +299,16 @@ const CartPage = () => {
                   </>
                 )}
               </button>
-              
-              <p className='text-[9px] text-center text-slate-600 font-medium leading-relaxed italic'>
+
+              <p className='text-[10px] text-center text-slate-400 font-medium leading-relaxed italic mt-4'>
                 * We will contact you shortly to verify your order details and delivery address.
               </p>
-            </form>
+            </div>
           </div>
-        </div>
+
+        </form>
       </div>
+
     </div>
   )
 }

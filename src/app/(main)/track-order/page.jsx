@@ -22,7 +22,9 @@ const STATUS_MAP = {
 }
 
 const PAY_STATUS_MAP = {
+  success:  { label: 'Paid',     color: 'text-emerald-600', bg: 'bg-emerald-50' },
   paid:     { label: 'Paid',     color: 'text-emerald-600', bg: 'bg-emerald-50' },
+  partial:  { label: 'Partial',  color: 'text-blue-600',    bg: 'bg-blue-50' },
   unpaid:   { label: 'Unpaid',   color: 'text-red-600',     bg: 'bg-red-50' },
   pending:  { label: 'Pending',  color: 'text-amber-600',   bg: 'bg-amber-50' },
   refunded: { label: 'Refunded', color: 'text-purple-600',  bg: 'bg-purple-50' },
@@ -74,11 +76,14 @@ const OrderCard = ({ order, siteData, index = 0 }) => {
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
               <User size={13} className="text-gray-400" />
-              {order.customer_name}
+              {order.name}
             </span>
             <span className="flex items-center gap-1.5">
               <CalendarDays size={13} className="text-gray-400" />
               {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+              <span className="text-[10px] text-gray-300 ml-1">
+                {new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+              </span>
             </span>
             <span className="flex items-center gap-1.5 font-bold text-gray-800">
               <ShoppingBag size={13} className="text-gray-400" />

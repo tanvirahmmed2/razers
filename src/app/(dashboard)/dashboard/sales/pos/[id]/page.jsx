@@ -88,6 +88,18 @@ const POSSLIPPAGE = ({ params }) => {
                             {order.payment_method || 'Cash'}
                         </span>
                     </div>
+                    {order.shipping_address && (
+                        <p className="text-[10px] text-gray-600 mt-2 italic break-words">
+                            <span className="font-bold uppercase text-[8px] mr-1 not-italic">Address:</span>
+                            {order.shipping_address}
+                        </p>
+                    )}
+                    {order.note && (
+                        <p className="text-[10px] text-gray-600 mt-1 italic break-words">
+                            <span className="font-bold uppercase text-[8px] mr-1 not-italic">Note:</span>
+                            {order.note}
+                        </p>
+                    )}
                 </div>
 
 
@@ -127,6 +139,13 @@ const POSSLIPPAGE = ({ params }) => {
                         </div>
                     )}
 
+                    {order.delivery_charge > 0 && (
+                        <div className="flex justify-between text-xs text-gray-600">
+                            <span>Delivery Charge</span>
+                            <span className="font-mono">৳{Number(order.delivery_charge).toFixed(2)}</span>
+                        </div>
+                    )}
+
                     <div className="flex justify-between items-end pt-1">
                         <span className="text-xs font-black uppercase">Net Total</span>
                         <span className="text-2xl font-bold font-mono tracking-tighter">
@@ -144,13 +163,19 @@ const POSSLIPPAGE = ({ params }) => {
                         <span>Change</span>
                         <span className="font-mono">৳{Number(order.change_amount || 0).toFixed(2)}</span>
                     </div>
+                    {Number(order.due_amount) > 0 && (
+                        <div className="flex justify-between text-[12px] font-black uppercase text-rose-600 mt-1 pt-1 border-t border-dashed border-rose-200">
+                            <span>Due Balance</span>
+                            <span className="font-mono">৳{Number(order.due_amount).toFixed(2)}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer */}
                 <footer className="mt-6 text-center">
                     <p className="text-[12px] italic font-medium">Thank you! Come again.</p>
                     <p className="mt-6 text-[8px] uppercase tracking-widest text-gray-400">
-                        © {new Date().getFullYear()} Disibin
+                        © {new Date().getFullYear()} {siteData?.business_name || siteData?.name || ''}
                     </p>
                 </footer>
 

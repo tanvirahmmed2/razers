@@ -97,6 +97,18 @@ const ReturnedOrdersPage = () => {
                 <p className='font-bold text-slate-800 text-lg leading-tight'>{order.name || 'Walk-in Customer'}</p>
                 <p className='text-sm text-slate-500 font-medium'>{order.phone || 'No Phone'}</p>
                 <p className='text-[10px] font-mono text-slate-400 mt-2'>ID: {order.order_id}</p>
+                {order.shipping_address && (
+                  <p className='text-[10px] text-slate-500 mt-2 italic line-clamp-2'>
+                    <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Address:</span> 
+                    {order.shipping_address}
+                  </p>
+                )}
+                {order.note && (
+                  <p className='text-[10px] text-sky-600 mt-1 italic font-medium line-clamp-2'>
+                    <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Note:</span> 
+                    {order.note}
+                  </p>
+                )}
             </div>
 
             {/* Products Info */}
@@ -130,6 +142,10 @@ const ReturnedOrdersPage = () => {
                 <div className='flex justify-between text-xs text-rose-500 font-medium'>
                     <span>Discount</span>
                     <span>- ৳{order.discount || 0}</span>
+                </div>
+                <div className='flex justify-between text-xs text-blue-500 font-medium'>
+                    <span>Delivery</span>
+                    <span>+ ৳{order.delivery_charge || 0}</span>
                 </div>
                 <div className='flex justify-between items-center border-t border-slate-200 pt-2 mt-1'>
                     <span className='text-[10px] font-black text-rose-600 uppercase tracking-wider'>Total Refunded</span>

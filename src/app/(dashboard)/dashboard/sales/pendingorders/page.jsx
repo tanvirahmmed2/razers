@@ -16,6 +16,8 @@ const PendingOrdersPage = () => {
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [confirmCancel, setConfirmCancel] = useState(null)
   const [confirmDeliver, setConfirmDeliver] = useState(null)
+  const [acceptingOrder, setAcceptingOrder] = useState(null)
+  const [receivedAmount, setReceivedAmount] = useState('')
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -31,11 +33,17 @@ const PendingOrdersPage = () => {
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 
-  const confirmOrder = async (orderId) => {
+  const confirmOrder = async (orderId, amount) => {
     try {
-      const res = await axios.put('/api/order', { orderId, action: 'confirm' }, { withCredentials: true })
+      const res = await axios.put('/api/order', { 
+        orderId, 
+        action: 'confirm', 
+        amountReceived: Number(amount || 0) 
+      }, { withCredentials: true })
       if (res.data.success) {
-        toast.success('Order confirmed — payment marked paid')
+        toast.success('Order confirmed & payment updated')
+        setAcceptingOrder(null)
+        setReceivedAmount('')
         fetchOrders()
         generateReceipt(res.data.payload, siteData)
       }
@@ -122,6 +130,18 @@ const PendingOrdersPage = () => {
               <p className='font-bold text-slate-800 text-lg leading-tight'>{order.name || 'Walk-in Customer'}</p>
               <p className='text-sm text-slate-500 font-medium'>{order.phone || 'No Phone'}</p>
               <p className='text-[10px] font-mono text-slate-400 mt-2'>ID: {order.order_id}</p>
+              {order.shipping_address && (
+                <p className='text-[10px] text-slate-500 mt-2 italic line-clamp-2'>
+                  <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Address:</span> 
+                  {order.shipping_address}
+                </p>
+              )}
+              {order.note && (
+                <p className='text-[10px] text-sky-600 mt-1 italic font-medium line-clamp-2'>
+                  <span className='font-black uppercase text-[8px] text-slate-400 mr-1 not-italic'>Note:</span> 
+                  {order.note}
+                </p>
+              )}
             </div>
 
             {/* Products */}
@@ -148,10 +168,19 @@ const PendingOrdersPage = () => {
               <div className='flex justify-between text-xs text-rose-500 font-medium'>
                 <span>Discount</span><span>−৳{order.discount || 0}</span>
               </div>
-              <div className='flex justify-between items-center border-t border-slate-200 pt-2 mt-1'>
-                <span className='text-[10px] font-black text-amber-600 uppercase tracking-wider'>Due</span>
-                <span className='text-lg font-black text-amber-600'>৳{Number(order.total_amount || 0).toLocaleString()}</span>
+              <div className='flex justify-between text-xs text-blue-500 font-medium'>
+                <span>Delivery</span><span>+৳{order.delivery_charge || 0}</span>
               </div>
+              <div className='flex justify-between items-center border-t border-slate-200 pt-2 mt-1'>
+                <span className='text-[10px] font-black text-emerald-600 uppercase tracking-wider'>Paid</span>
+                <span className='text-lg font-black text-emerald-600'>৳{(Number(order.total_amount || 0) - Number(order.due_amount || 0)).toLocaleString()}</span>
+              </div>
+              {Number(order.due_amount || 0) > 0 && (
+                <div className='flex justify-between items-center'>
+                  <span className='text-[10px] font-black text-rose-600 uppercase tracking-wider'>Due</span>
+                  <span className='text-sm font-black text-rose-600'>৳{Number(order.due_amount).toLocaleString()}</span>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
@@ -187,13 +216,42 @@ const PendingOrdersPage = () => {
                     <FaXmark />
                   </button>
                 </div>
+              ) : acceptingOrder === order.order_id ? (
+                <div className='flex flex-col gap-2 w-full animate-in fade-in zoom-in duration-200'>
+                  <p className='text-[10px] text-center text-slate-500 font-bold uppercase tracking-widest'>Received Amount</p>
+                  <div className="relative">
+                    <input 
+                      type="number" 
+                      value={receivedAmount} 
+                      onChange={(e) => setReceivedAmount(e.target.value)}
+                      placeholder={order.total_amount}
+                      className="w-full p-2.5 border border-sky-100 rounded-xl text-center font-bold text-slate-700 bg-white shadow-inner focus:ring-2 focus:ring-sky-200 outline-none transition-all"
+                      autoFocus
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">৳</span>
+                  </div>
+                  {Number(receivedAmount) > Number(order.total_amount) && (
+                    <p className='text-[10px] text-center text-emerald-600 font-bold'>
+                      Change: ৳{(Number(receivedAmount) - Number(order.total_amount)).toLocaleString()}
+                    </p>
+                  )}
+                  <button 
+                    onClick={() => confirmOrder(order.order_id, receivedAmount)} 
+                    className='w-full bg-sky-500 hover:bg-sky-600 text-white p-2.5 rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all active:scale-95 shadow-sm mt-1'
+                  >
+                    <FaCheck /> Confirm Accept
+                  </button>
+                  <button onClick={() => { setAcceptingOrder(null); setReceivedAmount(''); }} className='w-full bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl flex items-center justify-center transition-all active:scale-95'>
+                    <FaXmark />
+                  </button>
+                </div>
               ) : (
                 <div className='w-full flex flex-col gap-2'>
                   <div className='grid grid-cols-1 gap-2'>
                     <button onClick={() => setConfirmDeliver(order.order_id)} className='w-full bg-emerald-500 hover:bg-emerald-600 text-white p-2.5 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-tighter transition-all active:scale-95 shadow-sm' title='Deliver Immediately'>
                       <MdOutlineDoneAll size={18} /> Direct Deliver
                     </button>
-                    <button onClick={() => confirmOrder(order.order_id)} className='w-full bg-sky-500 hover:bg-sky-600 text-white p-2.5 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-tighter transition-all active:scale-95 shadow-sm' title='Accept & Confirm'>
+                    <button onClick={() => { setAcceptingOrder(order.order_id); setReceivedAmount(order.total_amount); }} className='w-full bg-sky-500 hover:bg-sky-600 text-white p-2.5 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-tighter transition-all active:scale-95 shadow-sm' title='Accept & Confirm'>
                       <GiConfirmed size={18} /> Accept Order
                     </button>
                   </div>

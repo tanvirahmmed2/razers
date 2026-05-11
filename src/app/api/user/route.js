@@ -30,6 +30,12 @@ export async function POST(req) {
             const values = [name, email, phone, hashedPassword, tenant_id, role || 'user'];
             const result = await client.query(query, values);
 
+            // SYNC CUSTOMER NAME: If a customer exists with this phone, update their name
+            await client.query(
+                "UPDATE ecom_customers SET name = $1 WHERE phone = $2 AND tenant_id = $3",
+                [name, phone, tenant_id]
+            );
+
             return NextResponse.json({
                 success: true,
                 message: "User registered successfully",

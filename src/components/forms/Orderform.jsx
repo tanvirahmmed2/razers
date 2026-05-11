@@ -8,7 +8,7 @@ import { FaMinus, FaPlus } from 'react-icons/fa6'
 import BarScanner from '../helper/BarcodeScanner'
 import { FaBarcode } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
-import { ShoppingBag } from 'lucide-react'
+import { ShoppingBag, Phone } from 'lucide-react'
 
 const Orderform = ({ cartItems = [] }) => {
     const { decreaseQuantity, increaseQuantity, clearCart, addToCart, removeFromCart, setCart, customers, setIsCustomerBox, siteData } = useContext(Context)
@@ -21,7 +21,7 @@ const Orderform = ({ cartItems = [] }) => {
     const [receivedAmount, setReceivedAmount] = useState(0)
 
     const [data, setData] = useState({
-        customer_id: '22',
+        phone: '019',
         extradiscount: 0,
         subTotal: 0,
         totalDiscount: 0,
@@ -62,8 +62,7 @@ const Orderform = ({ cartItems = [] }) => {
                     toast.error('Out of stock')
                     return
                 }
-                const priceToSet = saleType === 'wholesale' ? item.wholesale_price : item.sale_price;
-                addToCart({ ...item, price: parseFloat(priceToSet) || 0 })
+                addToCart({ ...item })
                 setSearchTerm('')
             }
         } catch (error) {
@@ -73,15 +72,6 @@ const Orderform = ({ cartItems = [] }) => {
 
     const handleSaleTypeChange = (type) => {
         setSaleType(type)
-        setCart(prev => ({
-            ...prev,
-            items: prev.items.map(item => ({
-                ...item,
-                price: type === 'wholesale'
-                    ? (parseFloat(item.wholesale_price) || 0)
-                    : (parseFloat(item.sale_price) || 0)
-            }))
-        }))
     }
 
     const handlePriceChange = (cartItemId, newPrice) => {
@@ -89,7 +79,7 @@ const Orderform = ({ cartItems = [] }) => {
             ...prev,
             items: prev.items.map(item =>
                 String(item.cartItemId) === String(cartItemId)
-                    ? { ...item, price: parseFloat(newPrice) || 0 }
+                    ? { ...item, manual_price: parseFloat(newPrice) || 0 }
                     : item
             )
         }))
@@ -97,24 +87,25 @@ const Orderform = ({ cartItems = [] }) => {
 
     // Master Calculation Effect
     useEffect(() => {
-        const subTotal = cartItems.reduce((sum, item) => {
-            // Priority: Manual price > default sale/wholesale price
-            const itemPrice = item.price !== undefined ? item.price : (saleType === 'retail' ? item.sale_price : item.wholesale_price);
-            return sum + (parseFloat(itemPrice) * (item.quantity || 0));
-        }, 0)
-
-        const productDiscountTotal = cartItems.reduce((sum, item) => {
-            const discountPerUnit = saleType === 'wholesale' ? 0 : (parseFloat(item.discount_price) || 0);
-            return sum + (discountPerUnit * (item.quantity || 0));
-        }, 0)
+        const totals = cartItems.reduce((acc, item) => {
+            const hasManualPrice = item.manual_price !== undefined;
+            const basePrice = hasManualPrice ? item.manual_price : (saleType === 'retail' ? item.sale_price : item.wholesale_price);
+            
+            // Discount only applies to retail and when price is not manually overridden
+            const discountPerUnit = (!hasManualPrice && saleType === 'retail') ? (parseFloat(item.discount_price) || 0) : 0;
+            
+            acc.subTotal += (parseFloat(basePrice) * (item.quantity || 0));
+            acc.productDiscountTotal += (discountPerUnit * (item.quantity || 0));
+            return acc;
+        }, { subTotal: 0, productDiscountTotal: 0 });
 
         const manualDiscount = parseFloat(data.extradiscount) || 0
-        const totalPrice = subTotal - productDiscountTotal - manualDiscount
+        const totalPrice = totals.subTotal - totals.productDiscountTotal - manualDiscount
 
         setData(prev => ({
             ...prev,
-            subTotal,
-            totalDiscount: productDiscountTotal,
+            subTotal: totals.subTotal,
+            totalDiscount: totals.productDiscountTotal,
             totalPrice: Math.max(0, totalPrice)
         }))
     }, [cartItems, data.extradiscount, saleType])
@@ -127,7 +118,7 @@ const Orderform = ({ cartItems = [] }) => {
     const handleSubmit = (e) => {
         e.preventDefault()
         if (cartItems.length === 0) return toast.error("Cart is empty")
-        if (!data.customer_id) return toast.error("Please select a customer")
+        if (!data.phone) return toast.error("Please enter customer phone number")
 
         setReceivedAmount(data.totalPrice)
         setIsPaymentModal(true)
@@ -139,32 +130,31 @@ const Orderform = ({ cartItems = [] }) => {
 
 
     const finalConfirm = async () => {
-        if (changeAmount < 0) {
-            toast.error("Received amount is less than total price");
-            return
-        }
-        const selectedCustomer = customers.find(c => String(c.customer_id) === String(data.customer_id))
-
         const payload = {
-            customer_id: data.customer_id,
-            phone: selectedCustomer?.phone || '',
-            customerName: selectedCustomer?.name || '',
+            phone: data.phone,
+            address: 'POS Sale',
             subtotal: data.subTotal,
             discount: data.totalDiscount + (parseFloat(data.extradiscount) || 0),
             total: data.totalPrice,
             paid_amount: parseFloat(receivedAmount) || 0,
             change_amount: Math.max(0, changeAmount),
             paymentMethod: data.paymentMethod,
+            payment_type: 'prepaid',
             transactionId: data.transactionId,
             saleType: saleType,
             status: 'delivered',
             createdAt: data.createdAt,
-            items: cartItems.map(item => ({
-                product_id: item.product_id,
-                quantity: item.quantity,
-                // Ensure we send the current price from state
-                price: item.price !== undefined ? item.price : (saleType === 'retail' ? item.sale_price : item.wholesale_price)
-            }))
+            items: cartItems.map(item => {
+                const hasManualPrice = item.manual_price !== undefined;
+                const basePrice = hasManualPrice ? item.manual_price : (saleType === 'retail' ? item.sale_price : item.wholesale_price);
+                const discountPerUnit = (!hasManualPrice && saleType === 'retail') ? (parseFloat(item.discount_price) || 0) : 0;
+                
+                return {
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    price: (parseFloat(basePrice) - discountPerUnit)
+                };
+            })
         }
 
         try {
@@ -177,7 +167,7 @@ const Orderform = ({ cartItems = [] }) => {
             setIsPaymentModal(false)
             clearCart()
             setData({
-                customer_id: '22',
+                phone: '',
                 extradiscount: 0,
                 transactionId: '',
                 paymentMethod: 'cash',
@@ -206,22 +196,18 @@ const Orderform = ({ cartItems = [] }) => {
                     />
 
                     <div className='flex items-center gap-2'>
-                        <select
-                            name="customer_id"
-                            id="customer_id"
-                            value={data.customer_id}
-                            onChange={handleChange}
-                            required
-                            className='flex-1 px-4 py-2 border border-slate-200 rounded-xl outline-none bg-slate-50 focus:bg-white focus:border-primary transition-all text-sm font-medium'
-                        >
-                            <option value="">-- select customer --</option>
-                            {customers.map((customer) => (
-                                <option value={customer.customer_id} key={customer.customer_id}>
-                                    {customer.name}
-                                </option>
-                            ))}
-                        </select>
-                        <button type='button' onClick={() => setIsCustomerBox(true)} className='w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-primary hover:text-white transition-all'>+</button>
+                        <div className="relative flex-1">
+                            <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={data.phone}
+                                onChange={handleChange}
+                                required
+                                placeholder="Customer Phone Number"
+                                className='w-full pl-11 pr-4 py-2 border border-slate-200 rounded-xl outline-none bg-slate-50 focus:bg-white focus:border-primary transition-all text-sm font-medium'
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -253,19 +239,18 @@ const Orderform = ({ cartItems = [] }) => {
                             {products.map((product) => (
                                 <div key={product.product_id} onClick={() => {
                                     if (Number(product.stock) > 0) {
-                                        const price = saleType === 'wholesale' ? product.wholesale_price : product.sale_price;
-                                        addToCart({ ...product, price: parseFloat(price) });
+                                        addToCart({ ...product });
                                         setSearchTerm('')
                                     } else {
                                         toast.error('Out of stock')
                                     }
-                                }} className="w-full cursor-pointer flex items-center justify-between p-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
-                                    <div className='flex flex-col'>
-                                        <span className="text-sm font-bold text-slate-700">{product.name}</span>
-                                        <span className='text-[10px] text-slate-400 font-bold uppercase'>{product.unit} · Stock: {product.stock}</span>
+                                    }} className="w-full cursor-pointer flex items-center justify-between p-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
+                                        <div className='flex flex-col'>
+                                            <span className="text-sm font-bold text-slate-700">{product.name}</span>
+                                            <span className='text-[10px] text-slate-400 font-bold uppercase'>{product.unit} · Stock: {product.stock}</span>
+                                        </div>
+                                        <span className="text-sm font-bold text-primary">৳{saleType === 'wholesale' ? product.wholesale_price : (product.sale_price - product.discount_price)}</span>
                                     </div>
-                                    <span className="text-sm font-bold text-primary">৳{saleType === 'retail' ? (product.sale_price - product.discount_price) : product.wholesale_price}</span>
-                                </div>
                             ))}
                         </div>
                     )}
@@ -286,13 +271,14 @@ const Orderform = ({ cartItems = [] }) => {
                             <span>Cart is empty</span>
                         </div>
                     ) : cartItems.map(item => {
-                        const itemRate = item.price !== undefined ? item.price : (saleType === 'wholesale'
+                        const hasManualPrice = item.manual_price !== undefined;
+                        const itemRate = hasManualPrice ? item.manual_price : (saleType === 'wholesale'
                             ? (parseFloat(item.wholesale_price) || 0)
                             : (parseFloat(item.sale_price) || 0));
 
-                        const itemDiscount = saleType === 'wholesale'
-                            ? 0
-                            : (parseFloat(item.discount_price) || 0);
+                        const itemDiscount = (!hasManualPrice && saleType === 'retail')
+                            ? (parseFloat(item.discount_price) || 0)
+                            : 0;
 
                         const rowTotal = (itemRate - itemDiscount) * (item.quantity || 0);
 
@@ -342,6 +328,21 @@ const Orderform = ({ cartItems = [] }) => {
                             <span>-৳{(data.totalDiscount + (parseFloat(data.extradiscount) || 0)).toFixed(2)}</span>
                         </div>
                     )}
+
+                    <div className='flex items-center justify-between gap-4 mt-1'>
+                        <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Extra Discount</span>
+                        <div className='relative flex-1 max-w-[120px]'>
+                            <input
+                                type="number"
+                                name="extradiscount"
+                                value={data.extradiscount}
+                                onChange={handleChange}
+                                placeholder="0"
+                                className='w-full bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg outline-none focus:border-primary focus:bg-white text-right text-xs font-bold text-slate-700 transition-all'
+                            />
+                            <span className='absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300'>৳</span>
+                        </div>
+                    </div>
                     
                     <div className='flex items-center justify-between pt-2 border-t border-dashed border-slate-200'>
                         <label className='text-sm font-bold text-slate-800 uppercase tracking-tight'>Total Amount</label>
@@ -380,9 +381,13 @@ const Orderform = ({ cartItems = [] }) => {
                                 />
                             </div>
 
-                            <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                                <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Change Due</span>
-                                <span className="text-2xl font-black text-emerald-700 tracking-tighter">৳{Math.max(0, changeAmount).toFixed(0)}</span>
+                            <div className={`flex justify-between items-center p-4 rounded-2xl border ${changeAmount >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                                <span className={`text-xs font-bold uppercase tracking-widest ${changeAmount >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    {changeAmount >= 0 ? 'Change Due' : 'Balance Due'}
+                                </span>
+                                <span className={`text-2xl font-black tracking-tighter ${changeAmount >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                                    ৳{Math.abs(changeAmount).toFixed(0)}
+                                </span>
                             </div>
 
                             <div className="flex gap-3 pt-2">

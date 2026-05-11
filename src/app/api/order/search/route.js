@@ -17,12 +17,16 @@ export async function GET(req) {
                 c.phone,
                 o.order_id,
                 o.total_amount,
+                o.due_amount,
                 o.total_discount_amount,
                 o.subtotal_amount,
                 o.status,
                 p.payment_status,
                 p.change_amount,
                 p.amount_received AS paid_amount,
+                o.shipping_address,
+                o.delivery_charge,
+                o.note,
                 o.created_at,
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
@@ -49,8 +53,9 @@ export async function GET(req) {
             )
             GROUP BY 
                 o.order_id, c.name, c.phone,
-                o.total_amount, o.total_discount_amount, o.subtotal_amount, o.status,
-                p.payment_status, p.change_amount, p.amount_received, o.created_at
+                o.total_amount, o.due_amount, o.total_discount_amount, o.subtotal_amount, o.status,
+                p.payment_status, p.change_amount, p.amount_received, o.created_at,
+                o.shipping_address, o.delivery_charge, o.note
             ORDER BY o.created_at DESC
         `;
 
