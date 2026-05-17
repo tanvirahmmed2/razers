@@ -1,16 +1,10 @@
 import { pool } from '@/lib/database/db'
-import { getTenant } from '@/lib/database/tenant';
+
 import { NextResponse } from 'next/server'
 
 export async function POST(req) {
   try {
-    const website = await getTenant();
-    if (!website) {
-      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-    }
-    const tenant_id = website.tenant_id;
-
-    const { name, description } = await req.json();
+const { name, description } = await req.json();
 
     // 1. Validation
     if (!name || name.trim() === '') {
@@ -24,8 +18,8 @@ export async function POST(req) {
 
     // 2. Check if exists
     const existBrand = await pool.query(
-      'SELECT 1 FROM ecom_brands WHERE name = $1 AND tenant_id = $2',
-      [brandName, tenant_id]
+      'SELECT 1 FROM ecom_brands WHERE name = $1',
+      [brandName]
     );
 
     if (existBrand.rowCount > 0) {
@@ -37,8 +31,8 @@ export async function POST(req) {
 
     // 3. Insert only NAME and DESCRIPTION (No slug)
     const newBrand = await pool.query(
-      'INSERT INTO ecom_brands(name, description, tenant_id) VALUES($1, $2, $3) RETURNING *',
-      [brandName, description || null, tenant_id]
+      'INSERT INTO ecom_brands(name, description) VALUES($1, $2, $3) RETURNING *',
+      [brandName, description || null]
     );
 
     return NextResponse.json(
@@ -60,15 +54,9 @@ export async function POST(req) {
 
 export async function GET() {
   try {
-    const website = await getTenant();
-    if (!website) {
-      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-    }
-    const tenant_id = website.tenant_id;
-
-    const data = await pool.query(
-      'SELECT * FROM ecom_brands WHERE tenant_id = $1 ORDER BY created_at DESC',
-      [tenant_id]
+const data = await pool.query(
+      'SELECT * FROM ecom_brands  ORDER BY created_at DESC',
+      []
     )
     const result = data.rows
 
@@ -93,13 +81,7 @@ export async function GET() {
 
 export async function DELETE(req) {
   try {
-    const website = await getTenant();
-    if (!website) {
-      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-    }
-    const tenant_id = website.tenant_id;
-
-    const { id } = await req.json()
+const { id } = await req.json()
 
     if (!id) {
       return NextResponse.json(
@@ -109,8 +91,8 @@ export async function DELETE(req) {
     }
 
     const result = await pool.query(
-      'DELETE FROM ecom_brands WHERE brand_id = $1 AND tenant_id = $2 RETURNING *',
-      [id, tenant_id]
+      'DELETE FROM ecom_brands WHERE brand_id = $1 RETURNING *',
+      [id]
     )
 
     if (result.rowCount === 0) {
@@ -134,13 +116,7 @@ export async function DELETE(req) {
 
 export async function PUT(req) {
   try {
-    const website = await getTenant();
-    if (!website) {
-      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-    }
-    const tenant_id = website.tenant_id;
-
-    const { id, name, description } = await req.json();
+const { id, name, description } = await req.json();
 
     if (!id || !name) {
       return NextResponse.json(
@@ -150,8 +126,8 @@ export async function PUT(req) {
     }
 
     const result = await pool.query(
-      'UPDATE ecom_brands SET name = $1, description = $2, updated_at = now() WHERE brand_id = $3 AND tenant_id = $4 RETURNING *',
-      [name.trim(), description || null, id, tenant_id]
+      'UPDATE ecom_brands SET name = $1, description = $2, updated_at = now() WHERE brand_id = $3 RETURNING *',
+      [name.trim(), description || null, id]
     );
 
     if (result.rowCount === 0) {

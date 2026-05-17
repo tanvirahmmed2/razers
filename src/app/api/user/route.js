@@ -1,16 +1,9 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { name, email, phone, password, role } = await req.json();
 
         if (!name || !email || !phone || !password) {
@@ -23,17 +16,17 @@ export async function POST(req) {
         const client = await pool.connect();
         try {
             const query = `
-                INSERT INTO ecom_users (name, email, phone, password, tenant_id, role)
-                VALUES ($1, $2, $3, $4, $5, $6)
+                INSERT INTO ecom_users (name, email, phone, password, role)
+                VALUES ($1, $2, $3, $4, $5)
                 RETURNING user_id, name, email, role;
             `;
-            const values = [name, email, phone, hashedPassword, tenant_id, role || 'user'];
+            const values = [name, email, phone, hashedPassword, role || 'user'];
             const result = await client.query(query, values);
 
             // SYNC CUSTOMER NAME: If a customer exists with this phone, update their name
             await client.query(
-                "UPDATE ecom_customers SET name = $1 WHERE phone = $2 AND tenant_id = $3",
-                [name, phone, tenant_id]
+                "UPDATE ecom_customers SET name = $1 WHERE phone = $2",
+                [name, phone]
             );
 
             return NextResponse.json({
@@ -57,18 +50,10 @@ export async function POST(req) {
 
 export async function GET(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const res = await pool.query(
             `SELECT user_id, name, email, phone, role, is_active, created_at 
              FROM ecom_users 
-             WHERE tenant_id = $1 
-             ORDER BY created_at DESC`, 
-            [tenant_id]
+             ORDER BY created_at DESC`
         );
 
         return NextResponse.json({
@@ -83,12 +68,6 @@ export async function GET(req) {
 
 export async function PUT(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { user_id, name, phone, email, password, role, is_active } = await req.json();
         const client = await pool.connect();
 
@@ -102,18 +81,18 @@ export async function PUT(req) {
                 query = `
                     UPDATE ecom_users 
                     SET name = $1, phone = $2, email = $3, password = $4, role = $5, is_active = $6
-                    WHERE user_id = $7 AND tenant_id = $8
+                    WHERE user_id = $7
                     RETURNING user_id, name, email, phone, role;
                 `;
-                values = [name, phone, email, hashedPassword, role, is_active, user_id, tenant_id];
+                values = [name, phone, email, hashedPassword, role, is_active, user_id];
             } else {
                 query = `
                     UPDATE ecom_users 
                     SET name = $1, phone = $2, email = $3, role = $4, is_active = $5
-                    WHERE user_id = $6 AND tenant_id = $7
+                    WHERE user_id = $6
                     RETURNING user_id, name, email, phone, role;
                 `;
-                values = [name, phone, email, role, is_active, user_id, tenant_id];
+                values = [name, phone, email, role, is_active, user_id];
             }
 
             const result = await client.query(query, values);
@@ -133,15 +112,9 @@ export async function PUT(req) {
 
 export async function DELETE(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { id } = await req.json();
 
-        const result = await pool.query("DELETE FROM ecom_users WHERE user_id = $1 AND tenant_id = $2", [id, tenant_id]);
+        const result = await pool.query("DELETE FROM ecom_users WHERE user_id = $1", [id]);
         
         if (result.rowCount === 0) {
             return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
@@ -155,12 +128,6 @@ export async function DELETE(req) {
 
 export async function PATCH(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { email, role } = await req.json();
 
         if (!email || !role) {
@@ -170,9 +137,9 @@ export async function PATCH(req) {
         const res = await pool.query(
             `UPDATE ecom_users 
              SET role = $1 
-             WHERE email = $2 AND tenant_id = $3 
+             WHERE email = $2 
              RETURNING user_id, name, email, role`, 
-            [role, email, tenant_id]
+            [role, email]
         );
 
         if (res.rowCount === 0) {

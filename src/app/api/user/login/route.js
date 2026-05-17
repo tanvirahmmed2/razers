@@ -1,5 +1,5 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
+
 import { NextResponse } from "next/server";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -9,18 +9,12 @@ const TWENTY_YEARS = 60 * 60 * 24 * 365 * 20;
 
 export async function POST(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const { email, password } = await req.json();
+const { email, password } = await req.json();
 
         // 1. Validate Input
         const existsUser = await pool.query(
-            `SELECT * FROM ecom_users WHERE email=$1 AND tenant_id = $2`, 
-            [email, tenant_id]
+            `SELECT * FROM ecom_users WHERE email=$1`, 
+            [email]
         );
         if (existsUser.rowCount === 0) {
             return NextResponse.json({ success: false, message: 'User not found' }, { status: 400 });

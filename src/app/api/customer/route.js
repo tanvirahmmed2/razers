@@ -1,22 +1,16 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
+
 import { NextResponse } from "next/server";
 
 // GET: Fetch all customers
 export async function GET() {
     const client = await pool.connect();
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const result = await client.query(`
+const result = await client.query(`
             SELECT * FROM ecom_customers 
-            WHERE tenant_id = $1
+            
             ORDER BY created_at DESC
-        `, [tenant_id]);
+        `, []);
         
         return NextResponse.json({
             success: true,
@@ -38,13 +32,7 @@ export async function GET() {
 export async function POST(req) {
     const client = await pool.connect();
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const body = await req.json();
+const body = await req.json();
         const { name, phone, email, address } = body;
 
         // 1. Basic Validation
@@ -57,8 +45,8 @@ export async function POST(req) {
 
         // 2. Check if phone already exists (unique constraint check)
         const checkExist = await client.query(
-            "SELECT customer_id FROM ecom_customers WHERE phone = $1 AND tenant_id = $2", 
-            [phone, tenant_id]
+            "SELECT customer_id FROM ecom_customers WHERE phone = $1", 
+            [phone]
         );
 
         if (checkExist.rowCount > 0) {
@@ -70,11 +58,11 @@ export async function POST(req) {
 
         // 3. Insert into Database
         const query = `
-            INSERT INTO ecom_customers (name, phone, email, address, tenant_id) 
+            INSERT INTO ecom_customers (name, phone, email, address) 
             VALUES ($1, $2, $3, $4, $5) 
             RETURNING *
         `;
-        const values = [name, phone, email || null, address || null, tenant_id];
+        const values = [name, phone, email || null, address || null];
         const result = await client.query(query, values);
 
         return NextResponse.json({

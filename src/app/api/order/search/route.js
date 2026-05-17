@@ -1,5 +1,4 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
@@ -7,11 +6,7 @@ export async function GET(req) {
     const searchTerm = searchParams.get('q') || '';
 
     try {
-        const website = await getTenant();
-        if (!website) return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        const tenant_id = website.tenant_id;
-
-        const query = `
+const query = `
             SELECT 
                 c.name,
                 c.phone,
@@ -39,11 +34,11 @@ export async function GET(req) {
                     )
                 ) AS items
             FROM ecom_orders o
-            JOIN ecom_customers c    ON o.customer_id = c.customer_id AND o.tenant_id = c.tenant_id
-            JOIN ecom_payments p     ON o.order_id    = p.order_id    AND o.tenant_id = p.tenant_id
-            JOIN ecom_order_items oi ON o.order_id    = oi.order_id   AND o.tenant_id = oi.tenant_id
-            JOIN ecom_products pr    ON oi.product_id = pr.product_id AND o.tenant_id = pr.tenant_id
-            WHERE o.status = 'delivered' AND o.tenant_id = $3 AND (
+            JOIN ecom_customers c    ON o.customer_id = c.customer_id
+            JOIN ecom_payments p     ON o.order_id    = p.order_id
+            JOIN ecom_order_items oi ON o.order_id    = oi.order_id
+            JOIN ecom_products pr    ON oi.product_id = pr.product_id
+            WHERE o.status = 'delivered' AND (
                 c.phone ILIKE $1 OR 
                 c.name ILIKE $1 OR 
                 pr.name ILIKE $1 OR 
@@ -59,7 +54,7 @@ export async function GET(req) {
             ORDER BY o.created_at DESC
         `;
 
-        const data = await pool.query(query, [`%${searchTerm}%`, searchTerm, tenant_id]);
+        const data = await pool.query(query, [`%${searchTerm}%`, searchTerm]);
 
         if (data.rows.length === 0) {
             return NextResponse.json({ success: false, message: 'No delivered orders found' }, { status: 404 });

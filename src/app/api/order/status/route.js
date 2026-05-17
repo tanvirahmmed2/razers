@@ -1,5 +1,4 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned'];
@@ -10,11 +9,7 @@ export async function GET(req) {
     const filterStatus = searchParams.get('q');
 
     try {
-        const website = await getTenant();
-        if (!website) return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        const tenant_id = website.tenant_id;
-
-        if (!filterStatus || !VALID_STATUSES.includes(filterStatus)) {
+if (!filterStatus || !VALID_STATUSES.includes(filterStatus)) {
             return NextResponse.json({
                 success: false,
                 message: `Valid status required: ${VALID_STATUSES.join(', ')}`
@@ -50,11 +45,11 @@ export async function GET(req) {
                     )
                 ) AS product_list
             FROM ecom_orders o
-            JOIN ecom_customers c    ON o.customer_id = c.customer_id AND o.tenant_id = c.tenant_id
-            JOIN ecom_payments p     ON o.order_id    = p.order_id    AND o.tenant_id = p.tenant_id
-            JOIN ecom_order_items oi ON o.order_id    = oi.order_id   AND o.tenant_id = oi.tenant_id
-            JOIN ecom_products pr    ON oi.product_id = pr.product_id AND o.tenant_id = pr.tenant_id
-            WHERE o.status = $1 AND o.tenant_id = $2
+            JOIN ecom_customers c    ON o.customer_id = c.customer_id
+            JOIN ecom_payments p     ON o.order_id    = p.order_id
+            JOIN ecom_order_items oi ON o.order_id    = oi.order_id
+            JOIN ecom_products pr    ON oi.product_id = pr.product_id
+            WHERE o.status = $1
             GROUP BY 
                 o.order_id, c.name, c.phone,
                 o.total_amount, o.due_amount, o.total_discount_amount, o.subtotal_amount, o.status,
@@ -64,7 +59,7 @@ export async function GET(req) {
             ORDER BY o.created_at DESC
         `;
 
-        const data = await client.query(query, [filterStatus, tenant_id]);
+        const data = await client.query(query, [filterStatus]);
 
         return NextResponse.json({
             success: true,

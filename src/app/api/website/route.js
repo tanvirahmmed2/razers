@@ -1,6 +1,5 @@
 import { isAdmin } from "@/lib/middleware";
 import { pool } from "@/lib/database/pg";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -10,22 +9,18 @@ export async function GET() {
             return NextResponse.json({ success: false, message: auth.message }, { status: 401 });
         }
 
-        const website = await getTenant();
-        if (!website) {
+        // Fetch full website data from the websites table
+        const res = await pool.query("SELECT * FROM public.websites LIMIT 1");
+
+        if (res.rowCount === 0) {
             return NextResponse.json({ success: false, message: "Website not found" }, { status: 404 });
         }
 
-        // Fetch full website data from the websites table
-        const res = await pool.query(
-            "SELECT * FROM public.websites WHERE website_id = $1",
-            [website.website_id]
-        );
-
         const payload = {
             ...res.rows[0],
-            subscription_status: website.subscription_status,
-            subscription_expires_at: website.subscription_expires_at,
-            tenant_status: website.status // Also include tenant status for completeness
+            subscription_status: 'active',
+            subscription_expires_at: null,
+            tenant_status: 'active'
         };
 
         return NextResponse.json({ success: true, payload });
@@ -39,11 +34,6 @@ export async function PUT(req) {
         const auth = await isAdmin();
         if (!auth.success) {
             return NextResponse.json({ success: false, message: auth.message }, { status: 401 });
-        }
-
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: "Website not found" }, { status: 404 });
         }
 
         const data = await req.json();
@@ -72,23 +62,14 @@ export async function PUT(req) {
             return NextResponse.json({ success: false, message: "No fields to update" }, { status: 400 });
         }
 
-        values.push(website.website_id);
         const query = `
             UPDATE public.websites 
             SET ${updates.join(', ')}, updated_at = now()
-            WHERE website_id = $${index}
+            WHERE website_id = (SELECT website_id FROM public.websites LIMIT 1)
             RETURNING *
         `;
 
         const res = await pool.query(query, values);
-
-        // Sync name with tenants table if it was updated
-        if (data.name) {
-            await pool.query(
-                "UPDATE tenants SET name = $1 WHERE tenant_id = $2",
-                [data.name, website.tenant_id]
-            );
-        }
 
         return NextResponse.json({
             success: true,

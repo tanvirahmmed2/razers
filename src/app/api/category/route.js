@@ -1,15 +1,8 @@
 import { pool } from '@/lib/database/db'
-import { getTenant } from '@/lib/database/tenant';
 import { NextResponse } from 'next/server'
 
 export async function POST(req) {
   try {
-    const website = await getTenant();
-    if (!website) {
-      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-    }
-    const tenant_id = website.tenant_id;
-
     const { name, parent_id } = await req.json()
 
     if (!name || name.trim() === '') {
@@ -22,8 +15,8 @@ export async function POST(req) {
     const parentId = parent_id ? parseInt(parent_id) : null;
 
     const existCat = await pool.query(
-      'SELECT 1 FROM ecom_categories WHERE name = $1 AND tenant_id = $2 AND (parent_id = $3 OR (parent_id IS NULL AND $3 IS NULL))',
-      [name.trim(), tenant_id, parentId]
+      'SELECT 1 FROM ecom_categories WHERE name = $1 AND (parent_id = $2 OR (parent_id IS NULL AND $2 IS NULL))',
+      [name.trim(), parentId]
     )
 
     if (existCat.rowCount > 0) {
@@ -34,8 +27,8 @@ export async function POST(req) {
     }
 
     const newCat = await pool.query(
-      'INSERT INTO ecom_categories(name, parent_id, tenant_id) VALUES($1, $2, $3) RETURNING *',
-      [name.trim(), parentId, tenant_id]
+      'INSERT INTO ecom_categories(name, parent_id) VALUES($1, $2) RETURNING *',
+      [name.trim(), parentId]
     )
 
     return NextResponse.json(
@@ -56,15 +49,8 @@ export async function POST(req) {
 
 export async function GET() {
     try {
-        const website = await getTenant();
-        if (!website) {
-          return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const data = await pool.query(
-            'SELECT * FROM ecom_categories WHERE tenant_id = $1 ORDER BY created_at DESC',
-            [tenant_id]
+            'SELECT * FROM ecom_categories ORDER BY created_at DESC'
         )
         const result = data.rows
 
@@ -87,12 +73,6 @@ export async function GET() {
 
 export async function PUT(req) {
   try {
-    const website = await getTenant();
-    if (!website) {
-      return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-    }
-    const tenant_id = website.tenant_id;
-
     const { id, name, parent_id } = await req.json();
 
     if (!id || !name) {
@@ -105,8 +85,8 @@ export async function PUT(req) {
     const parentId = parent_id ? parseInt(parent_id) : null;
 
     const result = await pool.query(
-      'UPDATE ecom_categories SET name = $1, parent_id = $2 WHERE category_id = $3 AND tenant_id = $4 RETURNING *',
-      [name.trim(), parentId, id, tenant_id]
+      'UPDATE ecom_categories SET name = $1, parent_id = $2 WHERE category_id = $3 RETURNING *',
+      [name.trim(), parentId, id]
     );
 
     if (result.rowCount === 0) {
@@ -130,12 +110,6 @@ export async function PUT(req) {
 
 export async function DELETE(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-          return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { id } = await req.json()
         if (!id) {
             return NextResponse.json({
@@ -143,8 +117,8 @@ export async function DELETE(req) {
             }, { status: 400 })
         }
         const result = await pool.query(
-            `DELETE FROM ecom_categories WHERE category_id = $1 AND tenant_id = $2 RETURNING *`, 
-            [id, tenant_id]
+            `DELETE FROM ecom_categories WHERE category_id = $1 RETURNING *`, 
+            [id]
         )
 
         if (result.rowCount === 0) {

@@ -1,16 +1,10 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
+
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const { id } = await params;
+const { id } = await params;
         if (!id) {
             return NextResponse.json({
                 success: false, message: 'Category id not received',
@@ -18,8 +12,8 @@ export async function GET(req, { params }) {
         }
 
         const data = await pool.query(
-            `SELECT * FROM ecom_products WHERE (category_id = $1 OR sub_category_id = $1) AND tenant_id = $2 ORDER BY created_at DESC LIMIT 50`,
-            [id, tenant_id]
+            `SELECT * FROM ecom_products WHERE (category_id = $1 OR sub_category_id = $1) ORDER BY created_at DESC LIMIT 50`,
+            [id]
         );
         const result = data.rows;
 

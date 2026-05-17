@@ -1,16 +1,9 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const { searchParams } = new URL(req.url);
+const { searchParams } = new URL(req.url);
         const category_id = searchParams.get('category');
         const sort      = searchParams.get('sort') || 'latest';       // latest | price_asc | price_desc
         const minPrice  = parseFloat(searchParams.get('minPrice')) || null;
@@ -19,8 +12,8 @@ export async function GET(req) {
         const limit = 20;
         const offset = (page - 1) * limit;
 
-        let params = [tenant_id];
-        let where  = `WHERE tenant_id = $1`;
+        let params = [];
+        let where  = ``;
 
         if (category_id && category_id !== '') {
             params.push(category_id);

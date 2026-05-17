@@ -1,17 +1,11 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
+
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/database/brevo";
 
 export async function POST(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const { name, email, subject, message } = await req.json()
+const { name, email, subject, message } = await req.json()
 
         if (!name || !email || !subject || !message) {
             return NextResponse.json({
@@ -20,8 +14,8 @@ export async function POST(req) {
         }
 
         const newSupport = await pool.query(
-            `INSERT INTO ecom_supports (name, email, subject, message, tenant_id) VALUES ($1, $2, $3, $4, $5) RETURNING *`, 
-            [name, email, subject, message, tenant_id]
+            `INSERT INTO ecom_supports (name, email, subject, message) VALUES ($1, $2, $3, $4, $5) RETURNING *`, 
+            [name, email, subject, message]
         );
 
         if (newSupport.rowCount === 0) {
@@ -41,13 +35,7 @@ export async function POST(req) {
 
 export async function GET() {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const data = await pool.query(`SELECT * FROM ecom_supports WHERE tenant_id = $1 ORDER BY created_at DESC`, [tenant_id])
+const data = await pool.query(`SELECT * FROM ecom_supports  ORDER BY created_at DESC`, [])
         const result = data.rows
 
         return NextResponse.json({
@@ -97,19 +85,13 @@ export async function PUT(req) {
 
 export async function DELETE(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const { id } = await req.json()
+const { id } = await req.json()
         if (!id) {
             return NextResponse.json({
                 success: false, message: 'ID not received'
             }, { status: 400 })
         }
-        const result = await pool.query(`DELETE FROM ecom_supports WHERE support_id = $1 AND tenant_id = $2 RETURNING *`, [id, tenant_id])
+        const result = await pool.query(`DELETE FROM ecom_supports WHERE support_id = $1 RETURNING *`, [id])
         if (result.rowCount === 0) {
             return NextResponse.json({
                 success: false, message: 'Failed to remove message'

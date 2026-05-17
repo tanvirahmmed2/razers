@@ -1,5 +1,5 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
+
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -7,29 +7,24 @@ export async function POST(req) {
     try {
         const { product_id, quantity, sale_price, customer_id } = await req.json();
         const total_deduction = parseFloat(sale_price) * parseInt(quantity);
-
-        const website = await getTenant();
-        if (!website) return NextResponse.json({ success: false, message: 'Website not found' }, { status: 404 });
-        const tenant_id = website.tenant_id;
-
-        await client.query('BEGIN');
+await client.query('BEGIN');
 
         // 1. Create a Negative Order to adjust revenue
         const negOrderQuery = `
-            INSERT INTO ecom_orders (customer_id, total_amount, status, created_at, tenant_id)
+            INSERT INTO ecom_orders (customer_id, total_amount, status, created_at)
             VALUES ($1, $2, 'returned', CURRENT_TIMESTAMP, $3)
             RETURNING order_id;
         `;
         
-        await client.query(negOrderQuery, [customer_id || null, -total_deduction, tenant_id]);
+        await client.query(negOrderQuery, [customer_id || null, -total_deduction]);
 
         const restoreStockQuery = `
             UPDATE ecom_products 
             SET stock = stock + $1 
-            WHERE product_id = $2 AND tenant_id = $3
+            WHERE product_id = $2
             RETURNING name, stock;
         `;
-        const productRes = await client.query(restoreStockQuery, [quantity, product_id, tenant_id]);
+        const productRes = await client.query(restoreStockQuery, [quantity, product_id]);
 
         await client.query('COMMIT');
 

@@ -1,18 +1,11 @@
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 
 // Public endpoint — no auth required
 // Query by:  ?orderId=123   OR   ?phone=01700000000
 export async function GET(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Store not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
-        const { searchParams } = new URL(req.url);
+const { searchParams } = new URL(req.url);
         const orderId = searchParams.get('orderId')?.trim();
         const phone   = searchParams.get('phone')?.trim();
 
@@ -51,32 +44,32 @@ export async function GET(req) {
                     ) ORDER BY pr.name
                 ) AS items
             FROM ecom_orders o
-            JOIN ecom_customers   c  ON o.customer_id  = c.customer_id  AND o.tenant_id = c.tenant_id
-            JOIN ecom_payments    p  ON o.order_id     = p.order_id     AND o.tenant_id = p.tenant_id
-            JOIN ecom_order_items oi ON o.order_id     = oi.order_id    AND o.tenant_id = oi.tenant_id
-            JOIN ecom_products    pr ON oi.product_id  = pr.product_id  AND o.tenant_id = pr.tenant_id
+            JOIN ecom_customers   c  ON o.customer_id  = c.customer_id
+            JOIN ecom_payments    p  ON o.order_id     = p.order_id
+            JOIN ecom_order_items oi ON o.order_id     = oi.order_id
+            JOIN ecom_products    pr ON oi.product_id  = pr.product_id
         `;
 
         let query, values;
 
         if (orderId) {
             query = `${baseSelect}
-                WHERE o.order_id = $1 AND o.tenant_id = $2
+                WHERE o.order_id = $1
                 GROUP BY 
                     o.order_id, o.subtotal_amount, o.total_discount_amount, o.total_amount, 
                     o.due_amount, o.delivery_charge, o.shipping_address, o.note, o.status, o.created_at,
                     c.name, c.phone, p.payment_method, p.payment_status, p.amount_received, p.change_amount`;
-            values = [orderId, tenant_id];
+            values = [orderId];
         } else {
             // Phone search — return all orders for that phone, newest first
             query = `${baseSelect}
-                WHERE c.phone = $1 AND o.tenant_id = $2
+                WHERE c.phone = $1
                 GROUP BY 
                     o.order_id, o.subtotal_amount, o.total_discount_amount, o.total_amount, 
                     o.due_amount, o.delivery_charge, o.shipping_address, o.note, o.status, o.created_at,
                     c.name, c.phone, p.payment_method, p.payment_status, p.amount_received, p.change_amount
                 ORDER BY o.created_at DESC`;
-            values = [phone, tenant_id];
+            values = [phone];
         }
 
         const { rows } = await pool.query(query, values);

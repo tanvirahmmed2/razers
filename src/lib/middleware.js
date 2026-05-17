@@ -2,19 +2,12 @@ import jwt from "jsonwebtoken";
 import { cookies, headers } from "next/headers";
 import { JWT_SECRET } from "./database/secret";
 import { pool } from "./database/db";
-import { getTenant } from "./database/tenant";
-
 /**
  * Common function to get the authenticated user from the request.
  * It uses the 'nvs_user_token' cookie and validates it against the ecom_users table.
  */
 async function getAuthenticatedUser() {
     try {
-        const headersList = await headers();
-        const website = await getTenant({ headers: headersList });
-        if (!website) return null;
-        const tenant_id = website.tenant_id;
-
         const cookieStore = await cookies(); 
         const token = cookieStore.get('nvs_user_token')?.value;
 
@@ -26,8 +19,8 @@ async function getAuthenticatedUser() {
         const res = await pool.query(
             `SELECT user_id, name, email, phone, role, created_at 
              FROM ecom_users 
-             WHERE user_id = $1 AND tenant_id = $2 AND is_active = TRUE`, 
-            [decoded.user_id || decoded.id, tenant_id]
+             WHERE user_id = $1 AND is_active = TRUE`, 
+            [decoded.user_id || decoded.id]
         );
 
         return res.rows[0] || null;

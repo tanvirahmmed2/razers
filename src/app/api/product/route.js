@@ -1,17 +1,10 @@
 import cloudinary from "@/lib/database/cloudinary";
 import { pool } from "@/lib/database/db";
-import { getTenant } from "@/lib/database/tenant";
 import { NextResponse } from "next/server";
 import slugify from "slugify";
 
 export async function POST(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const formData = await req.formData();
         
         const name = formData.get("name");
@@ -38,8 +31,8 @@ export async function POST(req) {
             const maxBarcodeResult = await pool.query(`
                 SELECT MAX(CAST(barcode AS BIGINT)) as max_code 
                 FROM ecom_products 
-                WHERE barcode ~ '^[0-9]+$' AND tenant_id = $1
-            `, [tenant_id]);
+                WHERE barcode ~ '^[0-9]+$'
+            `);
             const maxCode = maxBarcodeResult.rows[0]?.max_code;
             barcode = maxCode ? (Number(maxCode) + 1).toString() : "10001";
         }
@@ -53,8 +46,8 @@ export async function POST(req) {
             const slug = slugify(name.trim(), { lower: true, strict: true });
 
             const isExists = await client.query(
-                `SELECT product_id FROM ecom_products WHERE (slug=$1 OR barcode=$2) AND tenant_id = $3`, 
-                [slug, barcode, tenant_id]
+                `SELECT product_id FROM ecom_products WHERE (slug=$1 OR barcode=$2)`, 
+                [slug, barcode]
             );
             if (isExists.rowCount > 0) {
                 await client.query('ROLLBACK');
@@ -69,7 +62,7 @@ export async function POST(req) {
             const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
             const cloudImage = await new Promise((resolve, reject) => {
                 const stream = cloudinary.uploader.upload_stream(
-                    { folder: `tenant_${tenant_id}` },
+                    { folder: `products` },
                     (err, result) => {
                         if (err) reject(err);
                         else resolve(result);
@@ -82,16 +75,16 @@ export async function POST(req) {
                 INSERT INTO ecom_products (
                     name, description, category_id, sub_category_id, brand_id, slug, barcode, unit, 
                     stock, purchase_price, sale_price, discount_price, 
-                    wholesale_price, retail_price, dealer_price, image, image_id, tenant_id
+                    wholesale_price, retail_price, dealer_price, image, image_id
                 ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
                 RETURNING product_id`;
 
             const values = [
                 name, description, category_id, sub_category_id, brand_id, slug, barcode, unit,
                 computedStock, purchase_price, sale_price, discount_price,
                 wholesale_price, retail_price, dealer_price, 
-                cloudImage.secure_url, cloudImage.public_id, tenant_id
+                cloudImage.secure_url, cloudImage.public_id
             ];
 
             const newProduct = await client.query(query, values);
@@ -103,8 +96,8 @@ export async function POST(req) {
                 FROM ecom_products p
                 LEFT JOIN ecom_categories c ON p.category_id = c.category_id
                 LEFT JOIN ecom_brands b ON p.brand_id = b.brand_id
-                WHERE p.product_id = $1 AND p.tenant_id = $2
-            `, [productId, tenant_id]);
+                WHERE p.product_id = $1
+            `, [productId]);
 
             const productToReturn = finalProduct.rows[0];
 
@@ -131,18 +124,12 @@ export async function POST(req) {
 
 export async function GET(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get('page')) || 1;
         const limit = 20;
         const offset = (page - 1) * limit;
 
-        const countRes = await pool.query("SELECT COUNT(*) FROM ecom_products WHERE tenant_id = $1", [tenant_id]);
+        const countRes = await pool.query("SELECT COUNT(*) FROM ecom_products");
         const totalItems = parseInt(countRes.rows[0].count);
         const totalPages = Math.ceil(totalItems / limit);
 
@@ -150,10 +137,9 @@ export async function GET(req) {
             `SELECT 
                 p.*
              FROM ecom_products p 
-             WHERE p.tenant_id = $1 
              ORDER BY p.created_at DESC 
-             LIMIT $2 OFFSET $3`,
-            [tenant_id, limit, offset]
+             LIMIT $1 OFFSET $2`,
+            [limit, offset]
         );
 
         const result = data.rows;
@@ -187,12 +173,6 @@ export async function GET(req) {
 
 export async function DELETE(req) {
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const { id } = await req.json();
 
         if (!id) {
@@ -202,7 +182,7 @@ export async function DELETE(req) {
             );
         }
 
-        const { rows } = await pool.query(`SELECT * FROM ecom_products WHERE product_id = $1 AND tenant_id = $2`, [id, tenant_id]);
+        const { rows } = await pool.query(`SELECT * FROM ecom_products WHERE product_id = $1`, [id]);
         if (rows.length === 0) {
             return NextResponse.json(
                 { success: false, message: "No product found with this ID" },
@@ -221,8 +201,8 @@ export async function DELETE(req) {
         }
 
         const deleteProduct = await pool.query(
-            `DELETE FROM ecom_products WHERE product_id = $1 AND tenant_id = $2 RETURNING *`,
-            [id, tenant_id]
+            `DELETE FROM ecom_products WHERE product_id = $1 RETURNING *`,
+            [id]
         );
 
         if (deleteProduct.rowCount === 0) {
@@ -249,12 +229,6 @@ export async function DELETE(req) {
 export async function PUT(req) {
     const client = await pool.connect();
     try {
-        const website = await getTenant();
-        if (!website) {
-            return NextResponse.json({ success: false, message: 'Website/Tenant not found' }, { status: 404 });
-        }
-        const tenant_id = website.tenant_id;
-
         const formData = await req.formData();
         const id = formData.get("id");
         const name = formData.get("name");
@@ -294,7 +268,7 @@ export async function PUT(req) {
 
             const uploadResponse = await new Promise((resolve, reject) => {
                 cloudinary.uploader.upload_stream(
-                    { folder: `tenant_${tenant_id}` },
+                    { folder: `products` },
                     (error, result) => {
                         if (error) reject(error);
                         else resolve(result);
@@ -333,11 +307,11 @@ export async function PUT(req) {
         ];
 
         if (imageUrl) {
-            query += `, image = $16, image_id = $17 WHERE product_id = $18 AND tenant_id = $19`;
-            values.push(imageUrl, imagePublicId, id, tenant_id);
+            query += `, image = $16, image_id = $17 WHERE product_id = $18`;
+            values.push(imageUrl, imagePublicId, id);
         } else {
-            query += ` WHERE product_id = $16 AND tenant_id = $17`;
-            values.push(id, tenant_id);
+            query += ` WHERE product_id = $16`;
+            values.push(id);
         }
 
         const updatedProduct = await client.query(query + " RETURNING *", values);
@@ -353,8 +327,8 @@ export async function PUT(req) {
             FROM ecom_products p
             LEFT JOIN ecom_categories c ON p.category_id = c.category_id
             LEFT JOIN ecom_brands b ON p.brand_id = b.brand_id
-            WHERE p.product_id = $1 AND p.tenant_id = $2
-        `, [id, tenant_id]);
+            WHERE p.product_id = $1
+        `, [id]);
 
         const productToReturn = finalProduct.rows[0];
 
